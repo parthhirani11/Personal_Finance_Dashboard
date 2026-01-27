@@ -1125,7 +1125,7 @@ const addCategoryToInput = (value) => {
             {filters.map((f, index) => (
               <div
                 key={f.id}
-                className="d-flex align-items-center gap-1 mb-2 position-relative"
+                className="d-flex align-items-center gap-1 mb-4 position-relative"
               >
 
                 {/* FILTER TYPE */}
@@ -1176,7 +1176,7 @@ const addCategoryToInput = (value) => {
                   {f.type === "payment" && (
                     <>
                       <input
-                        className="form-control border-3"
+                        className="form-control border-3 "
                         placeholder="Cash, Bank, UPI, SBI, PhonePe..."
                         value={f.value || ""}
                         onChange={(e) => {
@@ -1508,7 +1508,7 @@ const addCategoryToInput = (value) => {
                       {/* </div> */}
                   </div>
                   <div className="col-md-6 mt-2">
-                    <label>Name</label>
+                    <label>Account Holder Name</label>
                     <input className="form-control"  name="person"  autoComplete="off" />
                   </div>
                 </div>
@@ -1561,7 +1561,7 @@ const addCategoryToInput = (value) => {
                 </div>
 
                 {/* <!-- BANK -->  */}
-                {paymentMode === "Bank" && (
+                {/* {paymentMode === "Bank" && (
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <select className="form-select border-1" style={{width:"220px"}} name="bankName" value={selectedBank}  onChange={(e) => setSelectedBank(e.target.value)}>
                       <option value="">Select Bank</option>
@@ -1571,9 +1571,9 @@ const addCategoryToInput = (value) => {
                          </option>
                       ))}
                     </select>
-                    <button className="plus-btnn" type="button" onClick={handleAddBank}>＋ Add Bank</button>
+                    <button className="plus-btnn" type="button" onClick={handleAddBank}>＋ Add Bank</button> */}
                     {/* <input className ="form-control "style={{width:"620px"}} name="accountNumber" autoComplete="off" step="0.01" placeholder="Account Number"required /> */}
-                    <input
+                    {/* <input
                           type="text"
                           className="form-control"
                           autoComplete="off" 
@@ -1586,10 +1586,10 @@ const addCategoryToInput = (value) => {
                           required
                         />
                   </div>
-                )}
+                )} */}
 
                 {/* <!-- UPI --> */}
-                {paymentMode === "UPI" && (
+                {/* {paymentMode === "UPI" && (
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <select className="form-select border-2"  style={{width:"220px"}} name="upiApp" >
                       <option value="">Select UPI</option>
@@ -1599,7 +1599,7 @@ const addCategoryToInput = (value) => {
                     </select>
                     <input className ="form-control " style={{width:"730px"}} autoComplete="off" name="upiId" placeholder="UPI ID / Mobile" />
                   </div>
-                )}
+                )} */}
                 {/* <div className="d-flex align-items-center gap-2 mb-2"> */}
                 <div className="row mb-2">
                   <div className="col-md-6 mt-2">
@@ -1804,7 +1804,7 @@ const addCategoryToInput = (value) => {
             <div className="popup-footer">
               <button type="submit" form="transactionForm"  className="btn btn-primary align-items-center d-flex">
                 <FiSave size={16} />
-                  Save Transaction
+                   .Save Transaction
               </button>
             </div>
           </div>
