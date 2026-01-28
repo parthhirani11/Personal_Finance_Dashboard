@@ -39,11 +39,6 @@ export const addTransaction = async (req, res) => {
       person,
       description,
       tags,
-      paymentMode,
-      bankName,
-      accountNumber,
-      upiApp,
-      upiId,
       date
     } = req.body;
     const file = req.file;
@@ -63,16 +58,10 @@ export const addTransaction = async (req, res) => {
       amount: Number(amount),
       person,
       description,
-      paymentMode,
       tags: parsedTags,
       attachment: file ? file.filename : null,
       originalName: file ? file.originalname : null,
-      bankDetails: bankName
-        ? { bankName, accountNumber }
-        : undefined,
-      upiDetails: upiApp
-        ? { appName: upiApp, upiId }
-        : undefined,
+      
       // tags: tags ? tags.split(",").map(t => t.trim()) : [],
        date: recordDate,
     });
@@ -99,11 +88,6 @@ export const updateTransaction = async (req, res) => {
     person,
     description,
     tags,
-    paymentMode,
-    bankName,
-    accountNumber,
-    upiApp,
-    upiId,
   } = req.body;
 
   const file = req.file;
@@ -121,23 +105,14 @@ export const updateTransaction = async (req, res) => {
     person,
     description,
     tags: parsedTags,
-    paymentMode,
+   
   };
  if (file) {
       updateData.attachment = file.filename;
       updateData.originalName = file.originalname;
     }
 
-  if (paymentMode === "Bank") {
-    updateData.bankDetails = { bankName, accountNumber };
-    updateData.upiDetails = {};
-  }
-
-  if (paymentMode === "UPI") {
-    updateData.upiDetails = { appName: upiApp, upiId };
-    updateData.bankDetails = {};
-  }
-
+  
   if (req.file) {
     updateData.attachment = req.file.filename;
     updateData.originalName = req.file.originalname;

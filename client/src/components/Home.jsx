@@ -25,6 +25,7 @@ import {
 export default function Dashboard() {
 
   const navigate = useNavigate();
+  
   const [accounts, setAccounts] = useState([]);
   const [activeTab, setActiveTab] = useState("transactions");
   
@@ -48,42 +49,40 @@ export default function Dashboard() {
     totalExpense: 0,
     balance: 0,
   });
+  // category 
   // const [tags, setTags] = useState("");
   const fixedCategories = ["Goods", "Salary", "Rent", "Food", "Travel"];
   const [categoryInput, setCategoryInput] = useState("");
   const [allCategories, setAllCategories] = useState([]);       // DB
   const [filteredCategories, setFilteredCategories] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
-  const tagRef = useRef(null);
-  const [suggestedTags, setSuggestedTags] = useState([]);
+  // sab tags
+  const fixedTags = ["office", "personal", "urgent", "family", "emi"];
+
+  const [tagInput, setTagInput] = useState("");
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  const [allTags, setAllTags] = useState([]);
+  const [filteredTags, setFilteredTags] = useState([]); 
   const [selectedTags, setSelectedTags] = useState([]);
-
-  const [showTagDropdown, setShowTagDropdown] = useState(false);
-  const [showAddTagModal, setShowAddTagModal] = useState(false);
-
+  
+  const tagRef = useRef(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
   
-  const [newTag, setNewTag] = useState("");
+  // const [newTag, setNewTag] = useState("");
   const [showPopup, setShowPopup] = useState(false);
-  const [paymentMode, setPaymentMode] = useState("Cash");
-  const [banks, setBanks] = useState(["SBI", "HDFC"]);
-  const [selectedBank, setSelectedBank] = useState("");
+  const [amount, setAmount] = useState("");
+  const [errors, setErrors] = useState({});
+
+  // payment mode 
+
  
   /* ================= FETCH DASHBOARD ================= */
   useEffect(() => {
     fetchDashboard();
-     fetchSuggestedTags();
+    
   }, []);
-
-  const fetchSuggestedTags = async () => {
-    const res = await api.get(
-      "/account/tags",
-      
-      { withCredentials: true }
-    );
-    setSuggestedTags(res.data || []);
-  };
 
   const fetchDashboard = async () => {
     try {
@@ -102,46 +101,8 @@ export default function Dashboard() {
       }
   };
 
-  //  tegs in dropdown list
 
-  const toggleTag = (tag) => {
-    setSelectedTags(prev =>
-      prev.includes(tag)
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
-  };
-
-  const addNewTag = () => {
-    const tag = newTag.trim().toLowerCase();
-    if (!tag) return;
-
-    // add to suggested list
-    setSuggestedTags(prev =>
-      prev.includes(tag) ? prev : [tag, ...prev]
-    );
-
-    // auto select
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev : [...prev, tag]
-    );
-
-    setNewTag("");               // reset modal input
-    setShowAddTagModal(false);   // close popup
-  };
-
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (tagRef.current && !tagRef.current.contains(e.target)) {
-        setShowTagDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+ 
   /* ================= SUMMARY (PURE FUNCTION) ================= */
   const calculateSummary = (data) => {
     const income = data
@@ -303,29 +264,7 @@ export default function Dashboard() {
         if (f.type === "type")
           return values.includes(item.type);
 
-        if (f.type === "payment") {
-          return values.some(v => {
-            // CASH
-            if (v === "cash")
-              return item.paymentMode === "Cash";
-
-            // BANK
-            if (item.paymentMode === "Bank")
-              return (
-                v === "bank" ||
-                item.bankDetails?.bankName?.toLowerCase().includes(v)
-              );
-
-            // UPI
-            if (item.paymentMode === "UPI")
-              return (
-                v === "upi" ||
-                item.upiDetails?.appName?.toLowerCase().includes(v)
-              );
-              return false;
-          });
-        }
-        return true;
+        
       });
     });
     return data;
@@ -351,12 +290,7 @@ export default function Dashboard() {
         if (f.type === "tags")
           return values.some(v => item.tags?.join(",").toLowerCase().includes(v));
 
-        if (f.type === "payment")
-          return values.some(v =>
-            item.paymentMode?.toLowerCase().includes(v) ||
-            item.bankDetails?.bankName?.toLowerCase().includes(v) ||
-            item.upiDetails?.appName?.toLowerCase().includes(v)
-          );
+        
 
         return true;
       });
@@ -404,20 +338,7 @@ export default function Dashboard() {
     if (type === "tags")
       return [...new Set(data.flatMap(i => i.tags || []))];
 
-    if (type === "payment") {
-      const banks = data
-        .filter(i => i.paymentMode === "Bank")
-        .map(i => i.bankDetails?.bankName)
-        .filter(Boolean);
-
-      const upis = data
-        .filter(i => i.paymentMode === "UPI")
-        .map(i => i.upiDetails?.appName)
-        .filter(Boolean);
-
-      return [...new Set(["Cash", "Bank", "UPI", ...banks, ...upis])];
-    }
-
+ 
     return [];
   };
 
@@ -489,10 +410,24 @@ export default function Dashboard() {
     
     const formData = new FormData(e.target);
      formData.append("tags", selectedTags.join(","));
-     formData.set("description", categoryInput); // ✅ IMPORTANT
+    //  formData.append("paymentMode", selectedPaymentMode);
+     
+    //  formData.set("description", categoryInput); // ✅ IMPORTANT
+    formData.set("description", selectedCategories.join(", "));
      if (file) {
       formData.append("attachment", file);
     } 
+
+     let newErrors = {};
+
+    if (!amount || Number(amount) <= 0) {
+      newErrors.amount = "Please enter amount";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // ❌ stop submit
+    }
     try {
       await api.post(
         "/account/add",
@@ -501,14 +436,16 @@ export default function Dashboard() {
           withCredentials: true 
         }
       );
-      await fetchCategories();  
+      await fetchCategories();   // 🔥 ADD THIS  
+
       setShowPopup(false);
       fetchDashboard();
-      fetchSuggestedTags(); 
 
+     
       setSelectedTags([]);
-      setShowTagDropdown(false);
-      
+      // setShowTagDropdown(false);
+      setShowTagSuggestions(false);
+      setSelectedCategories([]);
       setCategoryInput("");
       setFilteredCategories([]);
       setShowSuggestions(false);
@@ -531,9 +468,11 @@ export default function Dashboard() {
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
-
+    
     // Remove from state
     setTransactions((prev) => prev.filter((t) => t._id !== id));
+    fetchDashboard(); 
+    fetchCategories(); 
 
     // Show toast
     toast.success("Record deleted successfully");
@@ -547,65 +486,7 @@ export default function Dashboard() {
 };
 
 
-
-  /* ================= ADD BANK ================= */
-  const handleAddBank = () => {
-    const name = prompt("Enter Bank Name");
-    if (!name || banks.includes(name)) return;
-    setBanks(prev => [...prev, name]);
-    setSelectedBank(name);
-  };
-
-  const renderPayment = (item) => {
-    if (item.paymentMode === "Cash") {
-      return (
-        <div className="payment-wrap">
-          <span className="pay-badge cash">Cash</span>
-        </div>
-      );
-    }
-
-    if (item.paymentMode === "Bank") {
-      return (
-        <div className="payment-wrap">
-          <span className="pay-badge bank">
-          Bank: {item.bankDetails?.bankName || "Bank"}
-          </span>
-
-          {item.bankDetails?.accountNumber && (
-            <div className="pay-detail bank-detail">
-              <span className="pay-label">A/C:</span>
-              <span className="pay-value">
-                {item.bankDetails.accountNumber}
-              </span>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    if (item.paymentMode === "UPI") {
-      return (
-        <div className="payment-wrap">
-          <span className="pay-badge upi">
-          UPI: {item.upiDetails?.appName || "UPI"}
-          </span>
-
-          {item.upiDetails?.upiId && (
-            <div className="pay-detail upi-detail">
-              <span className="pay-label">UPI ID:</span>
-              <span className="pay-value">
-                {item.upiDetails.upiId}
-              </span>
-            </div>
-          )}
-        </div>
-      );
-    }
-     return <span>-</span>;
-  };
-
-
+  
   /* ================= MONTH WISE COLUMN CHART DATA (ALL MONTHS) ================= */
   const monthWiseChartData = useMemo(() => {
     const months = [
@@ -794,92 +675,161 @@ export default function Dashboard() {
     );
   }
 
-// // suggestion / button click
-// const addCategoryToInput = (value) => {
-//   const currentValues = categoryInput
-//     .split(",")
-//     .map(v => v.trim())
-//     .filter(Boolean);
-
-//   if (!currentValues.includes(value)) {
-//     const updated = currentValues.length
-//       ? currentValues.join(", ") + ", " + value
-//       : value;
-
-//     setCategoryInput(updated);
-//   }
-// };
-
-// // new category typed
-// const handleNewCategory = () => {
-//   const parts = categoryInput
-//     .split(",")
-//     .map(v => v.trim())
-//     .filter(Boolean);
-
-//   const last = parts[parts.length - 1];
-
-//   if (last && !categories.includes(last)) {
-//     setCategories(prev => [...prev, last]);
-//   }
-// };
+// lover case and duplicate valve not show
+const normalize = (v) => v.trim().toLowerCase();
+  // categories filter and add ..........
 useEffect(() => {
   fetchCategories();
 }, []);
 
+useEffect(() => {
+  setFilteredCategories(allCategories);
+}, [allCategories]);
+
 const fetchCategories = async () => {
   try {
-    const res = await api.get(
-      "/account/categories",
-      
-      { withCredentials: true }
-    );
-    // console.log("CATEGORIES FROM API:", res.data); // 🔴 CHECK THIS
-    setAllCategories(res.data);
-    setFilteredCategories(res.data);
+    const res = await api.get("/account/categories", {
+      withCredentials: true,
+    });
+    setAllCategories(res.data || []);
+     setFilteredCategories(res.data || []);
   } catch (err) {
     console.error(err);
   }
 };
 
-const getLastKeyword = (value) => {
-  const parts = value.split(",");
-  return parts[parts.length - 1].trim().toLowerCase();
+ const addCategory = (cat) => {
+  const value = cat.trim();
+  if (!value) return;
+
+  const isDuplicate = selectedCategories.some(
+    c => normalize(c) === normalize(value)
+  );
+
+  if (isDuplicate) return; // ❌ already exists
+
+
+  // if (!selectedCategories.includes(cat)) {
+  //   setSelectedCategories((prev) => [...prev, cat]);
+  // }
+  setSelectedCategories(prev => [...prev, value]);
+
+  setCategoryInput("");
+  setShowSuggestions(false);
+};
+
+ const removeCategory = (value) => {
+  setSelectedCategories((prev) =>
+    prev.filter((cat) => cat !== value)
+  );
+};
+
+ const handleKeyDown = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    const value = categoryInput.trim();
+    if (!value) return;
+
+    addCategory(value);
+  }
 };
 
 const handleCategoryChange = (value) => {
   setCategoryInput(value);
+  setShowSuggestions(true);
 
-  const keyword = getLastKeyword(value);
+  const keyword = normalize(value);
 
-  if (keyword === "") {
-    setFilteredCategories(allCategories); // show all
-  } else {
-    setFilteredCategories(
-      allCategories.filter(c =>
-        c.toLowerCase().includes(keyword)
+  setFilteredCategories(
+    allCategories.filter(cat =>
+      normalize(cat).includes(keyword) &&
+      !selectedCategories.some(
+        sel => normalize(sel) === normalize(cat)
       )
-    );
-  }
+    )
+  );
 };
 
-const addCategoryToInput = (value) => {
-  const parts = categoryInput
-    .split(",")
-    .map(v => v.trim())
-    .filter(Boolean);
+// sub tags filter and add  
+  const fetchTags = async () => {
+    try {
+      const res = await api.get("/account/tags", {
+        withCredentials: true,
+      });
+      setAllTags(res.data || []);
+      setFilteredTags(res.data || []);
+    } catch (err) {
+      console.error("Fetch tags error:", err);
+    }
+  };
 
-  if (!parts.includes(value)) {
-    const updated = [...parts, value].join(", ");
-    setCategoryInput(updated);
-  }
+  useEffect(() => {
+    fetchTags();
+  }, []);
+
+  useEffect(() => {
+    setFilteredTags(allTags);
+  }, [allTags]);
+
+  const addTag = (tag) => {
+  const value = tag.trim();
+  if (!value) return;
+
+  const isDuplicate = selectedTags.some(
+    t => normalize(t) === normalize(value)
+  );
+
+  if (isDuplicate) return;
+
+  setSelectedTags(prev => [...prev, value]);
+  setTagInput("");
+  setFilteredTags(allTags);
 };
 
-// useEffect(() => {
-//   const close = () => setFilteredCategories([]);
-//   document.addEventListener("click", close);
-//   return () => document.removeEventListener("click", close);
-// }, []);
+
+  const removeTag = (tag) => {
+    setSelectedTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const handleTagKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const value = tagInput.trim().toLowerCase();
+      if (!value) return;
+      addTag(value);
+    }
+  };
+
+  const handleTagChange = (value) => {
+  setTagInput(value);
+  setShowTagSuggestions(true);
+
+  const keyword = normalize(value);
+
+  setFilteredTags(
+    allTags.filter(tag =>
+      normalize(tag).includes(keyword) &&
+      !selectedTags.some(
+        sel => normalize(sel) === normalize(tag)
+      )
+    )
+  );
+};
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (tagRef.current && !tagRef.current.contains(e.target)) {
+        setShowTagSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // payment mode add in popup form 
+  
   return (
     <div className="container">
       {/* SUMMARY DashBoard */}
@@ -1173,50 +1123,7 @@ const addCategoryToInput = (value) => {
                     </select>
                   )}
 
-                  {f.type === "payment" && (
-                    <>
-                      <input
-                        className="form-control border-3 "
-                        placeholder="Cash, Bank, UPI, SBI, PhonePe..."
-                        value={f.value || ""}
-                        onChange={(e) => {
-                          updateFilter(f.id, "value", e.target.value);
-                          setActiveFilterIndex(index);
-
-                          const parts = e.target.value.split(",").map(v => v.trim());
-                          const current = parts.pop()?.toLowerCase();
-
-                          if (!current) {
-                            setActiveSuggestions([]);
-                            return;
-                          }
-
-                          const data = getFilteredDataExcept(index);
-                          const suggestions = getSuggestions("payment", data)
-                            .filter(s => s.toLowerCase().includes(current))
-                            .filter(s => !parts.map(p => p.toLowerCase()).includes(s.toLowerCase()));
-
-                          setActiveSuggestions(suggestions);
-                        }}
-                      />
-
-                      {activeFilterIndex === index && activeSuggestions.length > 0 && (
-                        <div className="suggestionBox list-group">
-                          {activeSuggestions.map((s, i) => (
-                            <button
-                              key={i}
-                              type="button"
-                              className="list-group-item list-group-item-action"
-                              onClick={() => selectSuggestion(index, s)}
-                            >
-                              {s}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-
+                 
                   
                   {/* RECIPIENT / CATEGORY / TAGS */}
                   {(f.type === "recipient" || f.type === "category" || f.type === "tags") && (
@@ -1319,24 +1226,6 @@ const addCategoryToInput = (value) => {
             ))}
           </div>
 
-          
-            
-              {/* SUMMARY */}
-              {/* <div className="transaction-summary">
-                <div>
-                  <strong>Total Income:  </strong>
-                  <span className="transaction-income-total">
-                    ₹{summary.totalIncome.toFixed(2)}
-                  </span>
-                </div>
-                <div>
-                  <strong> Total Expense:  </strong>
-                  
-                  <span className="transaction-expense-total">
-                    ₹{summary.totalExpense.toFixed(2)}
-                  </span>
-                </div>
-              </div> */}
           <ToastContainer position="top-center" autoClose={3000} />
           {filteredData.length > 0 ? (
             
@@ -1366,7 +1255,7 @@ const addCategoryToInput = (value) => {
                     </div>
 
                     <div className="transaction-details">
-                      <div className="payment-row"><span className="payment-label">Payment:</span>{renderPayment(item)}</div>
+                     
                       <div><strong>Recipient:</strong> {item.person || "-"}</div>
                       <div><strong>Category:</strong> {item.description || "-"}</div>
                       <div><strong>Tags:</strong> {item.tags?.join(", ") || "-"}</div>
@@ -1467,7 +1356,7 @@ const addCategoryToInput = (value) => {
             <div className="popup-body">
               <form id="transactionForm" className="center" onSubmit={addTransaction} encType="multipart/form-data">
               
-                <label>Type</label>
+                <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
                   <div
                     className={`slider-option ${form.type === "income" ? "active income" : ""}`}
@@ -1492,19 +1381,29 @@ const addCategoryToInput = (value) => {
                 <div className="row mb-2">
                   <div className="col-md-6 mt-2">
                     {/* <div className="d-flex align-items-center gap-2 mb-2"> */}
-                      <label>Amount</label>
+                      <label>Amount <span className="text-danger">*</span></label>
                         <input
-                          type="text"
-                          className="form-control"
-                          autoComplete="off" 
+                          type="number"
                           name="amount"
-                          // placeholder="Amount"
+                          className={`form-control ${errors.amount ? "is-invalid" : ""}`}
+                          value={amount}
                           inputMode="decimal"
+                          min="0"
+                          step="0.01"
                           onChange={(e) => {
-                            e.target.value = e.target.value.replace(/[^0-9.]/g, "");
+                            const value = e.target.value;
+                            if (/^\d*\.?\d*$/.test(value)) {
+                              setAmount(value);
+                              setErrors(prev => ({ ...prev, amount: "" }));
+                            }
                           }}
-                          required
                         />
+
+                        {errors.amount && (
+                          <div className="invalid-feedback">
+                            {errors.amount}
+                          </div>
+                        )}
                       {/* </div> */}
                   </div>
                   <div className="col-md-6 mt-2">
@@ -1513,148 +1412,82 @@ const addCategoryToInput = (value) => {
                   </div>
                 </div>
 
-                <div className="mb-2">      
-                  <label>Payment Mode</label>
-                  {/* <select className="form-select border-1" name="paymentMode" value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)}>
-                    <option value="Cash">Cash </option>
-                    <option value="Bank">Bank</option>
-                    <option value="UPI">UPI </option>
-                  </select> */}
+                <div className="mb-2"> 
+                  <label>
+                    Payment Mode <span className="text-danger">*</span>
+                  </label>
+
+                 
                   <div className="payment-mode">
-                    <label className="radio-item">
-                      <input
-                        type="radio"
-                        name="paymentMode"
-                        value="Cash"
-                        checked={paymentMode === "Cash"}
-                        onChange={(e) => setPaymentMode(e.target.value)}
-                      />
-                      <span className="custom-radio"></span>
-                      Cash
-                    </label>
-
-                    <label className="radio-item">
-                      <input
-                        type="radio"
-                        name="paymentMode"
-                        value="Bank"
-                        checked={paymentMode === "Bank"}
-                        onChange={(e) => setPaymentMode(e.target.value)}
-                      />
-                      <span className="custom-radio"></span>
-                      Bank
-                    </label>
-
-                    <label className="radio-item">
-                      <input
-                        type="radio"
-                        name="paymentMode"
-                        value="UPI"
-                        checked={paymentMode === "UPI"}
-                        onChange={(e) => setPaymentMode(e.target.value)}
-                      />
-                      <span className="custom-radio"></span>
-                      UPI
-                    </label>
+                    
                   </div>
 
                 </div>
 
-                {/* <!-- BANK -->  */}
-                {/* {paymentMode === "Bank" && (
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <select className="form-select border-1" style={{width:"220px"}} name="bankName" value={selectedBank}  onChange={(e) => setSelectedBank(e.target.value)}>
-                      <option value="">Select Bank</option>
-                      {banks.map((bank, index) => (
-                        <option key={index} value={bank}>
-                          {bank}
-                         </option>
-                      ))}
-                    </select>
-                    <button className="plus-btnn" type="button" onClick={handleAddBank}>＋ Add Bank</button> */}
-                    {/* <input className ="form-control "style={{width:"620px"}} name="accountNumber" autoComplete="off" step="0.01" placeholder="Account Number"required /> */}
-                    {/* <input
-                          type="text"
-                          className="form-control"
-                          autoComplete="off" 
-                          name="accountNumber"
-                          // placeholder="Amount"
-                          inputMode="decimal"
-                          onChange={(e) => {
-                            e.target.value = e.target.value.replace(/[^0-9.]/g, "");
-                          }}
-                          required
-                        />
-                  </div>
-                )} */}
-
-                {/* <!-- UPI --> */}
-                {/* {paymentMode === "UPI" && (
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <select className="form-select border-2"  style={{width:"220px"}} name="upiApp" >
-                      <option value="">Select UPI</option>
-                      <option value="GPay">Google Pay</option>
-                      <option value="PhonePe">PhonePe</option>
-                      <option value="Paytm">Paytm</option>
-                    </select>
-                    <input className ="form-control " style={{width:"730px"}} autoComplete="off" name="upiId" placeholder="UPI ID / Mobile" />
-                  </div>
-                )} */}
+                
                 {/* <div className="d-flex align-items-center gap-2 mb-2"> */}
                 <div className="row mb-2">
                   <div className="col-md-6 mt-2">
                     <div className="mb-2 position-relative">
-                      <label className="form-label">Category (add / select option)</label>
+                      <label className="form-label">Category</label>
 
-                      <input
-                        className="form-control"
-                        name="description"
-                        value={categoryInput}
-                        autoComplete="off" 
-                        placeholder="goods, sales..."
-                        onFocus={() => {
-                          setShowSuggestions(true);
-                          setFilteredCategories(allCategories);
-                        }}
-                        onChange={(e) => handleCategoryChange(e.target.value)}
-                        onBlur={() => {
-                          // thodu delay jethi click register thay
-                          setTimeout(() => setShowSuggestions(false), 150);
-                        }}
-                      />
+                      <div className="tag-input-wrapper">
+                        {selectedCategories.map((cat, i) => (
+                          <span key={i} className="tag-chip">
+                            {cat}
+                            <button
+                              type="button"
+                              className="remove-btn"
+                              onClick={() => removeCategory(cat)}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
 
+                        <input
+                          className="tag-input"
+                          value={categoryInput}
+                          autoComplete="off"
+                          placeholder="Type category & press Enter"
+                          onFocus={() => {
+                            setShowSuggestions(true);
+                            setFilteredCategories(allCategories);
+                          }}
+                          onChange={(e) => handleCategoryChange(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        />
+                      </div>
                       {showSuggestions && (
                         <div className="suggestionBox list-group mt-1">
-
                           {filteredCategories.length > 0 ? (
                             filteredCategories.map((cat, i) => (
                               <button
                                 key={i}
                                 type="button"
                                 className="list-group-item list-group-item-action"
-                                onMouseDown={() => addCategoryToInput(cat)}
+                                onMouseDown={() => addCategory(cat)}
                               >
                                 {cat}
                               </button>
                             ))
                           ) : (
-                            <div className="no-category-msg">
-                              No category found. Please add a new category
+                            <div className="no-category-msg px-2 py-1 text-muted">
+                              Press Enter to add new category
                             </div>
                           )}
-
                         </div>
                       )}
-
-                      {/* FIXED BUTTONS */}
+                      
                       {!showSuggestions && (
-                        <div className="category-buttons mb-2 mt-2">
+                        <div className="category-buttons mt-2">
                           {fixedCategories.map((cat, i) => (
                             <button
                               key={i}
                               type="button"
                               className="btn btn-outline-secondary btn-sm me-2"
-                              onClick={() => addCategoryToInput(cat.toLowerCase())}
+                              onClick={() => addCategory(cat)}
                             >
                               {cat}
                             </button>
@@ -1665,134 +1498,81 @@ const addCategoryToInput = (value) => {
                     </div>
                   </div>
                   <div className="col-md-6 mt-2">
-                    {/* TAG INPUT */}
-                    <div className="mb-1 position-relative" ref={tagRef}>
-                      <label className="form-label">Tags (add / select option)</label>
+                    <label className="form-label">Tags</label>
+
+                    <div className="tag-input-wrapper position-relative" ref={tagRef}>
+                      {/* SELECTED TAGS */}
+                      {selectedTags.map((tag, i) => (
+                        <span key={i} className="tag-chip">
+                          {tag}
+                          <button
+                            type="button"
+                            className="remove-btn"
+                            onClick={() => removeTag(tag)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+
+                      {/* INPUT */}
                       <input
-                        type="text"
-                        className="form-control"
-                        // style={{ width: "350px" }}
-                        // placeholder="Select tags"
-                        value={selectedTags.join(", ")}   // ✅ THIS IS IMPORTANT
-                        readOnly
-                        onClick={() => setShowTagDropdown(true)}
+                        className="tag-input"
+                        value={tagInput}
+                        autoComplete="off"
+                        placeholder="Type tag & press Enter"
+                        onFocus={() => {
+                          setShowTagSuggestions(true);
+                          setFilteredTags(allTags);
+                        }}
+                        onChange={(e) => handleTagChange(e.target.value)}
+                        onKeyDown={handleTagKeyDown}
                       />
-                      {showTagDropdown && (
-                        <div className="tag-dropdown">
-                          {suggestedTags.length === 0 ? (
-                            <div className="no-category-msg">
-                              No tags found. Please add a new tag
-                            </div>
-                          ) : (
-                            suggestedTags.map((tag, i) => (
-                              
-                                <label key={i} className="tag-option">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedTags.includes(tag)}
-                                    onChange={() => toggleTag(tag)}
-                                  />
-                                  <span>{tag}</span>
-                                </label>
-                             
+
+                      {/* ✅ SUGGESTION BOX (INSIDE ref — VERY IMPORTANT) */}
+                      {showTagSuggestions && (
+                        <div className="suggestionBox list-group mt-1">
+                          {filteredTags.length > 0 ? (
+                            filteredTags.map((tag, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                className="list-group-item list-group-item-action"
+                                onMouseDown={() => addTag(tag)}
+                              >
+                                {tag}
+                              </button>
                             ))
+                          ) : (
+                            <div className="no-category-msg px-2 py-1 text-muted">
+                              No tag found. Press Enter to add
+                            </div>
                           )}
                         </div>
                       )}
                     </div>
 
-                    {/* ADD TAG BUTTON */}
-                    <button
-                      type="button"
-                      className="plus-btnn mt-1"
-                      // style={{ width: "240px", height:"45px"}}
-                      onClick={() => setShowAddTagModal(true)}
-                    >
-                      + Add Tag
-                    </button>
-                    
-
-                    {/* </div> */}
-                    {showAddTagModal && (
-                      <div className="tag-modal-backdrop">
-                        <div className="tag-modal">
-                          <h5 style={{color:"#4f46e5"}}>Add New Tag</h5>
-
-                          <input
-                            type="text"
-                            className="form-control mb-3"
-                            // placeholder="Enter new tag"
-                            value={newTag}
-                            onChange={(e) => setNewTag(e.target.value)}
-                          />
-
-                          <div className="d-flex justify-content-end gap-2">
+                      {/* FIXED TAG BUTTONS */}
+                      {!showTagSuggestions && (
+                        <div className="mt-2">
+                          {fixedTags.map((tag, i) => (
                             <button
-                              className="btn btn-secondary"
-                                onClick={() => setShowAddTagModal(false)}
+                              key={i}
+                              type="button"
+                              className="btn btn-outline-secondary btn-sm me-2"
+                              onClick={() => addTag(tag)}
                             >
-                              Cancel
+                              {tag}
                             </button>
-                            <button
-                              className="btn btn-primary"
-                                onClick={addNewTag}
-                            >
-                              Add
-                            </button>
-                          </div>
+                          ))}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                  </div>
+                  </div>   
                 </div>
                 
-
-                  
-                {/* <div className="mb-3 position-relative" ref={tagRef}>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Select or Add New Tags"
-                    value={tagsInput}
-                    onChange={(e) => setTagsInput(e.target.value)}
-                    onFocus={() => setShowTagDropdown(true)}
-                    onKeyDown={(e) => e.key === "Enter" && addNewTag()}
-                  />
-
-                  {showTagDropdown && (
-                    <div className="tag-dropdown">
-                      {tagsInput && (
-                        <button
-                          type="button"
-                          className="add-tag-btn"
-                          onClick={addNewTag}
-                        >
-                          + Add “{tagsInput}”
-                        </button>
-                      )}
-                      {suggestedTags.map((tag, i) => (
-                        <label
-                          key={i}
-                          className={`tag-option ${
-                            selectedTags.includes(tag) ? "active" : ""
-                          }`}
-                        >
-                             
-                          <input
-                            type="checkbox"
-                            checked={selectedTags.includes(tag)}
-                            onChange={() => toggleTag(tag)}
-                          />
-                          <span>{tag}</span>
-                        </label>
-                      ))}  
-                    </div>
-                  )}
-                </div> */}
-
                 <div className="mb-1">
-                  <label>Attachment (Optional)</label>
+                  <label>Attachment</label>
                   <input type="file" className="form-control" onChange={(e) => setFile(e.target.files[0])} />
                 </div>
 
@@ -1804,7 +1584,7 @@ const addCategoryToInput = (value) => {
             <div className="popup-footer">
               <button type="submit" form="transactionForm"  className="btn btn-primary align-items-center d-flex">
                 <FiSave size={16} />
-                   .Save Transaction
+                    Save Transaction
               </button>
             </div>
           </div>

@@ -2215,7 +2215,8 @@ p a:hover {
   border-radius: 10px;
   border: 1px solid #38bdf8;
   box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-  z-index: 10;
+  /* z-index: 10; */
+  z-index: 9999;  
   margin-top: 5px;
   animation: fadeIn 0.3s ease;
 }
@@ -2410,9 +2411,89 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-size: 13px;
   color: #9aa0a6;
   text-align: center;
-  background: #111827;            /* dark dropdown bg */
+  background: #aeb7ca;            /* dark dropdown bg */
   border-radius: 6px;
   cursor: default;
 }
 
+/* categoury tags */
+
+.tag-input-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border: 1px solid #64748b;
+  background: #0f172a;
+  border-radius: 12px;
+  color: #f1f5f9;
+  padding: 10px;
+  
+}
+ 
+/* .tag-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+} */
+
+.tag-chip {
+  background: #0d6efd;
+  color: #fff;
+  padding: 2px 4px;
+  padding-left: 7px;
+  padding-bottom: px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 13px;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+/* .tag-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #fff;
+} */
+
+.tag-input {
+  border: none;
+  outline: none;
+  color: #fff;
+  background: #0f172a;
+  flex: 1;
+  min-width: 120px;
+  font-size: 14px;
+}
+
+.add-tag-btn {
+  border: none;
+  background: #0d6efd;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.add-tag-btn:disabled {
+  background: #4f80b0;
+  cursor: not-allowed;
+  align-items: center;
+  
+}
 
