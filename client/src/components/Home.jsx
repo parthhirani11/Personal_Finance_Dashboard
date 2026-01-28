@@ -1386,6 +1386,7 @@ const handleCategoryChange = (value) => {
                           type="number"
                           name="amount"
                           className={`form-control ${errors.amount ? "is-invalid" : ""}`}
+                          autoComplete="off"
                           value={amount}
                           inputMode="decimal"
                           min="0"

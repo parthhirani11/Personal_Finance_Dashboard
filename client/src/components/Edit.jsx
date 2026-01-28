@@ -176,74 +176,7 @@ export default function Edit() {
             <div className="mb-2">
               <label className="form-label">Payment Mode</label>
 
-              <div className="payment-mode-group">
-                {["Cash", "Bank", "UPI"].map((mode) => (
-                  <label key={mode} className="radio-item">
-                    <input
-                      type="radio"
-                      name="paymentMode"          // SAME name
-                      value={mode}
-                      checked={form.paymentMode === mode} // IMPORTANT
-                      onChange={handleChange}     // SAME handler
-                    />
-                    <span className="custom-radio"></span>
-                    {mode}
-                  </label>
-                ))}
-              </div>
             </div>
-
-            {/* Bank Details */}
-            {form.paymentMode === "Bank" && (
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <input
-                    className="form-control"
-                    placeholder="Bank Name"
-                    name="bankName"
-                    autoComplete="off" 
-                    value={form.bankName}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <input
-                    className="form-control"
-                    placeholder="Account Number"
-                    autoComplete="off" 
-                    name="accountNumber"
-                    value={form.accountNumber}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* UPI Details */}
-            {form.paymentMode === "UPI" && (
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <input
-                    className="form-control"
-                    autoComplete="off" 
-                    placeholder="UPI App Name"
-                    name="upiApp"
-                    value={form.upiApp}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <input
-                    className="form-control"
-                    autoComplete="off" 
-                    placeholder="UPI ID"
-                    name="upiId"
-                    value={form.upiId}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            )}
 
              <div className="row mb-2">
               {/* Category */}
@@ -270,27 +203,7 @@ export default function Edit() {
               </div>
             </div>
             
-            {/* <div className="mb-3">
-              <label className="form-label">Category</label>
-              <input
-                className="form-control"
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-              />
-            </div> */}
-
-            
-            {/* <div className="mb-3">
-              <label className="form-label">Tags</label>
-              <input
-                className="form-control"
-                name="tags"
-                value={form.tags}
-                onChange={handleChange}
-              />
-            </div> */}
-
+           
             {/* Attachment */}
             <div className="mb-3">
               <label className="form-label">Attachment</label>
