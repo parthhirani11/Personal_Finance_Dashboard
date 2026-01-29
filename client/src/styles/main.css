@@ -2006,16 +2006,26 @@ p a:hover {
 /* payment mode in chackmark in circle ................. */
 .payment-mode {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 6px;
 }
 
+/* RADIO ITEM */
 .radio-item {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
   font-weight: 500;
   color: #e5e7eb;
+}
+
+.radio-item:hover {
+  background: rgba(56, 189, 248, 0.1);
 }
 
 /* hide default radio */
@@ -2030,6 +2040,7 @@ p a:hover {
   border: 2px solid #38bdf8;
   border-radius: 50%;
   position: relative;
+  flex-shrink: 0;
 }
 
 /* checked dot */
@@ -2044,6 +2055,62 @@ p a:hover {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+/* MODE TEXT */
+.mode-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: capitalize;
+}
+
+/* COUNT BADGE */
+.mode-count {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 11px;
+  color: #38bdf8;
+}
+
+/* ADD MODE */
+.add-mode-wrapper {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.add-mode-input {
+  background: #020617;
+  border: 1px solid #334155;
+  color: #e5e7eb;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.add-mode-input::placeholder {
+  color: #64748b;
+}
+
+.add-mode-btn {
+  background: #38bdf8;
+  border: none;
+  color: #020617;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.add-mode-btn:hover {
+  background: #0ea5e9;
+}
+
+.Toastify__toast-container {
+  z-index: 99999 !important;
+}
+
 
 /*..................... income expense slider...................... */
 .type-slider {

@@ -7,6 +7,7 @@ const accountSchema = new mongoose.Schema({
   person: { type: String, default: null },
   description: { type: String },
   tags: { type: [String], default: [] },
+  paymentMode: { type: String, required: true },
   date: { type: Date, default: Date.now },
   attachment: {type: String,default: null},
   originalName: {type: String}, 

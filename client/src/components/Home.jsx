@@ -37,6 +37,7 @@ export default function Dashboard() {
  const [form, setForm] = useState({
   type: "income",
   amount: "",
+  person: "",
   category: "",
   payment: "",
   note: "",
@@ -49,7 +50,7 @@ export default function Dashboard() {
     totalExpense: 0,
     balance: 0,
   });
-  // category 
+ 
   // const [tags, setTags] = useState("");
   const fixedCategories = ["Goods", "Salary", "Rent", "Food", "Travel"];
   const [categoryInput, setCategoryInput] = useState("");
@@ -76,6 +77,18 @@ export default function Dashboard() {
   const [errors, setErrors] = useState({});
 
   // payment mode 
+  const defaultModes = ["cash", "upi", "bank"];
+  
+  const [paymentModes, setPaymentModes] = useState([]);
+  const [selectedMode, setSelectedMode] = useState("");
+  const [customMode, setCustomMode] = useState("");
+
+  const PAYMENT_COLORS = {
+  cash: { bg: "#e5e7eb33", text: "#e5e7eb" },      // light grey
+  bank: { bg: "#3b82f633", text: "#3b82f6" },      // blue
+  upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
+};
+  const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
 
  
   /* ================= FETCH DASHBOARD ================= */
@@ -181,8 +194,6 @@ export default function Dashboard() {
               item.description?.toLowerCase().includes(v) ||
               item.tags?.join(",").toLowerCase().includes(v) ||
               item.paymentMode?.toLowerCase().includes(v) ||
-              item.bankDetails?.bankName?.toLowerCase().includes(v) ||
-              item.upiDetails?.appName?.toLowerCase().includes(v) ||
               item.type?.toLowerCase().includes(v)
             )
           );
@@ -264,6 +275,12 @@ export default function Dashboard() {
         if (f.type === "type")
           return values.includes(item.type);
 
+        if (f.type === "paymentMode") {
+          return values.some(v =>
+            item.paymentMode?.toLowerCase().includes(v)
+          );
+        }
+
         
       });
     });
@@ -290,7 +307,11 @@ export default function Dashboard() {
         if (f.type === "tags")
           return values.some(v => item.tags?.join(",").toLowerCase().includes(v));
 
-        
+        if (f.type === "paymentMode")
+          return values.some(v =>
+          item.paymentMode?.toLowerCase().includes(v)
+        );
+
 
         return true;
       });
@@ -338,31 +359,71 @@ export default function Dashboard() {
     if (type === "tags")
       return [...new Set(data.flatMap(i => i.tags || []))];
 
- 
+    if (type === "paymentMode") {
+      return [
+        ...new Set(
+          data
+            .map(i => i.paymentMode)
+            .filter(Boolean)
+            .map(v => v.toLowerCase())
+        )
+      ];
+    }
+
+    
     return [];
   };
 
   const handleSuggestionInputChange = (e, f, index) => {
-    updateFilter(f.id, "value", e.target.value);
-    setActiveFilterIndex(index);
+  updateFilter(f.id, "value", e.target.value);
+  setActiveFilterIndex(index);
 
-    const value = e.target.value;
-    const parts = value.split(",");
-    const current = parts[parts.length - 1].trim().toLowerCase();
+  const value = e.target.value;
+  const parts = value.split(",");
+  const current = parts[parts.length - 1].trim().toLowerCase();
 
-    if (!current) {
-      setActiveSuggestions([]);
-      return;
-    }
+  if (!current) {
+    setActiveSuggestions([]);
+    return;
+  }
 
-    const data = getFilteredDataExcept(index);
+  const data = getFilteredDataExcept(index);
+  const allSuggestions = getSuggestions(f.type, data);
 
-    const suggestions = getSuggestions(f.type, data).filter(s =>
-      s.toLowerCase().includes(current)
-    );
+  // ✅ EXACT MATCH → HIDE BOX
+  if (allSuggestions.some(s => s.toLowerCase() === current)) {
+    setActiveSuggestions([]);
+    return;
+  }
 
-    setActiveSuggestions(suggestions);
-  };
+  const suggestions = allSuggestions.filter(s =>
+    s.toLowerCase().includes(current)
+  );
+
+  setActiveSuggestions(suggestions);
+};
+
+  // const handleSuggestionInputChange = (e, f, index) => {
+  //   updateFilter(f.id, "value", e.target.value);
+  //   setActiveFilterIndex(index);
+
+  //   const value = e.target.value;
+  //   const parts = value.split(",");
+  //   const current = parts[parts.length - 1].trim().toLowerCase();
+
+  //   if (!current) {
+  //     setActiveSuggestions([]);
+  //     return;
+  //   }
+
+  //   const data = getFilteredDataExcept(index);
+
+  //   const suggestions = getSuggestions(f.type, data).filter(s =>
+  //     s.toLowerCase().includes(current)
+  //   );
+
+  //   setActiveSuggestions(suggestions);
+  // };
 
   /* ================= Select Suggestion Data Name ================= */
   const selectSuggestion = (index, suggestion) => {
@@ -407,16 +468,19 @@ export default function Dashboard() {
   /* ================= ADD TRANSACTION ================= */
   const addTransaction = async (e) => {
     e.preventDefault();
-    
-    const formData = new FormData(e.target);
-     formData.append("tags", selectedTags.join(","));
-    //  formData.append("paymentMode", selectedPaymentMode);
-     
-    //  formData.set("description", categoryInput); // ✅ IMPORTANT
-    formData.set("description", selectedCategories.join(", "));
-     if (file) {
+  
+    const formData = new FormData();
+    formData.append("type", form.type);
+    formData.append("amount", amount);
+    formData.append("person", form.person);
+    formData.append("date",  form.date|| "");
+    formData.append("paymentMode", selectedMode);
+    formData.append("tags", selectedTags.join(","));
+    formData.append("description", selectedCategories.join(", "));
+
+    if (file) {
       formData.append("attachment", file);
-    } 
+    }
 
      let newErrors = {};
 
@@ -436,26 +500,57 @@ export default function Dashboard() {
           withCredentials: true 
         }
       );
-      await fetchCategories();   // 🔥 ADD THIS  
 
+      await fetchDashboard();
+      await fetchCategories();
       setShowPopup(false);
-      fetchDashboard();
 
-     
+      // Reset all states
+      setForm({
+        type: "income",      // default type
+        amount: "",
+        person: "",
+        category: "",
+        payment: "",
+        note: "",
+        date: "",
+        tags: [],
+      });
+      setAmount("");
       setSelectedTags([]);
-      // setShowTagDropdown(false);
-      setShowTagSuggestions(false);
       setSelectedCategories([]);
       setCategoryInput("");
-      setFilteredCategories([]);
+      setFilteredCategories(allCategories); // reset to all categories
       setShowSuggestions(false);
-      // setTags("");
+      setTagInput("");
+      setShowTagSuggestions(false);
+      setSelectedMode(paymentModes[0]?.name || "cash"); // default payment mode
+      setFile(null);
+      setErrors({});
+
+      // await fetchDashboard();
+      // await fetchCategories();
+      // setShowPopup(false);
+
+      // setSelectedTags([]);
+      // // setShowTagDropdown(false);
+      // setShowTagSuggestions(false);
+      // setSelectedCategories([]);
+      // setCategoryInput("");
+      // setFilteredCategories([]);
+      // setShowSuggestions(false);
+      // // setTags("");
  
-      e.target.reset();
-      setPaymentMode("Cash");
+      // // e.target.reset();
+      // // setPaymentMode("Cash");
 
     } catch (err) {
-      console.error("Add transaction error:", err);
+      const msg =
+      err.response?.data?.msg ||
+      err.response?.data?.message ||
+      "Something went wrong";
+
+      toast.error(msg);
     }
   };
 
@@ -564,87 +659,95 @@ export default function Dashboard() {
   } 
 
   // Expense and income by Bank , UPI, Cash(Dynamic Pie / Donut)
+  const normalizeMode = (mode) =>
+  mode ? mode.toLowerCase() : "unknown";
   const paymentBreakdown = useMemo(() => {
-    const map = {
-      Cash: { income: 0, expense: 0 },
-      Bank: { income: 0, expense: 0 },
-      UPI: { income: 0, expense: 0 },
-    };
+  const map = {};
 
-    transactions.forEach(t => {
-      const amount = Number(t.amount || 0);
-      const mode = t.paymentMode;
+  transactions.forEach(t => {
+    const amount = Number(t.amount || 0);
+    const mode = normalizeMode(t.paymentMode);
 
-      if (!map[mode]) return;
+    if (!map[mode]) {
+      map[mode] = { income: 0, expense: 0 };
+    }
 
-      if (t.type === "income") {
-        map[mode].income += amount;
-      }
+    if (t.type === "income") {
+      map[mode].income += amount;
+    }
 
-      if (t.type === "expense") {
-        map[mode].expense += amount;
-      }
-    });
+    if (t.type === "expense") {
+      map[mode].expense += amount;
+    }
+  });
 
-    return map;
-  }, [transactions]);
+  return map;
+}, [transactions]);
 
-  const paymentPieData = useMemo(() => {
-    return Object.entries(paymentBreakdown)
-      .map(([name, val]) => ({
-        name,
-        value: val.income + val.expense, // 👈 TOTAL
-      }))
-      .filter(i => i.value > 0);
-  }, [paymentBreakdown]);
 
-  function PaymentTooltip({ active, payload }) {
-    if (!active || !payload || !payload.length) return null;
+ const paymentPieData = useMemo(() => {
+  return Object.entries(paymentBreakdown)
+    .map(([key, val]) => ({
+      key,                              // cash / bank / upi / sbi
+      name: key.toUpperCase(),          // CASH / BANK
+      value: val.income + val.expense,
+    }))
+    .filter(i => i.value > 0);
+}, [paymentBreakdown]);
 
-    const mode = payload[0].name; // Cash / Bank / UPI
-    const data = paymentBreakdown[mode];
+function PaymentTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
 
-    if (!data) return null;
+  const key = payload[0].payload.key;
+  const data = paymentBreakdown[key];
 
-    const total = data.income + data.expense;
+  if (!data) return null;
 
-    return (
-      <div className="custom-tooltip">
-        <p className="tooltip-label">{mode}</p>
+  const total = data.income + data.expense;
 
-        <div className="tooltip-row">
-          <span className="tooltip-dot" style={{ background: "#34d399" }} />
-          <span className="tooltip-name">Income</span>
-          <span className="tooltip-value">
-            ₹{data.income.toLocaleString()}
-          </span>
-        </div>
+  return (
+    <div className="custom-tooltip">
+      <p className="tooltip-label">{key.toUpperCase()}</p>
 
-        <div className="tooltip-row">
-          <span className="tooltip-dot" style={{ background: "#f87171" }} />
-          <span className="tooltip-name">Expense</span>
-          <span className="tooltip-value">
-            ₹{data.expense.toLocaleString()}
-          </span>
-        </div>
-
-        <hr style={{ opacity: 0.2 }} />
-
-        <div className="tooltip-row">
-          <strong>Total</strong>
-          <strong className="tooltip-value">
-            ₹{total.toLocaleString()}
-          </strong>
-        </div>
+      <div className="tooltip-row">
+        <span className="tooltip-dot" style={{ background: "#34d399" }} />
+        <span>Income</span>
+        <span>₹{data.income.toLocaleString()}</span>
       </div>
-    );
-  }
 
-  const PAYMENT_COLORS = {
-    Cash: "#f59e0b", // amber
-    Bank: "#3b82f6", // blue
-    UPI: "#22c55e",  // green
-  };
+      <div className="tooltip-row">
+        <span className="tooltip-dot" style={{ background: "#f87171" }} />
+        <span>Expense</span>
+        <span>₹{data.expense.toLocaleString()}</span>
+      </div>
+
+      <hr />
+
+      <div className="tooltip-row">
+        <strong>Total</strong>
+        <strong>₹{total.toLocaleString()}</strong>
+      </div>
+    </div>
+  );
+}
+
+   
+const PAYMENTS_COLORS = {
+  cash: "#f59e0b",
+  bank: "#3b82f6",
+  upi: "#22c55e",
+};
+
+const getRandomColors = () => {
+  const colors = [
+    "#a855f7", "#ec4899", "#14b8a6",
+    "#d24411", "#6366f1", "#84cc16"
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+const colorMap = useRef({});
+
 
   //Savings Trend (Line Chart – 12 Months)
   const savingsTrend = useMemo(() => {
@@ -829,7 +932,124 @@ const handleCategoryChange = (value) => {
   }, []);
 
   // payment mode add in popup form 
-  
+  useEffect(() => {
+  if (paymentModes.length && !selectedMode) {
+    setSelectedMode(paymentModes[0].name);
+  }
+}, [paymentModes]);
+ useEffect(() => {
+  const fetchModes = async () => {
+    const res = await api.get("/account/payment-modes");
+    const final = res.data.map(i => ({
+    name: i._id,      // bank / upi / cash / sbi
+    count: i.count
+  }));
+    // API → { sbi: 5, cash: 3 }
+    const usageMap = {};
+    res.data.forEach(item => {
+      if (item._id) {
+        usageMap[item._id.toLowerCase()] = item.count;
+      }
+    });
+
+    // DEFAULT MODES
+    const defaultModes = ["cash", "upi", "bank"];
+
+    // FINAL UNIQUE SET
+    const modeSet = new Set();
+
+    // 1️⃣ default add
+    defaultModes.forEach(m => modeSet.add(m));
+
+    // 2️⃣ db-used add
+    Object.keys(usageMap).forEach(m => modeSet.add(m));
+
+    // BUILD FINAL ARRAY
+    const finalModes = Array.from(modeSet).map(name => ({
+      name,
+      count: usageMap[name] || 0,
+      isDefault: defaultModes.includes(name),
+    }));
+
+    // SORT → count DESC (default + used first)
+    finalModes.sort((a, b) => b.count - a.count);
+
+    setPaymentModes(final);
+  };
+
+  fetchModes();
+}, []);
+
+const addCustomMode = () => {
+  const mode = customMode.trim().toLowerCase();
+  if (!mode) {
+    toast.warning("Please enter a payment mode");
+    return;
+  }
+
+  const exists = paymentModes.some(m => m.name === mode);
+  if (exists) {
+    toast.error("Payment mode already exists");
+    return;
+  }
+
+  const color = getRandomColor(); // assign new colors
+
+  setPaymentModes(prev => [
+    ...prev,
+    { name: mode, count: 0, isDefault: false }
+  ]);
+
+  setPaymentColors(prev => ({
+    ...prev,
+    [mode]: color
+  }));
+
+  setSelectedMode(mode);
+  setCustomMode("");
+  toast.success("Payment mode added");
+};
+
+
+// payment color codes..
+
+const getRandomColor = () => {
+  const colors = [
+    { bg: "#facc1533", text: "#fbbf24" }, // yellow
+    { bg: "#3b82f633", text: "#3b82f6" }, // blue
+    { bg: "#ec489933", text: "#f87171" }, // red
+    { bg: "#8b5cf633", text: "#c084fc" }, // purple
+    { bg: "#f9731633", text: "#fb923c" }, // orange
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+const EXTRA_COLORS = [
+  { bg: "rgba(59, 130, 246, 0.2)", text: "#3b82f6" }, // blue
+  { bg: "rgba(234, 179, 8, 0.2)", text: "#facc15" },  // yellow
+  { bg: "rgba(239, 68, 68, 0.2)", text: "#f87171" },  // red
+  { bg: "rgba(139, 92, 246, 0.2)", text: "#c084fc" }, // purple
+];
+
+const [paymentModeColors, setPaymentModeColors] = useState({});
+
+useEffect(() => {
+  const map = {};
+  let extraIndex = 0;
+
+  paymentModes.forEach((mode) => {
+    const key = mode.name.toLowerCase();
+    if (PAYMENT_COLORS[key]) {
+      map[key] = PAYMENT_COLORS[key];
+    } else {
+      map[key] = EXTRA_COLORS[extraIndex % EXTRA_COLORS.length];
+      extraIndex++;
+    }
+  });
+
+  setPaymentModeColors(map);
+}, [paymentModes]);
+
   return (
     <div className="container">
       {/* SUMMARY DashBoard */}
@@ -908,36 +1128,43 @@ const handleCategoryChange = (value) => {
                     outerRadius={110}
                     paddingAngle={4}
                     cornerRadius={4}
-                    stroke="rgba(255,255,255,0.08)"
-                    strokeWidth={2}
                   >
-                    {paymentPieData.map((entry, i) => (
-                      <Cell
-                        key={entry.name}
-                        fill={PAYMENT_COLORS[entry.name]}
-                      />
-                    ))}
+                    {paymentPieData.map((entry) => {
+                      const key = entry.key;
+
+                      if (!colorMap.current[key]) {
+                        colorMap.current[key] =
+                          PAYMENTS_COLORS[key] || getRandomColors();
+                      }
+
+                      return (
+                        <Cell
+                          key={key}
+                          fill={colorMap.current[key]}
+                        />
+                      );
+                    })}
                   </Pie>
 
-                  <Tooltip
-                    content={<PaymentTooltip />} 
-                  />
+                  <Tooltip content={<PaymentTooltip />} />
+
+                  
                 </PieChart>
               </ResponsiveContainer>
 
                 {/* ===== LEGEND BOX ===== */}
                 <div className="pie-legend">
-                  {paymentPieData.map((item) => (
-                    <div key={item.name} className="legend-row">
+                  {paymentPieData.map(item => (
+                    <div key={item.key} className="legend-row">
                       <span
                         className="legend-dot"
-                        style={{ background: PAYMENT_COLORS[item.name] }}
+                        style={{ background: colorMap.current[item.key] }}
                       />
                       <span>{item.name}</span>
                       <strong>₹{item.value.toLocaleString()}</strong>
                     </div>
                   ))}
-                </div>        
+                </div>       
             </div>
 
             {/* Savings Trend */}
@@ -1087,7 +1314,7 @@ const handleCategoryChange = (value) => {
                 >
                   <option value="all">-- Select Filter --</option>
                   <option value="type">Type</option>
-                  <option value="payment">Payment Method</option>
+                  <option value="paymentMode">Payment Method</option>
                   <option value="recipient">Recipient</option>
                   <option value="category">Category</option>
                   <option value="tags">Tags</option>
@@ -1126,7 +1353,7 @@ const handleCategoryChange = (value) => {
                  
                   
                   {/* RECIPIENT / CATEGORY / TAGS */}
-                  {(f.type === "recipient" || f.type === "category" || f.type === "tags") && (
+                  {(f.type === "recipient" || f.type === "category" || f.type === "tags" || f.type === "paymentMode") && (
                     <>
                       <input
                         className="form-control border-3"
@@ -1255,7 +1482,19 @@ const handleCategoryChange = (value) => {
                     </div>
 
                     <div className="transaction-details">
-                     
+                      <div>
+                        <strong>Payment Mode: </strong> 
+                        <span style={{
+                            background: paymentModeColors[item.paymentMode?.toLowerCase()]?.bg || "#e5e7eb",
+                            color: paymentModeColors[item.paymentMode?.toLowerCase()]?.text || "#111",
+                            padding: "2px 8px",
+                            borderRadius: "6px",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {item.paymentMode.toUpperCase()}
+                        </span>
+                      </div>
                       <div><strong>Recipient:</strong> {item.person || "-"}</div>
                       <div><strong>Category:</strong> {item.description || "-"}</div>
                       <div><strong>Tags:</strong> {item.tags?.join(", ") || "-"}</div>
@@ -1347,6 +1586,16 @@ const handleCategoryChange = (value) => {
       {showPopup && (
         <div className="popup-overlay">
            <div className="popup-box">
+              {/* <ToastContainer
+                position="top-center"
+                autoClose={2000}
+                hideProgressBar
+                newestOnTop
+                closeOnClick
+                pauseOnHover
+                draggable
+                theme="dark"
+              /> */}
             <div className="popup-header">
               <h3 className=" text-center">Add Transaction</h3>
               <span className="close-btn" onClick={() => setShowPopup(false)}>
@@ -1409,7 +1658,15 @@ const handleCategoryChange = (value) => {
                   </div>
                   <div className="col-md-6 mt-2">
                     <label>Account Holder Name</label>
-                    <input className="form-control"  name="person"  autoComplete="off" />
+                    <input className="form-control"
+                      type="text"
+                      name="person"
+                      autoComplete="off"
+                      value={form.person}            // ✅ bind to state
+                      onChange={(e) =>
+                        setForm({ ...form, person: e.target.value })  // ✅ update state
+                      }
+                    />
                   </div>
                 </div>
 
@@ -1417,10 +1674,56 @@ const handleCategoryChange = (value) => {
                   <label>
                     Payment Mode <span className="text-danger">*</span>
                   </label>
-
-                 
                   <div className="payment-mode">
-                    
+                    {paymentModes.map((m, i) => {
+                      const color = paymentColors[m.name.toLowerCase()] || getRandomColor();
+
+                      return (
+                        <label key={i} className="radio-item">
+                          <input
+                            type="radio"
+                            name="paymentMode"
+                            value={m.name}
+                            checked={selectedMode === m.name}
+                            onChange={() => setSelectedMode(m.name)}
+                          />
+
+                          <span className="custom-radio"></span>
+
+                          <span
+                            className="mode-text pay-badge"
+                            style={{
+                              background: color.bg,
+                              color: color.text,
+                              padding: "0.25rem 0.5rem",
+                              borderRadius: "0.375rem",
+                              display: "inline-block",
+                              minWidth: "50px",
+                              textAlign: "center",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {m.name.toUpperCase()}
+                            <small style={{ marginLeft: "4px", fontWeight: "400" }}>
+                              {/* {m.count} */}
+                            </small>
+                          </span>
+                        </label>
+                      );
+                    })}
+
+                    {/* ADD CUSTOM MODE */}
+                    <div className="add-mode-wrapper">
+                      <input
+                        className="add-mode-input"
+                        value={customMode}
+                        onChange={e => setCustomMode(e.target.value)}
+                        placeholder="Add mode"
+                      />
+                      <button type="button" className="add-mode-btn" onClick={addCustomMode}>
+                        + Add
+                      </button>
+                    </div>
                   </div>
 
                 </div>

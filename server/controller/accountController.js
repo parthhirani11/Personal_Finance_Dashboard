@@ -1,10 +1,13 @@
 
 import Account from "../models/Account.js";
-
+import mongoose from "mongoose";
 
 // DASHBOARD OUTPUT
 export const getDashboard = async (req, res) => {
   try {
+    if (!req.session?.user?.id) {
+      return res.status(401).json({ msg: "Session expired" });
+    }
     const userId = req.session.user.id;
     const accounts = await Account.find({
       userId
@@ -32,44 +35,50 @@ export const getDashboard = async (req, res) => {
 // ADD TRANSACTION
 export const addTransaction = async (req, res) => {
   try {
+    if (!req.session || !req.session.user || !req.session.user.id) {
+      return res.status(401).json({ msg: "Session expired" });
+    }
+
     const userId = req.session.user.id;
+
     const {
       type,
       amount,
       person,
       description,
       tags,
+      paymentMode,
       date
     } = req.body;
-    const file = req.file;
+
+    if (!amount || !paymentMode || !type) {
+      return res.status(400).json({ msg: "Missing required fields" });
+    }
+
     const parsedTags = tags
       ? [...new Set(
-          tags
-            .split(",")
-            .map(t => t.trim().toLowerCase())
-            .filter(Boolean)
+          tags.split(",").map(t => t.trim().toLowerCase()).filter(Boolean)
         )]
       : [];
 
-    const recordDate = date ? new Date(date) : new Date();
     await Account.create({
-      userId, 
+      userId,
       type,
       amount: Number(amount),
       person,
       description,
       tags: parsedTags,
-      attachment: file ? file.filename : null,
-      originalName: file ? file.originalname : null,
-      
-      // tags: tags ? tags.split(",").map(t => t.trim()) : [],
-       date: recordDate,
+      paymentMode,
+      date: date ? new Date(date) : new Date(),
+      attachment: req.file ? req.file.filename : null,
+      originalName: req.file ? req.file.originalname : null,
     });
 
     res.json({ message: "Transaction added successfully" });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("ADD TRANSACTION ERROR 👉", err);
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -88,6 +97,7 @@ export const updateTransaction = async (req, res) => {
     person,
     description,
     tags,
+    paymentMode,
   } = req.body;
 
   const file = req.file;
@@ -105,6 +115,7 @@ export const updateTransaction = async (req, res) => {
     person,
     description,
     tags: parsedTags,
+    paymentMode,
    
   };
  if (file) {
@@ -200,3 +211,65 @@ export const getAllCategories = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getPaymentModeStats = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    const stats = await Account.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          paymentMode: { $ne: null }
+        }
+      },
+      {
+        // NORMALIZE CASE
+        $project: {
+          paymentMode: { $toLower: "$paymentMode" }
+        }
+      },
+      {
+        $group: {
+          _id: "$paymentMode",
+          count: { $sum: 1 }
+        }
+      },
+      {
+        // SORT MAX → MIN
+        $sort: { count: -1 }
+      }
+    ]);
+
+    res.json(stats);
+  } catch (err) {
+    console.error("Payment mode stats error:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// export const getPaymentModeStats = async (req, res) => {
+//   try {
+//     const userId = req.session.user.id;
+
+//   const stats = await Account.aggregate([
+//   {
+//     $match: {
+//       userId: new mongoose.Types.ObjectId(userId),
+//       paymentMode: { $ne: null }
+//     }
+//   },
+//   {
+//     $group: {
+//       _id: "$paymentMode",
+//       count: { $sum: 1 }
+//     }
+//   }
+// ]);
+
+//     res.json(stats);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+

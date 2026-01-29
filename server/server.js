@@ -14,8 +14,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // "https://phpstack-1249340-6098543.cloudwaysapps.com/ "
+// process.env.FRONTEND_URL,
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: "http://localhost:5173",
   credentials: true,
 }));
 
