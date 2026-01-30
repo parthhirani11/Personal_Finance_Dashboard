@@ -14,6 +14,7 @@ import Reset from "./components/Reset";
 import Edit from "./components/Edit";
 import Footer from "./components/Footer";
 import "./styles/main.css";
+import ScrollToTop from "./components/ScrollToTop";
 api.defaults.withCredentials = true;
 
 function App() {
@@ -42,10 +43,11 @@ useEffect(() => {
   return (
    
     <Router>
+      <ScrollToTop />
       <Header user={user} setUser={setUser}/>
-
+        
       <Routes>
-         <Route path="/login"element={ user ? <Navigate to="/home" replace /> : <Login setUser={setUser} /> }/>
+        <Route path="/login"element={ user ? <Navigate to="/home" replace /> : <Login setUser={setUser} /> }/>
         <Route path="/login" element={<Login setUser={setUser}/>} />
         <Route path="/signup" element={<Register />} />
         <Route path="/forgot" element={<Forgot />} />

@@ -5,7 +5,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../api/axios";
-import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter,FiDownload ,FiEdit2, FiTrash2, FiSave  } from "react-icons/fi";
+import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter,FiDownload ,FiEdit2, FiTrash2, FiSave,FiPlusCircle   } from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
@@ -28,22 +28,21 @@ export default function Dashboard() {
   
   const [accounts, setAccounts] = useState([]);
   const [activeTab, setActiveTab] = useState("transactions");
-  
   const [transactions, setTransactions] = useState([]);
   const [exportType, setExportType] = useState("");
   const [activeFilterIndex, setActiveFilterIndex] = useState(null);
   const [activeSuggestions, setActiveSuggestions] = useState([]);
   const [file, setFile] = useState(null);
  const [form, setForm] = useState({
-  type: "income",
-  amount: "",
-  person: "",
-  category: "",
-  payment: "",
-  note: "",
-  date: "",
-  tags: [],
-});
+    type: "income",
+    amount: "",
+    person: "",
+    category: "",
+    payment: "",
+    note: "",
+    date: "",
+    tags: [],
+  });
   const [filters, setFilters] = useState([{ id: Date.now(), type: "all", value: "", start: "", end: "" }]);
   const [summary, setSummary] = useState({
     totalIncome: 0,
@@ -51,7 +50,7 @@ export default function Dashboard() {
     balance: 0,
   });
  
-  // const [tags, setTags] = useState("");
+  // categoury
   const fixedCategories = ["Goods", "Salary", "Rent", "Food", "Travel"];
   const [categoryInput, setCategoryInput] = useState("");
   const [allCategories, setAllCategories] = useState([]);       // DB
@@ -61,7 +60,6 @@ export default function Dashboard() {
 
   // sab tags
   const fixedTags = ["office", "personal", "urgent", "family", "emi"];
-
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [allTags, setAllTags] = useState([]);
@@ -71,26 +69,27 @@ export default function Dashboard() {
   const tagRef = useRef(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
   
-  // const [newTag, setNewTag] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  
   const [amount, setAmount] = useState("");
   const [errors, setErrors] = useState({});
 
   // payment mode 
-  const defaultModes = ["cash", "upi", "bank"];
-  
   const [paymentModes, setPaymentModes] = useState([]);
   const [selectedMode, setSelectedMode] = useState("");
   const [customMode, setCustomMode] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  // ............................................................................. 
 
   const PAYMENT_COLORS = {
-  cash: { bg: "#e5e7eb33", text: "#e5e7eb" },      // light grey
-  bank: { bg: "#3b82f633", text: "#3b82f6" },      // blue
-  upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
-};
+    cash: { bg: "#e5e7eb33", text: "#e5e7eb" },      // light grey
+    bank: { bg: "#3b82f633", text: "#3b82f6" },      // blue
+    upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
+  };
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
 
- 
+  //  .............................................................................
+
   /* ================= FETCH DASHBOARD ================= */
   useEffect(() => {
     fetchDashboard();
@@ -113,9 +112,7 @@ export default function Dashboard() {
         console.error("Dashbord error:", err);
       }
   };
-
-
- 
+ //  .............................................................................
   /* ================= SUMMARY (PURE FUNCTION) ================= */
   const calculateSummary = (data) => {
     const income = data
@@ -137,6 +134,8 @@ export default function Dashboard() {
   summary.totalIncome > 0
     ? ((summary.balance / summary.totalIncome) * 100).toFixed(0)
     : 0;
+  
+  //  .............................................................................
   /* ================= EXPORT FILE HANDLE ================= */
   const handleExport = async () => {
     if (!exportType) {
@@ -152,7 +151,7 @@ export default function Dashboard() {
     let url = "";
     if (exportType === "csv") url = "/account/export/csv";
     if (exportType === "xlsx") url = "account/export/xlsx";
-    if (exportType === "pdf") url = "api/account/export/pdf";
+    if (exportType === "pdf") url = "/account/export/pdf";
 
     try {
       const res = await api.post(
@@ -180,6 +179,7 @@ export default function Dashboard() {
         alert("Export failed");
     }
   };
+  // ...........................................................................
 
   /* ================= Filter Transection ================= */
   const filteredData = useMemo(() => {
@@ -403,28 +403,7 @@ export default function Dashboard() {
   setActiveSuggestions(suggestions);
 };
 
-  // const handleSuggestionInputChange = (e, f, index) => {
-  //   updateFilter(f.id, "value", e.target.value);
-  //   setActiveFilterIndex(index);
-
-  //   const value = e.target.value;
-  //   const parts = value.split(",");
-  //   const current = parts[parts.length - 1].trim().toLowerCase();
-
-  //   if (!current) {
-  //     setActiveSuggestions([]);
-  //     return;
-  //   }
-
-  //   const data = getFilteredDataExcept(index);
-
-  //   const suggestions = getSuggestions(f.type, data).filter(s =>
-  //     s.toLowerCase().includes(current)
-  //   );
-
-  //   setActiveSuggestions(suggestions);
-  // };
-
+  
   /* ================= Select Suggestion Data Name ================= */
   const selectSuggestion = (index, suggestion) => {
     setFilters(prev => {
@@ -443,6 +422,8 @@ export default function Dashboard() {
     });
     setActiveSuggestions([]);
   };
+
+  //  .............................................................................
 
   /* ================= UPDATE SUMMARY WHEN FILTERS CHANGE ================= */
   useEffect(() => {
@@ -581,7 +562,8 @@ export default function Dashboard() {
 };
 
 
-  
+  //  .............................................................................
+
   /* ================= MONTH WISE COLUMN CHART DATA (ALL MONTHS) ================= */
   const monthWiseChartData = useMemo(() => {
     const months = [
@@ -658,31 +640,32 @@ export default function Dashboard() {
     );
   } 
 
+  //  .............................................................................
   // Expense and income by Bank , UPI, Cash(Dynamic Pie / Donut)
   const normalizeMode = (mode) =>
   mode ? mode.toLowerCase() : "unknown";
   const paymentBreakdown = useMemo(() => {
-  const map = {};
+    const map = {};
 
-  transactions.forEach(t => {
+    transactions.forEach(t => {
     const amount = Number(t.amount || 0);
     const mode = normalizeMode(t.paymentMode);
 
-    if (!map[mode]) {
-      map[mode] = { income: 0, expense: 0 };
-    }
+      if (!map[mode]) {
+        map[mode] = { income: 0, expense: 0 };
+      }
 
-    if (t.type === "income") {
-      map[mode].income += amount;
-    }
+      if (t.type === "income") {
+        map[mode].income += amount;
+      }
 
-    if (t.type === "expense") {
-      map[mode].expense += amount;
-    }
-  });
+      if (t.type === "expense") {
+        map[mode].expense += amount;
+      }
+    });
 
-  return map;
-}, [transactions]);
+    return map;
+  }, [transactions]);
 
 
  const paymentPieData = useMemo(() => {
@@ -693,63 +676,63 @@ export default function Dashboard() {
       value: val.income + val.expense,
     }))
     .filter(i => i.value > 0);
-}, [paymentBreakdown]);
+  }, [paymentBreakdown]);
 
-function PaymentTooltip({ active, payload }) {
-  if (!active || !payload?.length) return null;
+  function PaymentTooltip({ active, payload }) {
+    if (!active || !payload?.length) return null;
 
-  const key = payload[0].payload.key;
-  const data = paymentBreakdown[key];
+    const key = payload[0].payload.key;
+    const data = paymentBreakdown[key];
 
-  if (!data) return null;
+    if (!data) return null;
 
-  const total = data.income + data.expense;
+    const total = data.income + data.expense;
 
-  return (
-    <div className="custom-tooltip">
-      <p className="tooltip-label">{key.toUpperCase()}</p>
+    return (
+      <div className="custom-tooltip">
+        <p className="tooltip-label">{key.toUpperCase()}</p>
 
-      <div className="tooltip-row">
-        <span className="tooltip-dot" style={{ background: "#34d399" }} />
-        <span>Income</span>
-        <span>₹{data.income.toLocaleString()}</span>
+        <div className="tooltip-row">
+          <span className="tooltip-dot" style={{ background: "#34d399" }} />
+          <span>Income</span>
+          <span>₹{data.income.toLocaleString()}</span>
+        </div>
+
+        <div className="tooltip-row">
+          <span className="tooltip-dot" style={{ background: "#f87171" }} />
+          <span>Expense</span>
+          <span>₹{data.expense.toLocaleString()}</span>
+        </div>
+
+        <hr />
+
+        <div className="tooltip-row">
+          <strong>Total</strong>
+          <strong>₹{total.toLocaleString()}</strong>
+        </div>
       </div>
-
-      <div className="tooltip-row">
-        <span className="tooltip-dot" style={{ background: "#f87171" }} />
-        <span>Expense</span>
-        <span>₹{data.expense.toLocaleString()}</span>
-      </div>
-
-      <hr />
-
-      <div className="tooltip-row">
-        <strong>Total</strong>
-        <strong>₹{total.toLocaleString()}</strong>
-      </div>
-    </div>
-  );
-}
+    );
+  }
 
    
-const PAYMENTS_COLORS = {
-  cash: "#f59e0b",
-  bank: "#3b82f6",
-  upi: "#22c55e",
-};
+  const PAYMENTS_COLORS = {
+    cash: "#f59e0b",
+    bank: "#3b82f6",
+    upi: "#22c55e",
+  };
 
-const getRandomColors = () => {
-  const colors = [
-    "#a855f7", "#ec4899", "#14b8a6",
-    "#d24411", "#6366f1", "#84cc16"
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
+  const getRandomColors = () => {
+    const colors = [
+      "#a855f7", "#ec4899", "#14b8a6",
+      "#d24411", "#6366f1", "#84cc16"
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
-const colorMap = useRef({});
+  const colorMap = useRef({});
 
 
-  //Savings Trend (Line Chart – 12 Months)
+  //Savings Trend (Line Chart – 12 Months).......................
   const savingsTrend = useMemo(() => {
     return monthWiseChartData.map(m => ({
       month: m.month,
@@ -778,83 +761,83 @@ const colorMap = useRef({});
     );
   }
 
-// lover case and duplicate valve not show
-const normalize = (v) => v.trim().toLowerCase();
-  // categories filter and add ..........
-useEffect(() => {
-  fetchCategories();
-}, []);
+  //  .............................................................................
 
-useEffect(() => {
-  setFilteredCategories(allCategories);
-}, [allCategories]);
+  // lover case and duplicate valve not show
+  const normalize = (v) => v.trim().toLowerCase();
+    // categories filter and add ..........
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-const fetchCategories = async () => {
-  try {
-    const res = await api.get("/account/categories", {
-      withCredentials: true,
-    });
-    setAllCategories(res.data || []);
-     setFilteredCategories(res.data || []);
-  } catch (err) {
-    console.error(err);
-  }
-};
+  useEffect(() => {
+    setFilteredCategories(allCategories);
+  }, [allCategories]);
 
- const addCategory = (cat) => {
-  const value = cat.trim();
-  if (!value) return;
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get("/account/categories", {
+        withCredentials: true,
+      });
+      setAllCategories(res.data || []);
+      setFilteredCategories(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  const isDuplicate = selectedCategories.some(
-    c => normalize(c) === normalize(value)
-  );
-
-  if (isDuplicate) return; // ❌ already exists
-
-
-  // if (!selectedCategories.includes(cat)) {
-  //   setSelectedCategories((prev) => [...prev, cat]);
-  // }
-  setSelectedCategories(prev => [...prev, value]);
-
-  setCategoryInput("");
-  setShowSuggestions(false);
-};
-
- const removeCategory = (value) => {
-  setSelectedCategories((prev) =>
-    prev.filter((cat) => cat !== value)
-  );
-};
-
- const handleKeyDown = (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-
-    const value = categoryInput.trim();
+  const addCategory = (cat) => {
+    const value = cat.trim();
     if (!value) return;
 
-    addCategory(value);
-  }
-};
+    const isDuplicate = selectedCategories.some(
+      c => normalize(c) === normalize(value)
+    );
 
-const handleCategoryChange = (value) => {
-  setCategoryInput(value);
-  setShowSuggestions(true);
+    if (isDuplicate) return; // ❌ already exists
 
-  const keyword = normalize(value);
+    setSelectedCategories(prev => [...prev, value]);
 
-  setFilteredCategories(
-    allCategories.filter(cat =>
-      normalize(cat).includes(keyword) &&
-      !selectedCategories.some(
-        sel => normalize(sel) === normalize(cat)
+    setCategoryInput("");
+    setShowSuggestions(false);
+  };
+
+ const removeCategory = (value) => {
+    setSelectedCategories((prev) =>
+      prev.filter((cat) => cat !== value)
+    );
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      const value = categoryInput.trim();
+      if (!value) return;
+
+      addCategory(value);
+    }
+  };
+
+  const handleCategoryChange = (value) => {
+    setCategoryInput(value);
+    setShowSuggestions(true);
+
+    const keyword = normalize(value);
+
+    setFilteredCategories(
+      allCategories.filter(cat =>
+        normalize(cat).includes(keyword) &&
+        !selectedCategories.some(
+          sel => normalize(sel) === normalize(cat)
+        )
       )
-    )
-  );
-};
+    );
+  };
 
-// sub tags filter and add  
+  //  .............................................................................
+  // sub tags filter and add  
+
   const fetchTags = async () => {
     try {
       const res = await api.get("/account/tags", {
@@ -905,20 +888,20 @@ const handleCategoryChange = (value) => {
   };
 
   const handleTagChange = (value) => {
-  setTagInput(value);
-  setShowTagSuggestions(true);
+    setTagInput(value);
+    setShowTagSuggestions(true);
 
-  const keyword = normalize(value);
+    const keyword = normalize(value);
 
-  setFilteredTags(
-    allTags.filter(tag =>
-      normalize(tag).includes(keyword) &&
-      !selectedTags.some(
-        sel => normalize(sel) === normalize(tag)
+    setFilteredTags(
+      allTags.filter(tag =>
+        normalize(tag).includes(keyword) &&
+        !selectedTags.some(
+          sel => normalize(sel) === normalize(tag)
+        )
       )
-    )
-  );
-};
+    );
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -931,124 +914,100 @@ const handleCategoryChange = (value) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+
+  //  .............................................................................
   // payment mode add in popup form 
   useEffect(() => {
-  if (paymentModes.length && !selectedMode) {
-    setSelectedMode(paymentModes[0].name);
-  }
-}, [paymentModes]);
- useEffect(() => {
-  const fetchModes = async () => {
-    const res = await api.get("/account/payment-modes");
-    const final = res.data.map(i => ({
-    name: i._id,      // bank / upi / cash / sbi
-    count: i.count
-  }));
-    // API → { sbi: 5, cash: 3 }
-    const usageMap = {};
-    res.data.forEach(item => {
-      if (item._id) {
-        usageMap[item._id.toLowerCase()] = item.count;
+    if (paymentModes.length && !selectedMode) {
+      setSelectedMode(paymentModes[0].name);
+    }
+  }, [paymentModes]);
+
+  useEffect(() => {
+    const fetchModes = async () => {
+      const res = await api.get("/account/payment-modes");
+      const final = res.data.map(i => ({
+        name: i._id,      // bank / upi / cash / sbi
+        count: i.count
+      }));
+      // API → { sbi: 5, cash: 3 }
+      const usageMap = {};
+      res.data.forEach(item => {
+        if (item._id) {
+          usageMap[item._id.toLowerCase()] = item.count;
+        }
+      });
+
+      // DEFAULT MODES
+      const defaultModes = ["cash", "upi", "bank"];
+
+      // FINAL UNIQUE SET
+      const modeSet = new Set();
+
+      // 1️⃣ default add
+      defaultModes.forEach(m => modeSet.add(m));
+
+      // 2️⃣ db-used add
+      Object.keys(usageMap).forEach(m => modeSet.add(m));
+
+      // BUILD FINAL ARRAY
+      const finalModes = Array.from(modeSet).map(name => ({
+        name,
+        count: usageMap[name] || 0,
+        isDefault: defaultModes.includes(name),
+      }));
+
+      // SORT → count DESC (default + used first)
+      finalModes.sort((a, b) => b.count - a.count);
+
+      setPaymentModes(final);
+    };
+
+    fetchModes();
+  }, []);
+
+
+
+  //  .............................................................................
+
+  // payment color codes........
+
+  const getRandomColor = () => {
+    const colors = [
+      { bg: "#facc1533", text: "#fbbf24" }, // yellow
+      { bg: "#3b82f633", text: "#3b82f6" }, // blue
+      { bg: "#ec489933", text: "#f87171" }, // red
+      { bg: "#8b5cf633", text: "#c084fc" }, // purple
+      { bg: "#f9731633", text: "#fb923c" }, // orange
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  const EXTRA_COLORS = [
+    { bg: "rgba(59, 246, 206, 0.2)", text: "#21adc2" }, // blue
+    { bg: "rgba(234, 179, 8, 0.2)", text: "#facc15" },  // yellow
+    { bg: "rgba(239, 68, 68, 0.2)", text: "#f87171" },  // red
+    { bg: "rgba(139, 92, 246, 0.2)", text: "#c084fc" }, // purple
+  ];
+
+  const [paymentModeColors, setPaymentModeColors] = useState({});
+
+  useEffect(() => {
+    const map = {};
+    let extraIndex = 0;
+
+    paymentModes.forEach((mode) => {
+      const key = mode.name.toLowerCase();
+      if (PAYMENT_COLORS[key]) {
+        map[key] = PAYMENT_COLORS[key];
+      } else {
+        map[key] = EXTRA_COLORS[extraIndex % EXTRA_COLORS.length];
+        extraIndex++;
       }
     });
 
-    // DEFAULT MODES
-    const defaultModes = ["cash", "upi", "bank"];
-
-    // FINAL UNIQUE SET
-    const modeSet = new Set();
-
-    // 1️⃣ default add
-    defaultModes.forEach(m => modeSet.add(m));
-
-    // 2️⃣ db-used add
-    Object.keys(usageMap).forEach(m => modeSet.add(m));
-
-    // BUILD FINAL ARRAY
-    const finalModes = Array.from(modeSet).map(name => ({
-      name,
-      count: usageMap[name] || 0,
-      isDefault: defaultModes.includes(name),
-    }));
-
-    // SORT → count DESC (default + used first)
-    finalModes.sort((a, b) => b.count - a.count);
-
-    setPaymentModes(final);
-  };
-
-  fetchModes();
-}, []);
-
-const addCustomMode = () => {
-  const mode = customMode.trim().toLowerCase();
-  if (!mode) {
-    toast.warning("Please enter a payment mode");
-    return;
-  }
-
-  const exists = paymentModes.some(m => m.name === mode);
-  if (exists) {
-    toast.error("Payment mode already exists");
-    return;
-  }
-
-  const color = getRandomColor(); // assign new colors
-
-  setPaymentModes(prev => [
-    ...prev,
-    { name: mode, count: 0, isDefault: false }
-  ]);
-
-  setPaymentColors(prev => ({
-    ...prev,
-    [mode]: color
-  }));
-
-  setSelectedMode(mode);
-  setCustomMode("");
-  toast.success("Payment mode added");
-};
-
-
-// payment color codes..
-
-const getRandomColor = () => {
-  const colors = [
-    { bg: "#facc1533", text: "#fbbf24" }, // yellow
-    { bg: "#3b82f633", text: "#3b82f6" }, // blue
-    { bg: "#ec489933", text: "#f87171" }, // red
-    { bg: "#8b5cf633", text: "#c084fc" }, // purple
-    { bg: "#f9731633", text: "#fb923c" }, // orange
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
-
-const EXTRA_COLORS = [
-  { bg: "rgba(59, 130, 246, 0.2)", text: "#3b82f6" }, // blue
-  { bg: "rgba(234, 179, 8, 0.2)", text: "#facc15" },  // yellow
-  { bg: "rgba(239, 68, 68, 0.2)", text: "#f87171" },  // red
-  { bg: "rgba(139, 92, 246, 0.2)", text: "#c084fc" }, // purple
-];
-
-const [paymentModeColors, setPaymentModeColors] = useState({});
-
-useEffect(() => {
-  const map = {};
-  let extraIndex = 0;
-
-  paymentModes.forEach((mode) => {
-    const key = mode.name.toLowerCase();
-    if (PAYMENT_COLORS[key]) {
-      map[key] = PAYMENT_COLORS[key];
-    } else {
-      map[key] = EXTRA_COLORS[extraIndex % EXTRA_COLORS.length];
-      extraIndex++;
-    }
-  });
-
-  setPaymentModeColors(map);
-}, [paymentModes]);
+    setPaymentModeColors(map);
+  }, [paymentModes]);
 
   return (
     <div className="container">
@@ -1088,7 +1047,7 @@ useEffect(() => {
           </div>
       {activeTab === "overview" && (
         <>
-        
+          {/* .......................................all graph.................................... */}
           {/* graph pie */}
           <div className="dual-chart-grid">
             <div className="chart-card dark">
@@ -1259,14 +1218,14 @@ useEffect(() => {
             </ResponsiveContainer>
           </div>
         </>
-      )}     
+      )}   
+
+      {/* ..........................................filter transection and export data................................................................. */}
       {activeTab === "transactions" && (
         <>
           {/* TRANSACTION LIST */}
           {/* <div className="transection"><h4 >Transactions...</h4></div> */}
-          
-
-          
+       
           <div className="d-flex justify-content-between align-items-center  ">
   
             {/* EXPORT + FILTER */}
@@ -1453,6 +1412,9 @@ useEffect(() => {
             ))}
           </div>
 
+
+          {/* ....................................transection list recode card.................................... */}
+          
           <ToastContainer position="top-center" autoClose={3000} />
           {filteredData.length > 0 ? (
             
@@ -1481,37 +1443,42 @@ useEffect(() => {
                       </span>
                     </div>
 
-                    <div className="transaction-details">
-                      <div>
-                        <strong>Payment Mode: </strong> 
-                        <span style={{
-                            background: paymentModeColors[item.paymentMode?.toLowerCase()]?.bg || "#e5e7eb",
-                            color: paymentModeColors[item.paymentMode?.toLowerCase()]?.text || "#111",
-                            padding: "2px 8px",
-                            borderRadius: "6px",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {item.paymentMode.toUpperCase()}
-                        </span>
+                    <div className="transaction-details fixed">
+                      <div className="row">
+                        <span className="label">Payment Mode :</span>
+                        <span className="value" >{item.paymentMode.toUpperCase() || "-"}</span>
                       </div>
-                      <div><strong>Recipient:</strong> {item.person || "-"}</div>
-                      <div><strong>Category:</strong> {item.description || "-"}</div>
-                      <div><strong>Tags:</strong> {item.tags?.join(", ") || "-"}</div>
+
+                      <div className="row">
+                        <span className="label">Recipient :</span>
+                        <span className="value" >{item.person || "-"}</span>
+                      </div>
+
+                      <div className="row">
+                        <span className="label">Category :</span>
+                        <span className="value">{item.description || "-"}</span>
+                      </div>
+
+                      <div className="row">
+                        <span className="label">Tags :</span>
+                        <span className="value wrap">{item.tags?.join(", ") || "-"}</span>
+                      </div>
 
                       {item.attachment && item.attachment !== "No File" && (
-                        <div>
-                          <strong>Attachment:</strong>{" "}
+                        <div className="row full">
+                          <span className="label">Attachment :</span>
                           <a
-                            href={`https://phpstack-1249340-6098543.cloudwaysapps.com/uploads/${item.attachment}`}
+                            className="value link"
+                            href={`http://localhost:5000/uploads/${item.attachment}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            {item.originalName || "View file"}
+                            {item.originalName}
                           </a>
                         </div>
                       )}
                     </div>
+
                   </div>
 
                   {/* RIGHT ACTIONS */}
@@ -1527,6 +1494,7 @@ useEffect(() => {
                         <FiEdit2 size={14} />
                         Edit
                       </button>
+                     
 
                       <button
                         className="delete-btn d-flex align-items-center gap-1"
@@ -1574,7 +1542,7 @@ useEffect(() => {
           <div style={{marginTop:20}} ></div> 
         </>
       )}
-  
+    {/* ........................................add transection recode popup box............................................... */}
       <button className="robot-add-btn" onClick={() => setShowPopup(true)}>
         <img src={robot} alt="Add Transaction Robot" />
           <div className="robot-msg">
@@ -1586,16 +1554,7 @@ useEffect(() => {
       {showPopup && (
         <div className="popup-overlay">
            <div className="popup-box">
-              {/* <ToastContainer
-                position="top-center"
-                autoClose={2000}
-                hideProgressBar
-                newestOnTop
-                closeOnClick
-                pauseOnHover
-                draggable
-                theme="dark"
-              /> */}
+             
             <div className="popup-header">
               <h3 className=" text-center">Add Transaction</h3>
               <span className="close-btn" onClick={() => setShowPopup(false)}>
@@ -1676,16 +1635,25 @@ useEffect(() => {
                   </label>
                   <div className="payment-mode">
                     {paymentModes.map((m, i) => {
-                      const color = paymentColors[m.name.toLowerCase()] || getRandomColor();
+                      // 🔒 Normalize mode name safely
+                      const modeName =
+                        typeof m === "string"
+                          ? m
+                          : m?.name || m?._id;
+
+                      if (!modeName) return null;
+
+                      const key = modeName.toLowerCase();
+                      const color = paymentColors[key] || getRandomColor();
 
                       return (
                         <label key={i} className="radio-item">
                           <input
                             type="radio"
                             name="paymentMode"
-                            value={m.name}
-                            checked={selectedMode === m.name}
-                            onChange={() => setSelectedMode(m.name)}
+                            value={modeName}
+                            checked={selectedMode === modeName}
+                            onChange={() => setSelectedMode(modeName)}
                           />
 
                           <span className="custom-radio"></span>
@@ -1703,26 +1671,91 @@ useEffect(() => {
                               fontWeight: "600",
                             }}
                           >
-                            {m.name.toUpperCase()}
-                            <small style={{ marginLeft: "4px", fontWeight: "400" }}>
-                              {/* {m.count} */}
-                            </small>
+                            {modeName.toUpperCase()}
+                            {typeof m === "object" && m.count != null && (
+                              <small style={{ marginLeft: 4, fontWeight: 400 }}>
+                                {/* ({m.count}) */}
+                              </small>
+                            )}
                           </span>
                         </label>
                       );
                     })}
 
+                     <button
+                        type="button"
+                        className="add-mode-btn d-flex align-items-center gap-1"
+                        onClick={() => setShowModal(true)}
+                      >
+                        <FiPlusCircle size={16} />
+                        Add
+                      </button>
                     {/* ADD CUSTOM MODE */}
                     <div className="add-mode-wrapper">
-                      <input
-                        className="add-mode-input"
-                        value={customMode}
-                        onChange={e => setCustomMode(e.target.value)}
-                        placeholder="Add mode"
-                      />
-                      <button type="button" className="add-mode-btn" onClick={addCustomMode}>
-                        + Add
-                      </button>
+                      
+                      {showModal && (
+                          <div className="tag-modal-backdrop">
+                            <div className="tag-modal">
+                              <div className="modal-header mb-2">
+                                <h5 className="modal-title" style={{color:"#d9d8e2"}}>Add Payment Mode</h5>
+
+                                <button
+                                  type="button"
+                                  className="btn-close"
+                                  style={{ filter: "invert(1)" }}
+                                  onClick={() => setShowModal(false)}
+                                />
+                              </div>
+
+                              <input
+                                type="text"
+                                className="form-control mb-3"
+                                // placeholder="Enter new tag"
+                                value={customMode}
+                                  onChange={e => setCustomMode(e.target.value)}
+                              />
+
+                              <div className="d-flex justify-content-end gap-2">
+                                <button
+                                  className="btn btn-secondary"
+                                  onClick={() => setShowModal(false)}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => {
+                                    const newMode = customMode.trim();
+                                    if (!newMode) return;
+
+                                    const exists = paymentModes.some(m => {
+                                      const name = typeof m === "string" ? m : m.name;
+                                      return normalize(name) === normalize(newMode);
+                                    });
+
+                                    if (exists) {
+                                      toast.error("Payment mode already exists");
+                                      return;
+                                    }
+
+                                    setPaymentModes(prev => [
+                                      ...prev,
+                                      { name: newMode }
+                                    ]);
+
+                                    setSelectedMode(newMode);
+                                    setForm(prev => ({ ...prev, paymentMode: newMode }));
+
+                                    setCustomMode("");
+                                    setShowModal(false);
+                                  }}
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                     </div>
                   </div>
 
@@ -1734,7 +1767,6 @@ useEffect(() => {
                   <div className="col-md-6 mt-2">
                     <div className="mb-2 position-relative">
                       <label className="form-label">Category</label>
-
                       <div className="tag-input-wrapper">
                         {selectedCategories.map((cat, i) => (
                           <span key={i} className="tag-chip">
@@ -1886,9 +1918,8 @@ useEffect(() => {
             
             </div>
             <div className="popup-footer">
-              <button type="submit" form="transactionForm"  className="btn btn-primary align-items-center d-flex">
-                <FiSave size={16} />
-                    Save Transaction
+              <button type="submit" form="transactionForm"  className="btn btn-primary align-items-centerd-inline-flex gap-2 ">
+                 Save Transaction <FiSave size={19} />
               </button>
             </div>
           </div>
@@ -1898,7 +1929,8 @@ useEffect(() => {
   );
 }
 
-// ================= REUSABLE SUMMARY CARD =================
+
+// ================= REUSABLE SUMMARY CARD =================.....................................................
 function SummaryCard({ title, value, color, percentage }) {
   const icons = {
     income: <FaRupeeSign />,

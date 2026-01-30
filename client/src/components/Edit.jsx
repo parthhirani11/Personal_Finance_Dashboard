@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { FiEdit2, FiX } from "react-icons/fi";
 import api from "../api/axios";
 import "../styles/main.css";
 
@@ -252,6 +253,7 @@ export default function Edit() {
                     <label className="form-label">Tags</label>
                     <input
                       className="form-control"
+                      autoComplete="off"
                       name="tags"
                       value={form.tags}
                       onChange={handleChange}
@@ -279,14 +281,15 @@ export default function Edit() {
                 )}
 
                 {/* BUTTONS */}
-                <div className="d-flex justify-content-end gap-3 mt-4">
-                  <button className="editt-btnn">Save</button>
+                <div className="d-flex justify-content-end gap-3 mt-4 fs-6 ">
+                  <button className="edit-btn d-flex align-items-center gap-1">Save  <FiEdit2 /></button>
                   <button
                     type="button"
-                    className="clo-btnn"
+                    className="delete-btn d-flex align-items-center gap-1 "
                     onClick={() => navigate("/home")}
                   >
                     Close
+                     <FiX />
                   </button>
                 </div>
 
