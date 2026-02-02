@@ -1,6 +1,5 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
 import Msg from "../models/Msg.js";
@@ -126,9 +125,10 @@ router.post("/forgot/send-otp", async (req, res) => {
 
   try {
     const { email } = req.body;
+   
     if (!email) {
-      return res.render("forgot", { msg: "Email required", showOtp: false });
-    }
+  return res.status(400).json({ msg: "Email required" });
+}
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -139,22 +139,22 @@ router.post("/forgot/send-otp", async (req, res) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
     });
 
-    await transporter.sendMail({
-      from: `"Income Expense App" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Password Reset OTP",
-      html: `
-        <h2>Password Reset</h2>
-        <p>Your OTP is:</p>
-        <h1 style="color:green;">${otp}</h1>
-        <p>This OTP is valid for 5 minutes.</p>
-      `
-    });
+    try {
+      await transporter.sendMail({
+        from: `"Income Expense App" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Password Reset OTP",
+        html: `<h2>Password Reset</h2><p>Your OTP is:</p><h1 style="color:green;">${otp}</h1> <p>This OTP is valid for 5 minutes.</p>`
+      });
+    } catch(mailErr) {
+      console.error("Mail sending failed:", mailErr);
+      return res.status(500).json({ msg: "Failed to send OTP" });
+    }
 
-    res.json({ message: "OTP sent successfully" });
+    res.json({ msg: "OTP sent successfully" });
   } catch (error) {
     console.error("Forgot OTP ERROR:", error);
-    res.status(500).json({ message: "Failed to send OTP" });
+    res.status(500).json({ msg: "Failed to send OTP" });
   }
 });
 
