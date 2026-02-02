@@ -765,8 +765,7 @@ const [showEdit, setShowEdit] = useState(false);
 
   //  .............................................................................
 
-  // lover case and duplicate valve not show
-  const normalize = (v) => v.trim().toLowerCase();
+  
     // categories filter and add ..........
   useEffect(() => {
     fetchCategories();
@@ -918,6 +917,10 @@ const [showEdit, setShowEdit] = useState(false);
 
 
   //  .............................................................................
+
+  // lover case and duplicate valve not show
+  const normalize = (v) => v.trim().toLowerCase();
+
   // payment mode add in popup form 
   useEffect(() => {
     if (paymentModes.length && !selectedMode) {
@@ -925,49 +928,84 @@ const [showEdit, setShowEdit] = useState(false);
     }
   }, [paymentModes]);
 
-  useEffect(() => {
-    const fetchModes = async () => {
-      const res = await api.get("/account/payment-modes");
-      const final = res.data.map(i => ({
-        name: i._id,      // bank / upi / cash / sbi
-        count: i.count
-      }));
-      // API → { sbi: 5, cash: 3 }
-      const usageMap = {};
-      res.data.forEach(item => {
-        if (item._id) {
-          usageMap[item._id.toLowerCase()] = item.count;
-        }
-      });
+  // useEffect(() => {
+  //   const fetchModes = async () => {
+  //     const res = await api.get("/account/payment-modes");
+  //     const final = res.data.map(i => ({
+  //       name: i._id,      // bank / upi / cash / sbi
+  //       count: i.count
+  //     }));
+  //     // API → { sbi: 5, cash: 3 }
+  //     const usageMap = {};
+  //     res.data.forEach(item => {
+  //       if (item._id) {
+  //         usageMap[item._id.toLowerCase()] = item.count;
+  //       }
+  //     });
 
-      // DEFAULT MODES
-      const defaultModes = ["cash", "upi", "bank"];
+  //     // DEFAULT MODES
+  //     const defaultModes = ["cash", "upi", "bank"];
 
-      // FINAL UNIQUE SET
-      const modeSet = new Set();
+  //     // FINAL UNIQUE SET
+  //     const modeSet = new Set();
 
-      // 1️⃣ default add
-      defaultModes.forEach(m => modeSet.add(m));
+  //     // 1️⃣ default add
+  //     defaultModes.forEach(m => modeSet.add(m));
 
-      // 2️⃣ db-used add
-      Object.keys(usageMap).forEach(m => modeSet.add(m));
+  //     // 2️⃣ db-used add
+  //     Object.keys(usageMap).forEach(m => modeSet.add(m));
 
-      // BUILD FINAL ARRAY
-      const finalModes = Array.from(modeSet).map(name => ({
-        name,
-        count: usageMap[name] || 0,
-        isDefault: defaultModes.includes(name),
-      }));
+  //     // BUILD FINAL ARRAY
+  //     const finalModes = Array.from(modeSet).map(name => ({
+  //       name,
+  //       count: usageMap[name] || 0,
+  //       isDefault: defaultModes.includes(name),
+  //     }));
 
-      // SORT → count DESC (default + used first)
-      finalModes.sort((a, b) => b.count - a.count);
+  //     // SORT → count DESC (default + used first)
+  //     finalModes.sort((a, b) => b.count - a.count);
 
-      setPaymentModes(final);
-    };
+  //     setPaymentModes(final);
+  //   };
 
-    fetchModes();
-  }, []);
+  //   fetchModes();
+  // }, []);
 
+useEffect(() => {
+  const fetchModes = async () => {
+    const res = await api.get("/account/payment-modes");
+
+    // API → [{ _id: "cash", count: 3 }, { _id: "upi", count: 2 }]
+    const usageMap = {};
+    res.data.forEach(item => {
+      if (item._id) {
+        usageMap[normalize(item._id)] = item.count;
+      }
+    });
+
+    // 🔒 CASH ALWAYS DEFAULT
+    const modeSet = new Set(["cash"]);
+
+    // add used modes
+    Object.keys(usageMap).forEach(m => modeSet.add(m));
+
+    const finalModes = Array.from(modeSet).map(name => ({
+      name,
+      count: usageMap[name] || 0,
+    }));
+
+    // sort by usage (cash stays if equal)
+    finalModes.sort((a, b) => b.count - a.count);
+
+    setPaymentModes(finalModes);
+
+    // default select
+    setSelectedMode(prev => prev || "cash");
+    setForm(prev => ({ ...prev, paymentMode: prev.paymentMode || "cash" }));
+  };
+
+  fetchModes();
+}, []);
 
 
   //  .............................................................................
@@ -1658,7 +1696,7 @@ const [showEdit, setShowEdit] = useState(false);
                     Payment Mode <span className="text-danger">*</span>
                   </label>
                   <div className="payment-mode">
-                    {paymentModes.map((m, i) => {
+                    {/* {paymentModes.map((m, i) => {
                       // 🔒 Normalize mode name safely
                       const modeName =
                         typeof m === "string"
@@ -1698,13 +1736,53 @@ const [showEdit, setShowEdit] = useState(false);
                             {modeName.toUpperCase()}
                             {typeof m === "object" && m.count != null && (
                               <small style={{ marginLeft: 4, fontWeight: 400 }}>
-                                {/* ({m.count}) */}
+                                ({m.count})
                               </small>
                             )}
                           </span>
                         </label>
                       );
+                    })} */}
+
+                    {paymentModes.map((m, i) => {
+                      const modeName = m?.name;
+                      if (!modeName) return null;
+
+                      const key = normalize(modeName);
+                      const color = paymentModeColors[key] || getRandomColor();
+
+                      return (
+                        <label key={i} className="radio-item">
+                          <input
+                            type="radio"
+                            name="paymentMode"
+                            value={modeName}
+                            checked={selectedMode === modeName}
+                            onChange={() => {
+                              setSelectedMode(modeName);
+                              setForm(prev => ({ ...prev, paymentMode: modeName }));
+                            }}
+                          />
+
+                          <span className="custom-radio"></span>
+
+                          <span
+                            className="mode-text pay-badge"
+                            style={{
+                              background: color.bg,
+                              color: color.text,
+                              minWidth: 60,
+                              textAlign: "center",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {modeName.toUpperCase()}
+                            {/* ({m.count}) */}
+                          </span>
+                        </label>
+                      );
                     })}
+
 
                      <button
                         type="button"
@@ -1749,29 +1827,49 @@ const [showEdit, setShowEdit] = useState(false);
                                 <button
                                   className="btn btn-primary"
                                   onClick={() => {
-                                    const newMode = customMode.trim();
-                                    if (!newMode) return;
+                                  //   const newMode = customMode.trim();
+                                  //   if (!newMode) return;
 
-                                    const exists = paymentModes.some(m => {
-                                      const name = typeof m === "string" ? m : m.name;
-                                      return normalize(name) === normalize(newMode);
-                                    });
+                                  //   const exists = paymentModes.some(m => {
+                                  //     const name = typeof m === "string" ? m : m.name;
+                                  //     return normalize(name) === normalize(newMode);
+                                  //   });
 
-                                    if (exists) {
-                                      toast.error("Payment mode already exists");
-                                      return;
-                                    }
+                                  //   if (exists) {
+                                  //     toast.error("Payment mode already exists");
+                                  //     return;
+                                  //   }
 
-                                    setPaymentModes(prev => [
-                                      ...prev,
-                                      { name: newMode }
-                                    ]);
+                                  //   setPaymentModes(prev => [
+                                  //     ...prev,
+                                  //     { name: newMode }
+                                  //   ]);
 
-                                    setSelectedMode(newMode);
-                                    setForm(prev => ({ ...prev, paymentMode: newMode }));
+                                  //   setSelectedMode(newMode);
+                                  //   setForm(prev => ({ ...prev, paymentMode: newMode }));
 
-                                    setCustomMode("");
-                                    setShowModal(false);
+                                  //   setCustomMode("");
+                                  //   setShowModal(false);
+                                  const newMode = normalize(customMode);
+
+                                  if (!newMode) return;
+
+                                  const exists = paymentModes.some(
+                                    m => normalize(m.name) === newMode
+                                  );
+
+                                  if (exists) {
+                                    toast.error("Payment mode already exists");
+                                    return;
+                                  }
+
+                                  setPaymentModes(prev => [...prev, { name: newMode, count: 0 }]);
+                                  setSelectedMode(newMode);
+                                  setForm(prev => ({ ...prev, paymentMode: newMode }));
+
+                                  setCustomMode("");
+                                  setShowModal(false);
+
                                   }}
                                 >
                                   Add
