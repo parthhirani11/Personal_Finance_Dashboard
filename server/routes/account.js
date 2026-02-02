@@ -8,8 +8,12 @@ import { getDashboard, addTransaction, updateTransaction,getSingleRecord,getSugg
 const router = express.Router();
 
 router.get("/home", requireAuth , getDashboard);
-
-router.post("/add", requireAuth , upload.single("attachment"), addTransaction);
+router.put(
+  "/edit/:id",
+  upload.single("attachment"),
+  updateTransaction
+);
+// router.post("/add", requireAuth , upload.single("attachment"), addTransaction);
 router.get("/categories", requireAuth, getAllCategories);
 router.get("/tags", requireAuth, getSuggestedTags);
 router.get("/payment-modes",requireAuth, getPaymentModeStats);

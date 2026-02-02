@@ -90,48 +90,85 @@ export const getEditTransaction = async (req, res) => {
 
 // UPDATE
 export const updateTransaction = async (req, res) => {
-  //  const userId = req.session.user.id;
-  const {
-    type,
-    amount,
-    person,
-    description,
-    tags,
-    paymentMode,
-  } = req.body;
+  try {
+    const {
+      type,
+      amount,
+      person,
+      paymentMode,
+      description,
+      tags,
+    } = req.body;
 
-  const file = req.file;
-  const parsedTags = tags
-  ? [...new Set(
-      tags
-        .split(",")
-        .map(t => t.trim().toLowerCase())
-        .filter(Boolean)
-    )]
-  : [];
-  const updateData = {
-    type,
-    amount,
-    person,
-    description,
-    tags: parsedTags,
-    paymentMode,
-   
-  };
- if (file) {
-      updateData.attachment = file.filename;
-      updateData.originalName = file.originalname;
+    const updateData = {
+      type,
+      amount,
+      person,
+      paymentMode,
+      description: description || "",  
+      // tags: Array.isArray(tags) ? tags : [],
+      tags: tags
+  ? (Array.isArray(tags) ? tags : [tags])
+  : [],
+    };
+
+    if (req.file) {
+      updateData.attachment = req.file.filename;
+      updateData.originalName = req.file.originalname;
     }
 
-  
-  if (req.file) {
-    updateData.attachment = req.file.filename;
-    updateData.originalName = req.file.originalname;
-  }
+    await Account.findByIdAndUpdate(req.params.id, updateData);
 
-  await Account.findByIdAndUpdate(req.params.id, updateData);
-  res.json({ success: true });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Update error:", err);
+    res.status(500).json({ message: err.message });
+  }
 };
+
+// export const updateTransaction = async (req, res) => {
+//   //  const userId = req.session.user.id;
+//   const {
+//     type,
+//     amount,
+//     person,
+//     description,
+//     tags,
+//     paymentMode,
+//   } = req.body;
+
+//   const file = req.file;
+//   const parsedTags = tags
+//   ? [...new Set(
+//       tags
+//         .split(",")
+//         .map(t => t.trim().toLowerCase())
+//         .filter(Boolean)
+//     )]
+//   : [];
+//   const updateData = {
+//     type,
+//     amount,
+//     person,
+//     description,
+//     tags: parsedTags,
+//     paymentMode,
+   
+//   };
+//  if (file) {
+//       updateData.attachment = file.filename;
+//       updateData.originalName = file.originalname;
+//     }
+
+  
+//   if (req.file) {
+//     updateData.attachment = req.file.filename;
+//     updateData.originalName = req.file.originalname;
+//   }
+
+//   await Account.findByIdAndUpdate(req.params.id, updateData);
+//   res.json({ success: true });
+// };
 
 // DELETE
 export const deleteTransaction = async (req, res) => {

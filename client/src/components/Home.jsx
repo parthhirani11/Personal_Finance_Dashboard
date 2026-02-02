@@ -1,6 +1,7 @@
 import { useEffect,useMemo, useState, useRef  } from "react";
 import robot from "../assets/robot.png";
 import CountUp from "react-countup";
+import Edit from "./Edit";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -89,6 +90,12 @@ export default function Dashboard() {
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
 
   //  .............................................................................
+const [showEdit, setShowEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  useEffect(() => {
+    document.body.style.overflow = showEdit ? "hidden" : "auto";
+  }, [showEdit]);
 
   /* ================= FETCH DASHBOARD ================= */
   useEffect(() => {
@@ -446,6 +453,16 @@ export default function Dashboard() {
     );
   };
 
+ const fetchTransactions = async () => {
+  try {
+    const res = await api.get("/account/home", {
+      withCredentials: true,
+    });
+    setTransactions(res.data.accounts || []);
+  } catch (err) {
+    console.error("fetchTransactions error", err);
+  }
+};
   /* ================= ADD TRANSACTION ================= */
   const addTransaction = async (e) => {
     e.preventDefault();
@@ -509,21 +526,6 @@ export default function Dashboard() {
       setFile(null);
       setErrors({});
 
-      // await fetchDashboard();
-      // await fetchCategories();
-      // setShowPopup(false);
-
-      // setSelectedTags([]);
-      // // setShowTagDropdown(false);
-      // setShowTagSuggestions(false);
-      // setSelectedCategories([]);
-      // setCategoryInput("");
-      // setFilteredCategories([]);
-      // setShowSuggestions(false);
-      // // setTags("");
- 
-      // // e.target.reset();
-      // // setPaymentMode("Cash");
 
     } catch (err) {
       const msg =
@@ -870,7 +872,7 @@ export default function Dashboard() {
 
   setSelectedTags(prev => [...prev, value]);
   setTagInput("");
-  setFilteredTags(allTags);
+  setFilteredTags(false);
 };
 
 
@@ -1487,12 +1489,21 @@ export default function Dashboard() {
                       {new Date(item.date).toLocaleString()}
                     </small>
                     <div className="action-buttons d-flex gap-2">
-                      <button
+                      {/* <button
                         className="edit-btn d-flex align-items-center gap-1"
                         onClick={() => navigate(`/edit/${item._id}`)}
                       >
                         <FiEdit2 size={14} />
                         Edit
+                      </button> */}
+                      <button
+                        className="edit-btn"
+                        onClick={() => {
+                          setEditId(item._id);
+                          setShowEdit(true);
+                        }}
+                      >
+                        <FiEdit2 /> Edit
                       </button>
                      
 
@@ -1540,6 +1551,19 @@ export default function Dashboard() {
           }
 
           <div style={{marginTop:20}} ></div> 
+           {showEdit && (
+        <div className="edit-overlay">
+          <div className="edit-modal">
+            <Edit
+              id={editId}
+              onClose={() => {
+                setShowEdit(false);
+                fetchTransactions();
+              }}
+            />
+          </div>
+        </div>
+      )}
         </>
       )}
     {/* ........................................add transection recode popup box............................................... */}
