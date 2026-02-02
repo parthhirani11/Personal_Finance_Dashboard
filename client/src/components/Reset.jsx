@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../api/axios";
 
 function Reset() {
@@ -11,21 +12,29 @@ function Reset() {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [msg, setMsg] = useState("");
+  
 
   const resetPassword = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setMsg("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
     try {
-      await api.post("/auth/reset", { email, password, confirmPassword });
-      alert("Password reset successful!");
-      navigate("/login");
-    } catch (err) {
-      setMsg(err.response?.data?.msg || "Error resetting password");
-    }
+  const res = await api.post("/auth/reset", {
+    email,
+    password,
+    confirmPassword,
+  });
+
+  toast.success(res.data.message || "Password reset successful");
+  navigate("/login");
+
+} catch (err) {
+  toast.error(
+    err.response?.data?.message || "Error resetting password"
+  );
+}
   };
 
   return (
@@ -38,7 +47,7 @@ function Reset() {
             </Link>
           </div> 
         <h3>Reset Password</h3>
-        {msg && <p style={{ color: "red" }}>{msg}</p>}
+       
         <input
           type="password"
            className="form-input mb-2"

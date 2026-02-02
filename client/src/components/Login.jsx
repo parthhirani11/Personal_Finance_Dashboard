@@ -1,10 +1,12 @@
 import api from "../api/axios";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -36,14 +38,32 @@ function Login({ setUser }) {
           required
         />
 
-        <input
+        {/* <input
           type="password"
           placeholder="Password"
           className="form-input"
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
-        />
+        /> */}
+        <div className="password-wrapper mt-3">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            className="form-input"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+          />
+
+          <span
+            className="eye-icon"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEye /> : <FaEyeSlash />}
+          </span>
+        </div>
+
 
         <button type="submit" className="btn btn-primary w-100 mt-3">
           Login

@@ -343,7 +343,7 @@ body {
 .form-textarea {
   width: 100%;
   padding: 12px 14px;
-  margin-bottom: 16px;
+  /* margin-bottom: 16px; */
   border-radius: 10px;
   background: #0a1238;
   border: 1px solid #889bb9;
@@ -2679,6 +2679,66 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   line-height: 1;
 }
 
+/* password show and hide */
 
-/* ================= EDIT POPUP ONLY ================= */
-/* OVERLAY */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+.form-inputt{
+  width: 100%;
+  padding: 12px 14px;
+  /*  margin-bottom: 16px; */
+  border-radius: 10px;
+  background: #0a1238;
+  border: 1px solid #889bb9;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  padding-right: 40px;
+}
+
+.form-inputt::placeholder{
+  color: #94a3b8;
+}
+
+.form-inputt:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  font-size: 18px;
+  color: #94a3b8;
+}
+
+
+.eye-icon:hover {
+  color: #38bdf8;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fff;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

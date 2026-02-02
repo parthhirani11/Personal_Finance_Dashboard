@@ -58,7 +58,7 @@ function Register() {
 
         <input
           type="email"
-          className="form-input"
+          className="form-input mt-3"
           placeholder="Email"
           value={form.email}
           onChange={e => setForm({ ...form, email: e.target.value })}
@@ -67,7 +67,7 @@ function Register() {
 
         <input
           type="password"
-          className="form-input"
+          className="form-input mt-3"
           placeholder="Password"
           value={form.password}
           onChange={e => setForm({ ...form, password: e.target.value })}

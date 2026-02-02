@@ -336,7 +336,7 @@ const handleCategoryKeyDown = (e) => {
 
             {/* PAYMENT MODE */}
             <div className="mt-2">
-              <label className="form-label">Payment Mode</label>
+              <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
 
               <div className="edit-payment-mode">
                 {paymentModes.map((mode, i) => {
