@@ -1,3 +1,4 @@
+// footer part
 import { FaInstagram, FaLinkedinIn, FaFacebookF } from "react-icons/fa";
 import { FaRegCopyright } from "react-icons/fa6";
 

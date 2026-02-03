@@ -1,3 +1,4 @@
+// reset password and set new password
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
@@ -13,7 +14,7 @@ function Reset() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
-
+  // set new password
   const resetPassword = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {

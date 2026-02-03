@@ -1,3 +1,4 @@
+// contect page 
 import { useState } from "react";
 import api from "../api/axios";
 import contactImg from "../assets/contact1.png";
@@ -10,10 +11,12 @@ export default function Contact() {
     message: "",
   });
 
+  // set data
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // send msg
   const submitContact = async (e) => {
     e.preventDefault();
 

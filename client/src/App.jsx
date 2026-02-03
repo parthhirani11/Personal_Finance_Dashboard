@@ -1,6 +1,6 @@
+// sub root (router in all components page )
 import { BrowserRouter as Router, Routes, Route, Navigate  } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import api from "./api/axios";
 import Login from "./components/Login";
 import Register from "./components/Register";

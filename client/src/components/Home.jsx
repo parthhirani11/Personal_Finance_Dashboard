@@ -1,8 +1,8 @@
+// DASHBOARD PAGE
 import { useEffect,useMemo, useState, useRef  } from "react";
 import robot from "../assets/robot.png";
 import CountUp from "react-countup";
 import Edit from "./Edit";
-import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../api/axios";
@@ -69,7 +69,8 @@ export default function Dashboard() {
   
   const tagRef = useRef(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
-  
+
+  // POPUP SHOW
   const [showPopup, setShowPopup] = useState(false);
   
   const [amount, setAmount] = useState("");
@@ -90,7 +91,7 @@ export default function Dashboard() {
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
 
   //  .............................................................................
-const [showEdit, setShowEdit] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [editId, setEditId] = useState(null);
 
   useEffect(() => {
@@ -102,7 +103,7 @@ const [showEdit, setShowEdit] = useState(false);
     fetchDashboard();
     
   }, []);
-
+  // DASHBOARD DATA FATCH
   const fetchDashboard = async () => {
     try {
       const res = await api.get(
@@ -120,6 +121,7 @@ const [showEdit, setShowEdit] = useState(false);
       }
   };
  //  .............................................................................
+
   /* ================= SUMMARY (PURE FUNCTION) ================= */
   const calculateSummary = (data) => {
     const income = data
@@ -380,7 +382,7 @@ const [showEdit, setShowEdit] = useState(false);
     
     return [];
   };
-
+  // SUGGESTION INPUT 
   const handleSuggestionInputChange = (e, f, index) => {
   updateFilter(f.id, "value", e.target.value);
   setActiveFilterIndex(index);
@@ -735,6 +737,7 @@ const [showEdit, setShowEdit] = useState(false);
 
 
   //Savings Trend (Line Chart – 12 Months).......................
+
   const savingsTrend = useMemo(() => {
     return monthWiseChartData.map(m => ({
       month: m.month,
@@ -766,7 +769,7 @@ const [showEdit, setShowEdit] = useState(false);
   //  .............................................................................
 
   
-    // categories filter and add ..........
+  // categories filter and add ..........
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -928,84 +931,42 @@ const [showEdit, setShowEdit] = useState(false);
     }
   }, [paymentModes]);
 
-  // useEffect(() => {
-  //   const fetchModes = async () => {
-  //     const res = await api.get("/account/payment-modes");
-  //     const final = res.data.map(i => ({
-  //       name: i._id,      // bank / upi / cash / sbi
-  //       count: i.count
-  //     }));
-  //     // API → { sbi: 5, cash: 3 }
-  //     const usageMap = {};
-  //     res.data.forEach(item => {
-  //       if (item._id) {
-  //         usageMap[item._id.toLowerCase()] = item.count;
-  //       }
-  //     });
 
-  //     // DEFAULT MODES
-  //     const defaultModes = ["cash", "upi", "bank"];
+  useEffect(() => {
+    const fetchModes = async () => {
+      const res = await api.get("/account/payment-modes");
 
-  //     // FINAL UNIQUE SET
-  //     const modeSet = new Set();
+      // API → [{ _id: "cash", count: 3 }, { _id: "upi", count: 2 }]
+      const usageMap = {};
+      res.data.forEach(item => {
+        if (item._id) {
+          usageMap[normalize(item._id)] = item.count;
+        }
+      });
 
-  //     // 1️⃣ default add
-  //     defaultModes.forEach(m => modeSet.add(m));
+      // CASH ALWAYS DEFAULT
+      const modeSet = new Set(["cash"]);
 
-  //     // 2️⃣ db-used add
-  //     Object.keys(usageMap).forEach(m => modeSet.add(m));
+      // add used modes
+      Object.keys(usageMap).forEach(m => modeSet.add(m));
 
-  //     // BUILD FINAL ARRAY
-  //     const finalModes = Array.from(modeSet).map(name => ({
-  //       name,
-  //       count: usageMap[name] || 0,
-  //       isDefault: defaultModes.includes(name),
-  //     }));
+      const finalModes = Array.from(modeSet).map(name => ({
+        name,
+        count: usageMap[name] || 0,
+      }));
 
-  //     // SORT → count DESC (default + used first)
-  //     finalModes.sort((a, b) => b.count - a.count);
+      // sort by usage (cash stays if equal)
+      finalModes.sort((a, b) => b.count - a.count);
 
-  //     setPaymentModes(final);
-  //   };
+      setPaymentModes(finalModes);
 
-  //   fetchModes();
-  // }, []);
+      // default select
+      setSelectedMode(prev => prev || "cash");
+      setForm(prev => ({ ...prev, paymentMode: prev.paymentMode || "cash" }));
+    };
 
-useEffect(() => {
-  const fetchModes = async () => {
-    const res = await api.get("/account/payment-modes");
-
-    // API → [{ _id: "cash", count: 3 }, { _id: "upi", count: 2 }]
-    const usageMap = {};
-    res.data.forEach(item => {
-      if (item._id) {
-        usageMap[normalize(item._id)] = item.count;
-      }
-    });
-
-    // 🔒 CASH ALWAYS DEFAULT
-    const modeSet = new Set(["cash"]);
-
-    // add used modes
-    Object.keys(usageMap).forEach(m => modeSet.add(m));
-
-    const finalModes = Array.from(modeSet).map(name => ({
-      name,
-      count: usageMap[name] || 0,
-    }));
-
-    // sort by usage (cash stays if equal)
-    finalModes.sort((a, b) => b.count - a.count);
-
-    setPaymentModes(finalModes);
-
-    // default select
-    setSelectedMode(prev => prev || "cash");
-    setForm(prev => ({ ...prev, paymentMode: prev.paymentMode || "cash" }));
-  };
-
-  fetchModes();
-}, []);
+    fetchModes();
+  }, []);
 
 
   //  .............................................................................
@@ -1051,7 +1012,8 @@ useEffect(() => {
 
   return (
     <div className="container">
-      {/* SUMMARY DashBoard */}
+
+      {/* SUMMARY DashBoard .............................................*/}
       <div className="row mb-4">
         <SummaryCard title="Total Income" value={summary.totalIncome.toFixed(2)} color="income" />
         <SummaryCard title="Total Expense" value={summary.totalExpense.toFixed(2)} color="expense" />
@@ -1166,7 +1128,7 @@ useEffect(() => {
                 </div>       
             </div>
 
-            {/* Savings Trend */}
+            {/* Savings Trend Chart*/}
             <div className="chart-card dark">
               <h4 className="chart-title"><FiTrendingUp className="chart-icon line" />Savings Trend</h4>
               <p className="sub-text">12-month savings performance</p>
@@ -1395,42 +1357,46 @@ useEffect(() => {
                       />
                     </div>
                   )}
-                   {f.type === "week" && (
-                  <select
-                    className="form-select border-2"
-                    value={f.value || ""}
-                    onChange={(e) => updateFilter(f.id, "value", e.target.value)}
-                  >
-                    <option value="">Select Week</option>
-                    <option value="current">Current Week</option>
-                    <option value="last">Last Week</option>
-                  </select>
-                )}
 
-                {f.type === "month" && (
-                  <select
-                    className="form-select border-2"
-                    value={f.value || ""}
-                    onChange={(e) => updateFilter(f.id, "value", e.target.value)}
-                  >
-                    <option value="">Select Month</option>
-                    {[
-                      "January","February","March","April","May","June",
-                      "July","August","September","October","November","December"
-                    ].map((m, i) => (
-                      <option key={i} value={i}>{m}</option>
-                    ))}
-                  </select>
-                )}
+                   {/* week */}
+                  {f.type === "week" && (
+                    <select
+                      className="form-select border-2"
+                      value={f.value || ""}
+                      onChange={(e) => updateFilter(f.id, "value", e.target.value)}
+                    >
+                      <option value="">Select Week</option>
+                      <option value="current">Current Week</option>
+                      <option value="last">Last Week</option>
+                    </select>
+                  )}
 
-                {f.type === "year" && (
-                  <input
-                    className="form-control border-2"
-                    placeholder="2023, 2024..."
-                    value={f.value || ""}
-                    onChange={(e) => handleSuggestionInputChange(e, f, index)}
-                  />
-                )}
+                   {/* month */}
+                  {f.type === "month" && (
+                    <select
+                      className="form-select border-2"
+                      value={f.value || ""}
+                      onChange={(e) => updateFilter(f.id, "value", e.target.value)}
+                    >
+                      <option value="">Select Month</option>
+                      {[
+                        "January","February","March","April","May","June",
+                        "July","August","September","October","November","December"
+                      ].map((m, i) => (
+                        <option key={i} value={i}>{m}</option>
+                      ))}
+                    </select>
+                  )}
+
+                  {/* year */}
+                  {f.type === "year" && (
+                    <input
+                      className="form-control border-2"
+                      placeholder="2023, 2024..."
+                      value={f.value || ""}
+                      onChange={(e) => handleSuggestionInputChange(e, f, index)}
+                    />
+                  )}
                 </div>
                
 
@@ -1527,13 +1493,7 @@ useEffect(() => {
                       {new Date(item.date).toLocaleString()}
                     </small>
                     <div className="action-buttons d-flex gap-2">
-                      {/* <button
-                        className="edit-btn d-flex align-items-center gap-1"
-                        onClick={() => navigate(`/edit/${item._id}`)}
-                      >
-                        <FiEdit2 size={14} />
-                        Edit
-                      </button> */}
+                    
                       <button
                         className="edit-btn"
                         onClick={() => {
@@ -1589,21 +1549,23 @@ useEffect(() => {
           }
 
           <div style={{marginTop:20}} ></div> 
-           {showEdit && (
-        <div className="edit-overlay">
-          <div className="edit-modal">
-            <Edit
-              id={editId}
-              onClose={() => {
-                setShowEdit(false);
-                fetchTransactions();
-              }}
-            />
-          </div>
-        </div>
-      )}
+          {/*show edit recode popup   */}
+            {showEdit && (
+              <div className="edit-overlay">
+                <div className="edit-modal">
+                  <Edit
+                    id={editId}
+                    onClose={() => {
+                      setShowEdit(false);
+                      fetchTransactions();
+                    }}
+                  />
+                </div>
+              </div>
+            )}
         </>
       )}
+
     {/* ........................................add transection recode popup box............................................... */}
       <button className="robot-add-btn" onClick={() => setShowPopup(true)}>
         <img src={robot} alt="Add Transaction Robot" />
@@ -1696,62 +1658,16 @@ useEffect(() => {
                     Payment Mode <span className="text-danger">*</span>
                   </label>
                   <div className="payment-mode">
+                    {/* add more payment mode */}
                      <button
                         type="button"
-                        className="add-mode-btn "//d-flex align-items-center gap-1"
+                        className="add-mode-btn "
                         onClick={() => setShowModal(true)}
                       >
                         <FiPlusCircle className="add-icon" />
                         Add
                       </button>
-                    {/* {paymentModes.map((m, i) => {
-                      // 🔒 Normalize mode name safely
-                      const modeName =
-                        typeof m === "string"
-                          ? m
-                          : m?.name || m?._id;
-
-                      if (!modeName) return null;
-
-                      const key = modeName.toLowerCase();
-                      const color = paymentColors[key] || getRandomColor();
-
-                      return (
-                        <label key={i} className="radio-item">
-                          <input
-                            type="radio"
-                            name="paymentMode"
-                            value={modeName}
-                            checked={selectedMode === modeName}
-                            onChange={() => setSelectedMode(modeName)}
-                          />
-
-                          <span className="custom-radio"></span>
-
-                          <span
-                            className="mode-text pay-badge"
-                            style={{
-                              background: color.bg,
-                              color: color.text,
-                              padding: "0.25rem 0.5rem",
-                              borderRadius: "0.375rem",
-                              display: "inline-block",
-                              minWidth: "50px",
-                              textAlign: "center",
-                              fontWeight: "600",
-                            }}
-                          >
-                            {modeName.toUpperCase()}
-                            {typeof m === "object" && m.count != null && (
-                              <small style={{ marginLeft: 4, fontWeight: 400 }}>
-                                ({m.count})
-                              </small>
-                            )}
-                          </span>
-                        </label>
-                      );
-                    })} */}
-
+                    {/* redio btn payment mode */}
                     {paymentModes.map((m, i) => {
                       const modeName = m?.name;
                       if (!modeName) return null;
@@ -1792,16 +1708,7 @@ useEffect(() => {
                       );
                     })}
 
-{/* 
-                     <button
-                        type="button"
-                        className="add-mode-btn "//d-flex align-items-center gap-1"
-                        onClick={() => setShowModal(true)}
-                      >
-                        <FiPlusCircle className="add-icon" />
-                        Add
-                      </button> */}
-                    {/* ADD CUSTOM MODE */}
+                    {/* add payment mode popup box */}
                     <div className="add-mode-wrapper">
                       
                       {showModal && (
@@ -1836,29 +1743,7 @@ useEffect(() => {
                                 <button
                                   className="btn btn-primary"
                                   onClick={() => {
-                                  //   const newMode = customMode.trim();
-                                  //   if (!newMode) return;
-
-                                  //   const exists = paymentModes.some(m => {
-                                  //     const name = typeof m === "string" ? m : m.name;
-                                  //     return normalize(name) === normalize(newMode);
-                                  //   });
-
-                                  //   if (exists) {
-                                  //     toast.error("Payment mode already exists");
-                                  //     return;
-                                  //   }
-
-                                  //   setPaymentModes(prev => [
-                                  //     ...prev,
-                                  //     { name: newMode }
-                                  //   ]);
-
-                                  //   setSelectedMode(newMode);
-                                  //   setForm(prev => ({ ...prev, paymentMode: newMode }));
-
-                                  //   setCustomMode("");
-                                  //   setShowModal(false);
+                                  
                                   const newMode = normalize(customMode);
 
                                   if (!newMode) return;
@@ -1895,6 +1780,7 @@ useEffect(() => {
                 
                 {/* <div className="d-flex align-items-center gap-2 mb-2"> */}
                 <div className="row mb-2">
+                  {/* add category and suggestion list  */}
                   <div className="col-md-6 mt-2">
                     <div className="mb-2 position-relative">
                       <label className="form-label">Category</label>
@@ -1926,6 +1812,7 @@ useEffect(() => {
                           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                         />
                       </div>
+                      {/*  category suggestion list  */}
                       {showSuggestions && (
                         <div className="suggestionBox list-group mt-1">
                           {filteredCategories.length > 0 ? (
@@ -1946,7 +1833,7 @@ useEffect(() => {
                           )}
                         </div>
                       )}
-                      
+                      {/* add category 5 btn  */}
                       {!showSuggestions && (
                         <div className="category-buttons mt-2">
                           {fixedCategories.map((cat, i) => (
@@ -1996,7 +1883,7 @@ useEffect(() => {
                         onKeyDown={handleTagKeyDown}
                       />
 
-                      {/* ✅ SUGGESTION BOX (INSIDE ref — VERY IMPORTANT) */}
+                      {/* ✅ SUGGESTION BOX TAGS */}
                       {showTagSuggestions && (
                         <div className="suggestionBox list-group mt-1">
                           {filteredTags.length > 0 ? (
@@ -2019,7 +1906,7 @@ useEffect(() => {
                       )}
                     </div>
 
-                      {/* FIXED TAG BUTTONS */}
+                      {/* 5 FIXED TAG BUTTONS */}
                       {!showTagSuggestions && (
                         <div className="mt-2">
                           {fixedTags.map((tag, i) => (

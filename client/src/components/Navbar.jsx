@@ -1,3 +1,4 @@
+// nave bar page 
 // import { NavLink } from "react-router-dom";
 // import { FiHome, FiInfo, FiPhone } from "react-icons/fi";
 

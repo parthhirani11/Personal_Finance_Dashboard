@@ -1,3 +1,4 @@
+// edit transection recode
 import { useState, useEffect, useRef } from "react";
 import { FiX, FiSave, FiPlusCircle } from "react-icons/fi";
 import api from "../api/axios";
@@ -132,34 +133,35 @@ export default function EditPopup({ id, onClose }){
   }, []);
 
   const handleCategoryChange = (value) => {
-  setCategoryInput(value);
-  setShowSuggestions(true);
+    setCategoryInput(value);
+    setShowSuggestions(true);
 
-  const keyword = normalize(value);
+    const keyword = normalize(value);
 
-  setFilteredCategories(
-    allCategories.filter(cat =>
-      normalize(cat).includes(keyword) &&
-      !selectedCategories.some(
-        sel => normalize(sel) === normalize(cat)
+    setFilteredCategories(
+      allCategories.filter(cat =>
+        normalize(cat).includes(keyword) &&
+        !selectedCategories.some(
+          sel => normalize(sel) === normalize(cat)
+        )
       )
-    )
-  );
-};
+    );
+  };
 
-const handleCategoryKeyDown = (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    addCategory(categoryInput);
-  }
-};
+  //  Type the word and press enter.(CATEGORY)
+  const handleCategoryKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addCategory(categoryInput);
+    }
+  };
 
   /* ================= SUBMIT ================= */
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const data = new FormData();
+    const data = new FormData();
 
     // basic fields
     data.append("type", form.type);
@@ -169,7 +171,6 @@ const handleCategoryKeyDown = (e) => {
 
     // arrays
     data.append("description", selectedCategories.join(", "));
-    // selectedCategories.forEach(c => data.append("category[]", c));
     selectedTags.forEach(t => data.append("tags[]", t));
 
     // attachment
@@ -190,7 +191,7 @@ const handleCategoryKeyDown = (e) => {
       toast.error("Update failed");
     }
   };
-
+  // fetch Categories
   const fetchCategories = async () => {
     const res = await api.get("/account/categories", { withCredentials: true });
 
@@ -213,7 +214,7 @@ const handleCategoryKeyDown = (e) => {
     fetchCategories();
     fetchTags();
   }, []);
-
+  // ADD NEW CATEGORY
   const addCategory = (cat) => {
     const value = cat.trim();
     if (!value) return;
@@ -227,13 +228,12 @@ const handleCategoryKeyDown = (e) => {
     setCategoryInput("");
     setShowSuggestions(false);
   };
-
+  // REMOVE CATEGORY
   const removeCategory = (cat) => {
     setSelectedCategories(prev => prev.filter(c => c !== cat));
   };
 
-
-
+  // ADD NEW TAGS
   const addTag = (tag) => {
     const value = tag.trim();
     if (!value) return;
@@ -246,11 +246,11 @@ const handleCategoryKeyDown = (e) => {
     setSelectedTags(prev => [...prev, value]);
     setTagInput("");
   };
-
+  // REMOVE TAGS
   const removeTag = (tag) => {
     setSelectedTags(prev => prev.filter(t => t !== tag));
   };
-
+  // CHANGE TAGS VALUE
   const handleTagChange = (value) => {
     setTagInput(value);
     setShowTagSuggestions(true);
@@ -265,7 +265,7 @@ const handleCategoryKeyDown = (e) => {
       )
     );
   };
-
+  //  Type the word and press enter.(TAGS)
   const handleTagKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -502,7 +502,7 @@ const handleCategoryKeyDown = (e) => {
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   />
 
-                  {/* ✅ SUGGESTION DROPDOWN */}
+                  {/* ✅ SUGGESTION DROPDOWN LIST IN CATEGORY */}
                   {showSuggestions && (
                     <div className="suggestionBox list-group mt-1">
                       {filteredCategories.length > 0 ? (
@@ -525,6 +525,7 @@ const handleCategoryKeyDown = (e) => {
                   )}
                 </div>
 
+                {/* SUGGESTION 5 CATEGOURY BTN */}
                 {!showSuggestions && (
                   <div className="mt-2">
                     {fixedCategories.map((cat, i) => (
@@ -567,6 +568,7 @@ const handleCategoryKeyDown = (e) => {
                     onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
                   />
 
+                  {/* SUGGESTION TAGS LIST */}
                   {showTagSuggestions && (
                     <div className="suggestionBox list-group mt-1">
                       {filteredTags.length > 0 ? (
@@ -589,6 +591,7 @@ const handleCategoryKeyDown = (e) => {
                   )}
                 </div>
 
+                {/* SUGGESTION 5  TAGS BTN */}
                 {!showTagSuggestions && (
                   <div className="mt-2">
                     {fixedTags.map((tag, i) => (

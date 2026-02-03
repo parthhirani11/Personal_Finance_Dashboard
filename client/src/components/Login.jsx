@@ -1,3 +1,4 @@
+// login page 
 import api from "../api/axios";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -10,7 +11,7 @@ function Login({ setUser }) {
 
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
+  // fetch  data and navigete ih home page
    const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -38,14 +39,6 @@ function Login({ setUser }) {
           required
         />
 
-        {/* <input
-          type="password"
-          placeholder="Password"
-          className="form-input"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        /> */}
         <div className="password-wrapper mt-3">
           <input
             type={showPassword ? "text" : "password"}

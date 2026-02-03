@@ -1,3 +1,4 @@
+// logout page layout in header
 import Navbar from "./Navbar";
 import Header from "./Header";
 
@@ -12,3 +13,4 @@ export default function Layout({ user, logout, children }) {
     </>
   );
 }
+

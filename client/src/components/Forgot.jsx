@@ -1,3 +1,4 @@
+// forgot password and send otp page
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -5,6 +6,7 @@ import { FiArrowLeft } from "react-icons/fi";
 
 import api from "../api/axios"; 
 
+//  To send an OTP in the mail
 function Forgot() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -12,6 +14,7 @@ function Forgot() {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // send otp funtion 
   const sendOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -25,7 +28,7 @@ function Forgot() {
     setLoading(false);
   }
   };
-
+  //  verify otp
   const verifyOtp = async (e) => {
     e.preventDefault();
       setLoading(true);
@@ -44,7 +47,7 @@ function Forgot() {
   return (
     <div className="container-center">
       
-
+      {/* send otp in mail */}
       {!showOtp ? (
         <form className="auth-box" onSubmit={sendOtp}>
           <div className="mt-4">
@@ -64,6 +67,8 @@ function Forgot() {
             <button className="btn btn-primary mb-3" type="submit" disabled={loading}>{loading ? <span className="spinner"></span> : "Send OTP"}</button>
         </form>
       ) : (
+
+        // Verify OTP and enter otp
         <form className="auth-box" onSubmit={verifyOtp}>
              <div className="mt-4">
             <Link to="/login" className="back-icon-link">

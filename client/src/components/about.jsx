@@ -1,3 +1,4 @@
+// about page..
 import incomeImg from "../assets/about3.png";
 export default function About() {
   return (

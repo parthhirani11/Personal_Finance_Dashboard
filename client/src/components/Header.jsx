@@ -1,3 +1,4 @@
+// header page 
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import logo from "../assets/logo2.png"; 
@@ -6,6 +7,7 @@ import { FiHome, FiInfo, FiPhone,FiLogOut  } from "react-icons/fi";
 export default function TopHeader({ user, setUser }) {
   const navigate = useNavigate();
 
+  // logout user
   const logout = async () => {
     await api.post("/auth/logout");
     setUser(null);
@@ -27,6 +29,7 @@ export default function TopHeader({ user, setUser }) {
         </p>
       </div>
     </div>
+    {/* home contect contact page navigation */}
     {user && (
      <div className="d-flex gap-4">
         <NavItem to="/home" label="Home" Icon={FiHome} />
@@ -34,7 +37,7 @@ export default function TopHeader({ user, setUser }) {
         <NavItem to="/contact" label="Contact" Icon={FiPhone} />
       </div>
     )}
-    {/* USER */}
+    {/* USER data  with logout btn */}
     {user && (
       
       <div className="d-flex align-items-center gap-3">
@@ -54,6 +57,7 @@ export default function TopHeader({ user, setUser }) {
 </div>
   );
 }
+//Navigation is page redirection.
 function NavItem({ to, label, Icon }) {
   return (
     <NavLink

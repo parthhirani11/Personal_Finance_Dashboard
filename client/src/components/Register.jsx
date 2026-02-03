@@ -1,4 +1,4 @@
-
+// register new user page 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
@@ -14,7 +14,7 @@ function Register() {
 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  //  store new user data
   const register = async () => {
     try {
       setLoading(true);
@@ -33,7 +33,7 @@ function Register() {
       setLoading(false);
     }
   };
-
+  // seve new user data 
   const handleSubmit = (e) => {
     e.preventDefault();
     register();

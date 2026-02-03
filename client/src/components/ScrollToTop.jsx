@@ -1,3 +1,4 @@
+// The page was refreshed, so the page was shown from the top.
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
