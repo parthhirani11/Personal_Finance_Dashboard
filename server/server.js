@@ -34,6 +34,7 @@ app.use(
     },
   })
 );
+
 // connectDB();
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected"));
@@ -43,7 +44,7 @@ app.use("/api/account", accountRoutes);
 app.use("/api/account", exportRoutes);
 app.use("/uploads", express.static("uploads"));
 
-
+// server connection
 const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

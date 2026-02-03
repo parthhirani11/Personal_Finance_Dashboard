@@ -44,7 +44,7 @@ export default function Contact() {
           <h2>Get in Touch</h2>
 
           <input
-            className="form-input"
+            className="form-input mb-3"
             name="nname"
             placeholder="Enter your full name"
             autoComplete="off" 
@@ -54,7 +54,7 @@ export default function Contact() {
           />
 
           <input
-            className="form-input"
+            className="form-input mb-3"
             name="email"
             type="email"
             placeholder="Enter your email"

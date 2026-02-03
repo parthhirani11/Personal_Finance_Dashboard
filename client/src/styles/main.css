@@ -2136,43 +2136,7 @@ p a:hover {
   color: #38bdf8;
 }
 
-/* ADD MODE */
-.add-mode-wrapper {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
 
-.add-mode-input {
-  background: #020617;
-  border: 1px solid #334155;
-  color: #e5e7eb;
-  padding: 5px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.add-mode-input::placeholder {
-  color: #64748b;
-}
-
-.add-mode-btn {
-  background: #38bdf8;
-  border: none;
-  color: #020617;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.add-mode-btn:hover {
-  background: #0ea5e9;
-}
-
-.Toastify__toast-container {
-  z-index: 99999 !important;
-}
 
 
 /*..................... income expense slider...................... */
@@ -2632,40 +2596,32 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .add-mode-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+
+  height: 36px;                 /* ✅ FIX HEIGHT */
   gap: 8px;
+
+  padding: 0 14px;              /* ✅ REMOVE 0px TOP/BOTTOM */
 
   background: linear-gradient(135deg, #2563eb, #1e40af);
   color: #ffffff;
 
-  padding: 8px 14px;
-  border-radius: 999px; /* pill shape */
+  border-radius: 10px;
   border: none;
 
   font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  line-height: 1;               /* ✅ TEXT ALIGN FIX */
 
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
-}
 
-/* Hover */
-.add-mode-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
-  background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+  white-space: nowrap;          /* ✅ PREVENT WRAP */
 }
-
-/* Active */
-.add-mode-btn:active {
-  transform: scale(0.96);
-}
-
-/* Plus icon bubble */
 .add-mode-btn .add-icon {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;                 /* ✅ MATCH HEIGHT */
 
   display: flex;
   align-items: center;
@@ -2674,10 +2630,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: rgba(255, 255, 255, 0.18);
   border-radius: 50%;
 
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1;
 }
+
 
 /* password show and hide */
 

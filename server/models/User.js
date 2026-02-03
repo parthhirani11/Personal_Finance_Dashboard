@@ -1,3 +1,4 @@
+// add new user models data type value
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({

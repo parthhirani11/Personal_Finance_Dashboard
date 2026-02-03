@@ -1,3 +1,4 @@
+// send otp data type value
 import mongoose from "mongoose";
 
 const otpSchema = new mongoose.Schema({

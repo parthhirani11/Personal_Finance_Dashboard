@@ -339,6 +339,14 @@ const handleCategoryKeyDown = (e) => {
               <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
 
               <div className="edit-payment-mode">
+                <button
+                  type="button"
+                  className="add-mode-btn d-flex align-items-center gap-1"
+                  onClick={() => setShowModal(true)}
+                >
+                  <FiPlusCircle size={16} />
+                  Add
+                </button>
                 {paymentModes.map((mode, i) => {
                   const color =paymentColors[mode] || getRandomColor();
                     return (
@@ -373,14 +381,14 @@ const handleCategoryKeyDown = (e) => {
                        
                 })}
 
-                <button
+                {/* <button
                   type="button"
                   className="add-mode-btn d-flex align-items-center gap-1"
                   onClick={() => setShowModal(true)}
                 >
                   <FiPlusCircle size={16} />
                   Add
-                </button>
+                </button> */}
                 {showModal && (
                   <div className="tag-modal-backdrop">
                     <div className="tag-modal">
@@ -621,7 +629,7 @@ const handleCategoryKeyDown = (e) => {
 
         {/* FOOTER */}
         <div className="edit-popup-footer">
-          <button className="edit-save-btn" onClick={handleSubmit}>
+          <button className="btn btn-primary align-items-centerd-inline-flex gap-2" onClick={handleSubmit}>
             Save Transaction <FiSave />
           </button>
         </div>

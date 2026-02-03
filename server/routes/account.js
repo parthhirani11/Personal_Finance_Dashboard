@@ -1,4 +1,4 @@
-// routes/account.js
+// routes/account.js pass the data
 import express from "express";
 import {requireAuth } from "../middleware/authmid.js";
 import { upload } from "../middleware/upload.js";
@@ -16,8 +16,7 @@ router.get("/payment-modes",requireAuth, getPaymentModeStats);
 
 router.get("/:id", requireAuth , getSingleRecord);
 router.put("/edit/:id", requireAuth , upload.single("attachment"), updateTransaction);
-// router.put("/edit/:id",upload.single("attachment"),updateTransaction);
 
 router.post("/delete/:id", requireAuth , deleteTransaction);
-// router.get("/categories", getAllCategories);
+
 export default router;

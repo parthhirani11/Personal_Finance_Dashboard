@@ -1696,6 +1696,14 @@ useEffect(() => {
                     Payment Mode <span className="text-danger">*</span>
                   </label>
                   <div className="payment-mode">
+                     <button
+                        type="button"
+                        className="add-mode-btn "//d-flex align-items-center gap-1"
+                        onClick={() => setShowModal(true)}
+                      >
+                        <FiPlusCircle className="add-icon" />
+                        Add
+                      </button>
                     {/* {paymentModes.map((m, i) => {
                       // 🔒 Normalize mode name safely
                       const modeName =
@@ -1752,6 +1760,7 @@ useEffect(() => {
                       const color = paymentModeColors[key] || getRandomColor();
 
                       return (
+                        
                         <label key={i} className="radio-item">
                           <input
                             type="radio"
@@ -1783,15 +1792,15 @@ useEffect(() => {
                       );
                     })}
 
-
+{/* 
                      <button
                         type="button"
-                        className="add-mode-btn d-flex align-items-center gap-1"
+                        className="add-mode-btn "//d-flex align-items-center gap-1"
                         onClick={() => setShowModal(true)}
                       >
-                        <FiPlusCircle size={16} />
+                        <FiPlusCircle className="add-icon" />
                         Add
-                      </button>
+                      </button> */}
                     {/* ADD CUSTOM MODE */}
                     <div className="add-mode-wrapper">
                       

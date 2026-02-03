@@ -1,3 +1,4 @@
+// user's data pass
 import express from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
@@ -39,10 +40,10 @@ router.post("/contact", async (req, res) => {
       });
     } catch (twilioErr) {
       console.error("TWILIO ERROR:", twilioErr.message);
-      // ❗️do NOT send response here
+      
     }
 
-    // ✅ response only ONCE
+    //  response only ONCE
     return res.status(200).json({ msg: "Message sent successfully" });
 
   } catch (error) {
@@ -102,8 +103,6 @@ const { email, password } = req.body;
 
   res.json({ msg: "Login success", user: req.session.user });
 });
-
-
 
 
 // Get session user

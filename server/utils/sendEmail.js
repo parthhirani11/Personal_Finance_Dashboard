@@ -1,4 +1,4 @@
-
+// send otp in mail 
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 

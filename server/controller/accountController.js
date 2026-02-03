@@ -106,7 +106,7 @@ export const updateTransaction = async (req, res) => {
       person,
       paymentMode,
       description: description || "",  
-      // tags: Array.isArray(tags) ? tags : [],
+     
       tags: tags
   ? (Array.isArray(tags) ? tags : [tags])
   : [],
@@ -126,56 +126,13 @@ export const updateTransaction = async (req, res) => {
   }
 };
 
-// export const updateTransaction = async (req, res) => {
-//   //  const userId = req.session.user.id;
-//   const {
-//     type,
-//     amount,
-//     person,
-//     description,
-//     tags,
-//     paymentMode,
-//   } = req.body;
-
-//   const file = req.file;
-//   const parsedTags = tags
-//   ? [...new Set(
-//       tags
-//         .split(",")
-//         .map(t => t.trim().toLowerCase())
-//         .filter(Boolean)
-//     )]
-//   : [];
-//   const updateData = {
-//     type,
-//     amount,
-//     person,
-//     description,
-//     tags: parsedTags,
-//     paymentMode,
-   
-//   };
-//  if (file) {
-//       updateData.attachment = file.filename;
-//       updateData.originalName = file.originalname;
-//     }
-
-  
-//   if (req.file) {
-//     updateData.attachment = req.file.filename;
-//     updateData.originalName = req.file.originalname;
-//   }
-
-//   await Account.findByIdAndUpdate(req.params.id, updateData);
-//   res.json({ success: true });
-// };
-
 // DELETE
 export const deleteTransaction = async (req, res) => {
   await Account.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 };
 
+// fetch recode
 export const getSingleRecord = async (req, res) => {
   try {
      const userId = req.session.user.id;
@@ -211,7 +168,7 @@ export const getSuggestedTags = async (req, res) => {
       }
     });
 
-    res.json([...tagSet]); // ✅ unique tags
+    res.json([...tagSet]); //  unique tags
 
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch tags" });
@@ -221,9 +178,9 @@ export const getSuggestedTags = async (req, res) => {
 // GET ALL CATEGORIES (for suggestion box)
 export const getAllCategories = async (req, res) => {
   try {
-    // console.log("SESSION:", req.session);
+    
 
-    const userId = req.session.user.id; // ❌ optional chaining hatao
+    const userId = req.session.user.id; // ❌ optional chaining 
 
     const records = await Account.find(
       { userId },
@@ -249,6 +206,7 @@ export const getAllCategories = async (req, res) => {
   }
 };
 
+// SUGGESTION PAYMENT MODE DATA
 export const getPaymentModeStats = async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -284,29 +242,3 @@ export const getPaymentModeStats = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
-
-// export const getPaymentModeStats = async (req, res) => {
-//   try {
-//     const userId = req.session.user.id;
-
-//   const stats = await Account.aggregate([
-//   {
-//     $match: {
-//       userId: new mongoose.Types.ObjectId(userId),
-//       paymentMode: { $ne: null }
-//     }
-//   },
-//   {
-//     $group: {
-//       _id: "$paymentMode",
-//       count: { $sum: 1 }
-//     }
-//   }
-// ]);
-
-//     res.json(stats);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
