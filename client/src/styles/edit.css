@@ -44,11 +44,6 @@
   .edit-popup-header .close-btn:hover {
     transform: rotate(90deg);
   }
-/* 
-.edit-close-btn {
-  font-size: 26px;
-  cursor: pointer;
-} */
 
 /* BODY */
 .edit-popup-body {
@@ -138,34 +133,6 @@
   gap: 18px;
 }
 
-/* TYPE SWITCH */
-/* .edit-type-switch {
-  display: flex;
-  border: 1px solid #334155;
-  border-radius: 999px;
-  margin-bottom: 18px;
-}
-
-.edit-type-btn {
-  flex: 1;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  color: #94a3b8;
-}
-
-.edit-type-btn.active.income {
-  background: linear-gradient(135deg, #22c55e, #4ade80);
-  color: #022c22;
-}
-
-
-
-.edit-type-btn.active.expense {
-  background: linear-gradient(135deg, #ef4444, #f87171);
-  color: #450a0a;
-} */
-
 /*..................... income expense slider...................... */
 .edit-type-slider {
   position: relative;
@@ -215,6 +182,7 @@
   background: linear-gradient(135deg, #dc3545, #f05858);
   transform: translateX(100%);
 }
+
 /* ........................................................................... */
 /* PAYMENT MODE RADIO */
 .edit-payment-mode {
@@ -294,6 +262,7 @@ body.popup-open {
   overflow: hidden;
 }
 
+/* tags and categoury suggestion box */
 .suggestion-Box {
   position: absolute;
   top: 100%;
@@ -331,32 +300,3 @@ body.popup-open {
 .tag-input-wrapper {
   position: relative;
 }
-/* .suggestion-box {
-  position: absolute;
-  background: #111;
-  border: 1px solid #333;
-  width: 100%;
-  max-height: 150px;
-  overflow-y: auto;
-  z-index: 9999;
-}
-
-.suggestion-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  color: #fff;
-}
-
-.suggestion-item:hover {
-  background: #333;
-}
-
-.category-wrapper {
-  position: relative;
-} */
-
-/* .edit-popup-body {
-  overflow: visible !important;
-} */
-
-

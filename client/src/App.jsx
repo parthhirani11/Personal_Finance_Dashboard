@@ -11,7 +11,7 @@ import Contact from "./components/Contact";
 import Header from "./components/Header";
 import Forgot from "./components/Forgot";
 import Reset from "./components/Reset";
-import Edit from "./components/Edit";
+// import Edit from "./components/Edit";
 import Footer from "./components/Footer";
 import "./styles/main.css";
 import ScrollToTop from "./components/ScrollToTop";
@@ -57,7 +57,7 @@ useEffect(() => {
         <Route path="/home"element={ user ?  <Home user={user} /> : <Navigate to="/login" replace /> }/>
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/edit/:id" element={<Edit />} />
+        {/* <Route path="/edit/:id" element={<Edit />} /> */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
         <Footer />

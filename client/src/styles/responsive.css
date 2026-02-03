@@ -1,0 +1,205 @@
+/* ================= RESPONSIVE header in top================= */
+@media (max-width: 992px) {
+  .top-header .container-fluid {
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+  }
+
+  .brand-wrap {
+    justify-content: center;
+  }
+
+  .nav-links {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .logout-btn {
+    margin-top: 6px;
+  }
+
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .brand-title {
+    font-size: 1.15rem;
+  }
+
+  .brand-desc {
+    display: none;
+  }
+
+  .nav-links {
+    gap: 14px;
+  }
+
+  .page-link {
+    font-size: 0.9rem;
+  }
+}
+
+
+/* ================= RESPONSIVE  about page================= */
+@media (max-width: 768px) {
+  .about-card {
+    grid-template-columns: 1fr;
+    padding: 32px;
+    text-align: center;
+  }
+
+  .about-content ul {
+    text-align: left;
+    display: inline-block;
+  }
+
+  .about-image img {
+    max-width: 280px;
+    margin-bottom: 20px;
+  }
+}
+
+
+/* ================= RESPONSIVE contect page ================= */
+@media (max-width: 768px) {
+  .contact-card {
+    grid-template-columns: 1fr;
+    padding: 32px;
+    text-align: center;
+  }
+}
+
+/* ================= RESPONSIVE login page ================= */
+@media (max-width: 480px) {
+  .auth-box {
+    padding: 32px 26px;
+  }
+}
+
+/* responsive in transection card  */
+ @media (max-width: 992px) {
+  .transaction-card {
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .transaction-side {
+    min-width: 120px;
+  }
+
+  .amount {
+    font-size: 1.1rem;
+  }
+}
+@media (max-width: 768px) {
+  .transaction-card {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .transaction-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .transaction-side {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    min-width: unset;
+  }
+
+  .action-buttons {
+    gap: 10px;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    padding: 6px 12px;
+  }
+
+  .amount {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .transaction-card {
+    padding: 16px;
+  }
+
+  .transaction-details {
+    font-size: 0.85rem;
+  }
+
+  .transaction-side {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .action-buttons {
+    width: 100%;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+@media (hover: none) {
+  .transaction-card:hover {
+    transform: none;
+    box-shadow: 0 14px 36px rgba(0,0,0,0.45);
+  }
+} 
+
+
+@media (max-width: 768px) {
+  .transaction-details.fixed {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  .dual-chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .card {
+    padding: 20px;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+  }
+
+  .d-flex.gap-2 .btn {
+    width: 100%;
+  }
+}
+
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .export-filter-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .form-select {
+    width: 100% !important;
+  }
+  .plus-btnnx {
+    width: 100%;
+    text-align: center;
+  }
+}
