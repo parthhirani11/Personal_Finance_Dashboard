@@ -340,7 +340,7 @@ body {
 
 /* Center page */
 .container-center {
-  min-height: 90vh;
+  min-height: 69vh;
   display: flex;
   align-items: center;
   justify-content: center;
