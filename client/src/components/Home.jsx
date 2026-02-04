@@ -711,10 +711,10 @@ export default function Dashboard() {
 
         <hr />
 
-        <div className="tooltip-row">
+        {/* <div className="tooltip-row">
           <strong>Total</strong>
           <strong>₹{total.toLocaleString()}</strong>
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -891,7 +891,7 @@ export default function Dashboard() {
     setFilteredTags(allTags);
   }, [allTags]);
 
-  
+
   const removeTag = (tag) => {
     setSelectedTags((prev) => prev.filter((t) => t !== tag));
   };
