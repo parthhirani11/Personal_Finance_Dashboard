@@ -891,22 +891,7 @@ export default function Dashboard() {
     setFilteredTags(allTags);
   }, [allTags]);
 
-//   const addTag = (tag) => {
-//   const value = tag.trim();
-//   if (!value) return;
-
-//   const isDuplicate = selectedTags.some(
-//     t => normalize(t) === normalize(value)
-//   );
-
-//   if (isDuplicate) return;
-
-//   setSelectedTags(prev => [...prev, value]);
-//   setTagInput("");
-//   setFilteredTags(false);
-// };
-
-
+  
   const removeTag = (tag) => {
     setSelectedTags((prev) => prev.filter((t) => t !== tag));
   };
@@ -1153,7 +1138,7 @@ export default function Dashboard() {
                         style={{ background: colorMap.current[item.key] }}
                       />
                       <span>{item.name}</span>
-                      <strong>₹{item.value.toLocaleString()}</strong>
+                      {/* <strong>₹{item.value.toLocaleString()}</strong> */}
                     </div>
                   ))}
                 </div>       
