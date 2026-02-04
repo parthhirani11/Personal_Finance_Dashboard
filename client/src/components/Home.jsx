@@ -553,6 +553,7 @@ export default function Dashboard() {
     setTransactions((prev) => prev.filter((t) => t._id !== id));
     fetchDashboard(); 
     fetchCategories(); 
+    await fetchTags();  
 
     // Show toast
     toast.success("Record deleted successfully");
@@ -842,6 +843,34 @@ export default function Dashboard() {
   //  .............................................................................
   // sub tags filter and add  
 
+  const addTag = (tag) => {
+  const value = tag.trim();
+  if (!value) return;
+
+  const isDuplicate = selectedTags.some(
+    t => normalize(t) === normalize(value)
+  );
+
+  if (isDuplicate) return;
+
+  // ✅ add to selected tags
+  setSelectedTags(prev => [...prev, value]);
+
+  // ✅ add to allTags (for instant suggestion)
+  setAllTags(prev => {
+    const exists = prev.some(
+      t => normalize(t) === normalize(value)
+    );
+    return exists ? prev : [...prev, value];
+  });
+
+  // reset input & suggestion
+  setTagInput("");
+  setFilteredTags([]);
+  setShowTagSuggestions(false);
+};
+
+
   const fetchTags = async () => {
     try {
       const res = await api.get("/account/tags", {
@@ -862,34 +891,36 @@ export default function Dashboard() {
     setFilteredTags(allTags);
   }, [allTags]);
 
-  const addTag = (tag) => {
-  const value = tag.trim();
-  if (!value) return;
+//   const addTag = (tag) => {
+//   const value = tag.trim();
+//   if (!value) return;
 
-  const isDuplicate = selectedTags.some(
-    t => normalize(t) === normalize(value)
-  );
+//   const isDuplicate = selectedTags.some(
+//     t => normalize(t) === normalize(value)
+//   );
 
-  if (isDuplicate) return;
+//   if (isDuplicate) return;
 
-  setSelectedTags(prev => [...prev, value]);
-  setTagInput("");
-  setFilteredTags(false);
-};
+//   setSelectedTags(prev => [...prev, value]);
+//   setTagInput("");
+//   setFilteredTags(false);
+// };
 
 
   const removeTag = (tag) => {
     setSelectedTags((prev) => prev.filter((t) => t !== tag));
   };
 
-  const handleTagKeyDown = (e) => {
+ const handleTagKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const value = tagInput.trim().toLowerCase();
+      const value = tagInput.trim();
       if (!value) return;
+
       addTag(value);
     }
   };
+
 
   const handleTagChange = (value) => {
     setTagInput(value);
@@ -1979,7 +2010,7 @@ function SummaryCard({ title, value, color, percentage }) {
           <h6 className="summary-title">{title}</h6>
 
           <h3 className="summary-value">
-            ₹
+            {value < 0 && "-"}₹
             <CountUp
               end={Math.abs(value)}
               duration={getDuration(value)}
@@ -1992,7 +2023,7 @@ function SummaryCard({ title, value, color, percentage }) {
 
           <span className="summary-sub">
             {percentage !== undefined
-              ? `${Math.abs(percentage)}% of ${percentage < 0 ? "expense" : "income"}`
+              ? `${percentage}% of ${percentage < 0 ? "expense" : "income"}`
               : "Amount"}
           </span>
         </div>
