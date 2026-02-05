@@ -5,32 +5,47 @@ import mongoose from "mongoose";
 // DASHBOARD OUTPUT
 export const getDashboard = async (req, res) => {
   try {
+    // 🔐 Session check
     if (!req.session?.user?.id) {
       return res.status(401).json({ msg: "Session expired" });
     }
+
     const userId = req.session.user.id;
+    const { dashboardId } = req.params;   // 👈 STEP-5 ADD
+
+    if (!dashboardId) {
+      return res.status(400).json({ msg: "DashboardId required" });
+    }
+
+    // 📊 Fetch ONLY selected dashboard records
     const accounts = await Account.find({
-      userId
+      userId,
+      dashboardId                    // 👈 MOST IMPORTANT CHANGE
     }).sort({ date: -1 });
-    
+
+    // 💰 Calculate totals (dashboard-wise)
     const totalIncome = accounts
       .filter(a => a.type === "income")
-      .reduce((s, a) => s + a.amount, 0);
+      .reduce((sum, a) => sum + Number(a.amount), 0);
 
     const totalExpense = accounts
       .filter(a => a.type === "expense")
-      .reduce((s, a) => s + a.amount, 0);
+      .reduce((sum, a) => sum + Number(a.amount), 0);
 
+    // ✅ Response
     res.json({
-      accounts,
+      transactions: accounts, 
       totalIncome,
       totalExpense,
       balance: totalIncome - totalExpense,
     });
+
   } catch (err) {
+    console.error("Dashboard error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ADD TRANSACTION
 export const addTransaction = async (req, res) => {
@@ -42,6 +57,7 @@ export const addTransaction = async (req, res) => {
     const userId = req.session.user.id;
 
     const {
+      dashboardId,
       type,
       amount,
       person,
@@ -50,6 +66,10 @@ export const addTransaction = async (req, res) => {
       paymentMode,
       date
     } = req.body;
+
+    if (!dashboardId) {
+  return res.status(400).json({ msg: "Dashboard not selected" });
+}
 
     if (!amount || !paymentMode || !type) {
       return res.status(400).json({ msg: "Missing required fields" });
@@ -60,9 +80,14 @@ export const addTransaction = async (req, res) => {
           tags.split(",").map(t => t.trim().toLowerCase()).filter(Boolean)
         )]
       : [];
+    
+      if (!dashboardId) {
+      return res.status(400).json({ msg: "Dashboard is required" });
+    }
 
     await Account.create({
       userId,
+      dashboardId,
       type,
       amount: Number(amount),
       person,

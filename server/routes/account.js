@@ -2,12 +2,12 @@
 import express from "express";
 import {requireAuth } from "../middleware/authmid.js";
 import { upload } from "../middleware/upload.js";
-import { getDashboard, addTransaction, updateTransaction,getSingleRecord,getSuggestedTags,getAllCategories,getPaymentModeStats,
+import { getDashboard, addTransaction, updateTransaction, getSingleRecord, getSuggestedTags, getAllCategories, getPaymentModeStats,
   deleteTransaction, } from "../controller/accountController.js";
 
 const router = express.Router();
 
-router.get("/home", requireAuth , getDashboard);
+router.get("/home/:dashboardId", requireAuth , getDashboard);
 
 router.post("/add", requireAuth , upload.single("attachment"), addTransaction);
 router.get("/categories", requireAuth, getAllCategories);

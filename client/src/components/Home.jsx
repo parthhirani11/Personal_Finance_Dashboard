@@ -6,7 +6,7 @@ import Edit from "./Edit";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../api/axios";
-import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter,FiDownload ,FiEdit2, FiTrash2, FiSave,FiPlusCircle   } from "react-icons/fi";
+import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter,FiDownload ,FiEdit2, FiSave,FiPlusCircle  ,FiPlus, FiTrash2 ,FiEdit} from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
@@ -51,6 +51,10 @@ export default function Dashboard() {
     balance: 0,
   });
  
+  const [confirmDelete, setConfirmDelete] = useState({
+  show: false,
+  id: null
+});
   // categoury
   const fixedCategories = ["Goods", "Salary", "Rent", "Food", "Travel"];
   const [categoryInput, setCategoryInput] = useState("");
@@ -68,7 +72,6 @@ export default function Dashboard() {
   const [selectedTags, setSelectedTags] = useState([]);
   
   const tagRef = useRef(null);
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
 
   // POPUP SHOW
   const [showPopup, setShowPopup] = useState(false);
@@ -98,28 +101,41 @@ export default function Dashboard() {
     document.body.style.overflow = showEdit ? "hidden" : "auto";
   }, [showEdit]);
 
-  /* ================= FETCH DASHBOARD ================= */
+  const [dashboards, setDashboards] = useState([]);
+  const [activeDashboard, setActiveDashboard] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [dashboardName, setDashboardName] = useState("");
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [renamePopup, setRenamePopup] = useState(null);
+  const [newName, setNewName] = useState("");
+
+  // add new dashboard
   useEffect(() => {
-    fetchDashboard();
-    
-  }, []);
-  // DASHBOARD DATA FATCH
-  const fetchDashboard = async () => {
-    try {
-      const res = await api.get(
-        "/account/home",
-        {
-          withCredentials: true,
-        }
-      );
-      const data = res.data.accounts || [];
-      setAccounts(data);
-      setTransactions(data);   
-      setSummary(calculateSummary(data));
-    } catch (err) {
-        console.error("Dashbord error:", err);
+    api.get("/dashboard").then(res => {
+      setDashboards(res.data);
+
+      // default dashboard
+      if (res.data.length > 0) {
+        setActiveDashboard(res.data[0]._id);
       }
+    });
+  }, []);
+
+    useEffect(() => {
+    fetchDashboard();
+  }, [activeDashboard]);
+    const fetchDashboard = async () => {
+    if (!activeDashboard) return;
+
+    const res = await api.get(`/account/home/${activeDashboard}`);
+    setTransactions(
+      Array.isArray(res.data.transactions)
+        ? res.data.transactions
+        : []
+    );
   };
+
  //  .............................................................................
 
   /* ================= SUMMARY (PURE FUNCTION) ================= */
@@ -192,7 +208,8 @@ export default function Dashboard() {
 
   /* ================= Filter Transection ================= */
   const filteredData = useMemo(() => {
-    let data = [...transactions];
+    // let data = [...transactions];
+    let data = Array.isArray(transactions) ? [...transactions] : [];
     filters.forEach((f) => {
       if (f.type === "all" && f.value) {
           const values = f.value.split(",").map(v => v.trim().toLowerCase());
@@ -384,33 +401,33 @@ export default function Dashboard() {
   };
   // SUGGESTION INPUT 
   const handleSuggestionInputChange = (e, f, index) => {
-  updateFilter(f.id, "value", e.target.value);
-  setActiveFilterIndex(index);
+    updateFilter(f.id, "value", e.target.value);
+    setActiveFilterIndex(index);
 
-  const value = e.target.value;
-  const parts = value.split(",");
-  const current = parts[parts.length - 1].trim().toLowerCase();
+    const value = e.target.value;
+    const parts = value.split(",");
+    const current = parts[parts.length - 1].trim().toLowerCase();
 
-  if (!current) {
-    setActiveSuggestions([]);
-    return;
-  }
+    if (!current) {
+      setActiveSuggestions([]);
+      return;
+    }
 
-  const data = getFilteredDataExcept(index);
-  const allSuggestions = getSuggestions(f.type, data);
+    const data = getFilteredDataExcept(index);
+    const allSuggestions = getSuggestions(f.type, data);
 
-  // ✅ EXACT MATCH → HIDE BOX
-  if (allSuggestions.some(s => s.toLowerCase() === current)) {
-    setActiveSuggestions([]);
-    return;
-  }
+    // ✅ EXACT MATCH → HIDE BOX
+    if (allSuggestions.some(s => s.toLowerCase() === current)) {
+      setActiveSuggestions([]);
+      return;
+    }
 
-  const suggestions = allSuggestions.filter(s =>
-    s.toLowerCase().includes(current)
-  );
+    const suggestions = allSuggestions.filter(s =>
+      s.toLowerCase().includes(current)
+    );
 
-  setActiveSuggestions(suggestions);
-};
+    setActiveSuggestions(suggestions);
+  };
 
   
   /* ================= Select Suggestion Data Name ================= */
@@ -455,21 +472,33 @@ export default function Dashboard() {
     );
   };
 
- const fetchTransactions = async () => {
-  try {
-    const res = await api.get("/account/home", {
-      withCredentials: true,
-    });
-    setTransactions(res.data.accounts || []);
-  } catch (err) {
-    console.error("fetchTransactions error", err);
-  }
-};
+  useEffect(() => {
+    if (!activeDashboard) return;
+
+    api.get(`/account/home/${activeDashboard}`)
+      .then(res => {
+        setTransactions(
+          Array.isArray(res.data.transactions)
+            ? res.data.transactions
+            : []
+        );
+      })
+      .catch(err => {
+        console.error(err);
+        setTransactions([]);
+      });
+  }, [activeDashboard]);
+
   /* ================= ADD TRANSACTION ================= */
   const addTransaction = async (e) => {
     e.preventDefault();
   
+      if (!activeDashboard) {
+    toast.error("Please select a dashboard first");
+    return;
+     }
     const formData = new FormData();
+     formData.append("dashboardId", activeDashboard);
     formData.append("type", form.type);
     formData.append("amount", amount);
     formData.append("person", form.person);
@@ -500,8 +529,10 @@ export default function Dashboard() {
           withCredentials: true 
         }
       );
+        api.get(`/account/home/${activeDashboard}`)
+     .then(res => setTransactions(res.data.transactions));
 
-      await fetchDashboard();
+      // await fetchDashboard();
       await fetchCategories();
       setShowPopup(false);
 
@@ -527,7 +558,7 @@ export default function Dashboard() {
       setSelectedMode(paymentModes[0]?.name || "cash"); // default payment mode
       setFile(null);
       setErrors({});
-
+      
 
     } catch (err) {
       const msg =
@@ -537,34 +568,48 @@ export default function Dashboard() {
 
       toast.error(msg);
     }
+   
   };
 
-  /* ================= DELETE TRANSACTION ================= */
- const handleConfirmDelete = async (id) => {
-  try {
-    const token = localStorage.getItem("token");
-    await api.post(
-      `/account/delete/${id}`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
     
-    // Remove from state
-    setTransactions((prev) => prev.filter((t) => t._id !== id));
-    fetchDashboard(); 
-    fetchCategories(); 
-    await fetchTags();  
+  /* ================= DELETE TRANSACTION ================= */
 
-    // Show toast
-    toast.success("Record deleted successfully");
+  const handleConfirmDelete = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
 
-  } catch (err) {
-    console.error("Delete error:", err);
-    toast.error("Failed to delete record");
-  } finally {
-    setConfirmDelete({ show: false, id: null }); // hide modal
-  }
-};
+      await api.post(
+        `/account/delete/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // ✅ Remove deleted transaction from UI instantly
+      setTransactions(prev => prev.filter(t => t._id !== id));
+
+      // ✅ Reload current dashboard transactions
+      if (activeDashboard) {
+        const res = await api.get(`/account/home/${activeDashboard}`);
+        setTransactions(
+          Array.isArray(res.data.transactions)
+            ? res.data.transactions
+            : []
+        );
+      }
+
+      // Optional refresh helpers
+      fetchCategories();
+      await fetchTags();
+
+      toast.success("Record deleted successfully");
+
+    } catch (err) {
+      console.error("Delete error:", err);
+      toast.error("Failed to delete record");
+    } finally {
+      setConfirmDelete({ show: false, id: null });
+    }
+  };
 
 
   //  .............................................................................
@@ -583,7 +628,7 @@ export default function Dashboard() {
       monthMap[m] = { month: m, income: 0, expense: 0 };
     });
 
-    transactions.forEach((t) => {
+    (Array.isArray(transactions) ? transactions : []).forEach(t =>  {
       if (!t.date) return;
 
       const date = new Date(t.date);
@@ -652,7 +697,7 @@ export default function Dashboard() {
   const paymentBreakdown = useMemo(() => {
     const map = {};
 
-    transactions.forEach(t => {
+    (Array.isArray(transactions) ? transactions : []).forEach(t => {
     const amount = Number(t.amount || 0);
     const mode = normalizeMode(t.paymentMode);
 
@@ -844,31 +889,31 @@ export default function Dashboard() {
   // sub tags filter and add  
 
   const addTag = (tag) => {
-  const value = tag.trim();
-  if (!value) return;
+    const value = tag.trim();
+    if (!value) return;
 
-  const isDuplicate = selectedTags.some(
-    t => normalize(t) === normalize(value)
-  );
-
-  if (isDuplicate) return;
-
-  // ✅ add to selected tags
-  setSelectedTags(prev => [...prev, value]);
-
-  // ✅ add to allTags (for instant suggestion)
-  setAllTags(prev => {
-    const exists = prev.some(
+    const isDuplicate = selectedTags.some(
       t => normalize(t) === normalize(value)
     );
-    return exists ? prev : [...prev, value];
-  });
 
-  // reset input & suggestion
-  setTagInput("");
-  setFilteredTags([]);
-  setShowTagSuggestions(false);
-};
+    if (isDuplicate) return;
+
+    // ✅ add to selected tags
+    setSelectedTags(prev => [...prev, value]);
+
+    // ✅ add to allTags (for instant suggestion)
+    setAllTags(prev => {
+      const exists = prev.some(
+        t => normalize(t) === normalize(value)
+      );
+      return exists ? prev : [...prev, value];
+    });
+
+    // reset input & suggestion
+    setTagInput("");
+    setFilteredTags([]);
+    setShowTagSuggestions(false);
+  };
 
 
   const fetchTags = async () => {
@@ -1026,8 +1071,202 @@ export default function Dashboard() {
     setPaymentModeColors(map);
   }, [paymentModes]);
 
+  const refreshDashboard = async () => {
+    if (!activeDashboard) return;
+
+    const res = await api.get(`/account/home/${activeDashboard}`);
+    setTransactions(
+      Array.isArray(res.data.transactions)
+        ? res.data.transactions
+        : []
+    );
+  };
+
+  // add new dashboard..............................................
+
+  const addDashboard = async () => {
+    if (!dashboardName.trim()) return;
+
+    const res = await api.post("/dashboard", { name: dashboardName });
+
+    setDashboards(prev => [...prev, res.data]);
+    setActiveDashboard(res.data._id);
+
+    setDashboardName("");     // ✅ RESET INPUT
+    setShowAdd(false);
+  };
+
+  // rename Dashboard
+  const renameDashboard = async (id, name) => {
+    await api.put(`/dashboard/${id}`, { name });
+
+    setDashboards(d =>
+      d.map(x => x._id === id ? { ...x, name } : x)
+    );
+  };
+
+
+  const confirmDeletee = async () => {
+    try {
+      await api.delete(`/dashboard/${activeDashboard}`);
+
+      const updated = dashboards.filter(d => d._id !== activeDashboard);
+      setDashboards(updated);
+
+      if (updated.length > 0) {
+        const nextId = updated[0]._id;
+        setActiveDashboard(nextId);
+
+        // 🔥 fetch new dashboard data
+        const res = await api.get(`/account/home/${nextId}`);
+        setTransactions(
+          Array.isArray(res.data.transactions)
+            ? res.data.transactions
+            : []
+        );
+      } else {
+        // 🔥 NO DASHBOARD CASE
+        setActiveDashboard(null);
+        setTransactions([]);   // ⛔ old data remove
+      }
+
+      setShowConfirm(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
   return (
     <div className="container">
+      <div className="dashboard-bar">
+
+        {/* LEFT SIDE – ADD DASHBOARD */}
+        <div className="dashboard-left">
+          <select
+            className="form-selectt border-2"
+            value={activeDashboard || ""}
+            onChange={(e) => setActiveDashboard(e.target.value)}
+          >
+            {dashboards.map(d => (
+              <option key={d._id} value={d._id}>
+                {d.name} {d.isDefault ? "(Default)" : ""}
+              </option>
+            ))}
+          </select>
+
+          <button
+        className="rename-btn"
+        disabled={!activeDashboard}
+        onClick={() => {
+          const d = dashboards.find(x => x._id === activeDashboard);
+          setRenamePopup(d);
+          setNewName(d.name);
+        }}
+      >
+        <FiEdit size={18} /> Rename
+      </button>
+
+
+          <button
+            className="delete-btn"
+            disabled={dashboards.length === 1}
+            onClick={() => setShowConfirm(true)}
+          >
+            <FiTrash2 size={18} /> Delete
+          </button>
+
+        </div>
+
+        {/* RIGHT SIDE – SELECT / RENAME / DELETE */}
+        <div className="dashboard-right">
+
+        
+            <button className="edit-btn" onClick={() => setShowAdd(true)}>
+            <FiPlus size={18} style={{ marginRight: "6px" }} />
+            Add Dashboard
+          </button>
+        </div>
+      </div>
+
+      {renamePopup && (
+        <div className="modal-backdrop">
+          <div className="modal-box">
+            <h4>Rename Dashboard</h4>
+
+            <input
+              type="text"
+              className="form-inputt mb-3"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-danger"
+                onClick={() => {
+                  renameDashboard(renamePopup._id, newName);
+                  setRenamePopup(null);
+                }}
+              >
+                Save
+              </button>
+
+              <button
+                className="btn btn-secondary"
+                onClick={() => setRenamePopup(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {showAdd && (
+        <div className="modal-backdrop">
+          <div className="modal-box">
+            <h4>Add Dashboard</h4>
+
+            <input
+              className="form-inputt mb-3"
+              placeholder="Dashboard name"
+              value={dashboardName}
+              onChange={(e) => setDashboardName(e.target.value)}
+            />
+
+            <div className="modal-actions">
+              <button className="btn btn-danger" onClick={addDashboard}>Save</button>
+              <button className="btn btn-secondary" 
+              onClick={() => {
+                setDashboardName("");   // ✅ RESET
+                setShowAdd(false);
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirm && (
+        <div className="modal-backdrop">
+          <div className="modal-box danger">
+            <h4>Confirm Delete</h4>
+            <b> "{dashboards.find(d => d._id === activeDashboard)?.name}" </b>
+            <p> This dashboard and all its transactions will be deleted.</p>
+
+            <div className="modal-actions">
+              <button className="btn btn-danger" onClick={confirmDeletee}>
+                Yes, Delete
+              </button>
+              <button className="btn btn-secondary" onClick={() => setShowConfirm(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* SUMMARY DashBoard .............................................*/}
       <div className="row mb-4">
@@ -1074,7 +1313,7 @@ export default function Dashboard() {
                   Transactions by Payment
               </h4>
               <p className="sub-text">Cash vs Bank vs UPI (Income + Expense)</p>
-
+              {Array.isArray(transactions) && (
               <ResponsiveContainer width="100%" height={235}>
                 <PieChart>
                   <text
@@ -1128,6 +1367,7 @@ export default function Dashboard() {
                   
                 </PieChart>
               </ResponsiveContainer>
+              )}
 
                 {/* ===== LEGEND BOX ===== */}
                 <div className="pie-legend">
@@ -1528,27 +1768,8 @@ export default function Dashboard() {
                         <FiTrash2 size={14} />
                         Delete
                       </button>
-                      {confirmDelete.show && (
-                        <div className="confirm-modal-backdrop">
-                          <div className="confirm-modal">
-                            <p>Delete this record?</p>
-                            <div className="confirm-buttons">
-                              <button
-                                className="btn btn-secondary"
-                                onClick={() => setConfirmDelete({ show: false, id: null })}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                className="btn btn-danger"
-                                onClick={() => handleConfirmDelete(confirmDelete.id)}
-                              >
-                                OK
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+
+                      
 
                     </div>
                   </div>
@@ -1565,6 +1786,27 @@ export default function Dashboard() {
           }
 
           <div style={{marginTop:20}} ></div> 
+          {confirmDelete.show && (
+            <div className="confirm-modal-backdrop">
+              <div className="confirm-modal">
+                <p>Delete this record?</p>
+                <div className="confirm-buttons">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setConfirmDelete({ show: false, id: null })}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => handleConfirmDelete(confirmDelete.id)}
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {/*show edit recode popup   */}
             {showEdit && (
               <div className="edit-overlay">
@@ -1573,7 +1815,7 @@ export default function Dashboard() {
                     id={editId}
                     onClose={() => {
                       setShowEdit(false);
-                      fetchTransactions();
+                       refreshDashboard();
                     }}
                   />
                 </div>
@@ -1582,8 +1824,14 @@ export default function Dashboard() {
         </>
       )}
 
-    {/* ........................................add transection recode popup box............................................... */}
-      <button className="robot-add-btn" onClick={() => setShowPopup(true)}>
+      {/* ........................................add transection recode popup box............................................... */}
+      <button className="robot-add-btn"  onClick={() => {
+        if (!activeDashboard) {
+          toast.error("Please select a dashboard first");
+          return;
+        }
+        setShowPopup(true);
+      }}>
         <img src={robot} alt="Add Transaction Robot" />
           <div className="robot-msg">
             Add<br />Transaction
@@ -1859,7 +2107,7 @@ export default function Dashboard() {
                               className="btn btn-outline-secondary btn-sm me-2"
                               onClick={() => addCategory(cat)}
                             >
-                              {cat}
+                              + {cat}
                             </button>
                           ))}
                         </div>
@@ -1932,7 +2180,7 @@ export default function Dashboard() {
                               className="btn btn-outline-secondary btn-sm me-2"
                               onClick={() => addTag(tag)}
                             >
-                              {tag}
+                              + {tag}
                             </button>
                           ))}
                         </div>

@@ -188,8 +188,8 @@
 .edit-payment-mode {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .edit-radio-item {

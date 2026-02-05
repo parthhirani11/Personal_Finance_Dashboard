@@ -865,7 +865,7 @@ body {
   height: 100%;
   
   /* semi-transparent so you can see blurred background */
-  background: rgba(26, 18, 60, 0.1); 
+  background: rgba(6, 4, 13, 0.6); 
   
   /* this will blur the content behind */
   /* backdrop-filter: blur(2px); */
@@ -1902,8 +1902,8 @@ p a:hover {
 .payment-mode {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 /* RADIO ITEM */
@@ -2388,4 +2388,140 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: #b6c0ce;
 }
 
+
+
+/* add new dashboard css.............. */
+
+/* TOP BAR */
+.dashboard-bar {
+  display: flex;
+  justify-content: space-between; /* 👈 LEFT & RIGHT split */
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* LEFT SIDE */
+.dashboard-left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* RIGHT SIDE */
+.dashboard-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+
+.form-selectt {
+  border-radius: 12px;
+  border: 1px solid #64748b;
+  background: #0f172a;
+  color: #f1f5f9;
+  width: 260px;
+  font-weight: 500;
+  padding: 10px 14px;
+  transition: all 0.3s ease;
+}
+
+.form-selectt:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
+}
+
+
+.form-inputt {
+  border-radius: 12px;
+  border: 1px solid #64748b;
+  background: #0f172a;
+  color: #f1f5f9;
+ 
+  font-weight: 500;
+  padding: 10px 14px;
+  transition: all 0.3s ease;
+}
+
+.form-inputt:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
+}
+
+
+
+
+/* EDIT LIST */
+.dashboard-edit-list {
+  margin-top: 10px;
+}
+
+.dashboard-edit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dashboard-edit-input {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.default-badge {
+  font-size: 12px;
+  color: #16a34a;
+}
+
+/* MODAL */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+   background: rgba(0, 0, 0, 0.6);  
+  /* background: rgba(0,0,0,0.45); */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 320px;
+}
+
+.modal-box.danger h4 {
+  color: #dc2626;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 6px;
+  margin: 10px 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.rename-btn {
+  background: rgba(50, 221, 96, 0.15);
+  color: #29d229;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.rename-btn:hover {
+  background: rgba(63, 216, 39, 0.3);
+}
 

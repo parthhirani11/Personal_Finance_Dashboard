@@ -535,7 +535,7 @@ export default function EditPopup({ id, onClose }){
                         className="btn btn-outline-secondary btn-sm me-2"
                         onClick={() => addCategory(cat)}
                       >
-                        {cat}
+                        + {cat}
                       </button>
                     ))}
                   </div>
@@ -601,7 +601,7 @@ export default function EditPopup({ id, onClose }){
                         className="btn btn-outline-secondary btn-sm me-2"
                         onClick={() => addTag(tag)}
                       >
-                        {tag}
+                       + {tag}
                       </button>
                     ))}
                   </div>

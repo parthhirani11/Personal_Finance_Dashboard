@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import accountRoutes from "./routes/account.js";
 import exportRoutes from "./routes/exportRoutes.js";
+import dashboardRoutes from "./routes/dashboard.js"
 import connectDB from "./config/db.js";
 dotenv.config();
 
@@ -42,6 +43,7 @@ mongoose.connect(process.env.MONGO_URL)
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);
 app.use("/api/account", exportRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.use("/uploads", express.static("uploads"));
 
 // server connection
