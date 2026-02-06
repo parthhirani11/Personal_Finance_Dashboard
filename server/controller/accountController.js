@@ -1,5 +1,6 @@
 
 import Account from "../models/Account.js";
+import Dashboard from "../models/Dashboard.js";
 import mongoose from "mongoose";
 
 // DASHBOARD OUTPUT
@@ -20,7 +21,7 @@ export const getDashboard = async (req, res) => {
     // 📊 Fetch ONLY selected dashboard records
     const accounts = await Account.find({
       userId,
-      dashboardId                    // 👈 MOST IMPORTANT CHANGE
+       dashboardIds: dashboardId                    // 👈 MOST IMPORTANT CHANGE
     }).sort({ date: -1 });
 
     // 💰 Calculate totals (dashboard-wise)
@@ -57,7 +58,7 @@ export const addTransaction = async (req, res) => {
     const userId = req.session.user.id;
 
     const {
-      dashboardId,
+      dashboardIds,
       type,
       amount,
       person,
@@ -67,9 +68,11 @@ export const addTransaction = async (req, res) => {
       date
     } = req.body;
 
-    if (!dashboardId) {
-  return res.status(400).json({ msg: "Dashboard not selected" });
-}
+       if (!dashboardIds || dashboardIds.length === 0) {
+      return res.status(400).json({
+        msg: "At least one dashboard is required"
+      });
+    }
 
     if (!amount || !paymentMode || !type) {
       return res.status(400).json({ msg: "Missing required fields" });
@@ -81,13 +84,27 @@ export const addTransaction = async (req, res) => {
         )]
       : [];
     
-      if (!dashboardId) {
-      return res.status(400).json({ msg: "Dashboard is required" });
+    //   if (!dashboardId) {
+    //   return res.status(400).json({ msg: "Dashboard is required" });
+    // }
+       const dashboards = Array.isArray(dashboardIds)
+      ? dashboardIds
+      : [dashboardIds];
+
+        const validDashboards = await Dashboard.find({
+      _id: { $in: dashboards },
+      userId
+    });
+
+      if (validDashboards.length !== dashboards.length) {
+      return res.status(403).json({
+        msg: "Invalid dashboard access"
+      });
     }
 
-    await Account.create({
+     const records = dashboards.map(did => ({
       userId,
-      dashboardId,
+      dashboardIds: [did],
       type,
       amount: Number(amount),
       person,
@@ -97,8 +114,8 @@ export const addTransaction = async (req, res) => {
       date: date ? new Date(date) : new Date(),
       attachment: req.file ? req.file.filename : null,
       originalName: req.file ? req.file.originalname : null,
-    });
-
+     }));
+      await Account.insertMany(records);
     res.json({ message: "Transaction added successfully" });
 
   } catch (err) {

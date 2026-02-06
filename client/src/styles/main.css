@@ -2525,3 +2525,99 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: rgba(63, 216, 39, 0.3);
 }
 
+.multi-select {
+  position: relative;
+  width: 100%;
+}
+
+/* .multi-select-header {
+  border: 1px solid #ccc;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+}
+
+.multi-select-dropdown {
+  position: absolute;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 5px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.multi-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.multi-option:hover {
+  background: #f5f5f5;
+}
+
+.arrow {
+  font-size: 12px;
+} */
+
+
+
+.dashboard-select {
+  border-radius: 12px;
+  border: 1px solid #64748b;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-weight: 500;
+  padding: 10px 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 👈 icon full right */
+}
+
+.dashboard-select:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
+}
+
+.dropdown-icon {
+  font-size: 18px;
+  color: #555;
+  flex-shrink: 0;   /* 👈 icon squeeze nahi thase */
+}
+
+.multi-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.multi-option:hover {
+  /* background: #5bd5e5; */
+   background: #38bdf8;
+  color: #0f172a;
+  /* transform: scale(1.02); */
+  border-radius: 8px;
+}
+
+.selected-text {
+  color: #2563eb; /* blue */
+  font-weight: 500;
+}
+
+.Toastify__toast-container {
+  z-index: 99999 !important;
+}

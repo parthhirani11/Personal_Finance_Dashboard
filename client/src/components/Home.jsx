@@ -6,7 +6,7 @@ import Edit from "./Edit";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../api/axios";
-import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter,FiDownload ,FiEdit2, FiSave,FiPlusCircle  ,FiPlus, FiTrash2 ,FiEdit} from "react-icons/fi";
+import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter,FiDownload ,FiEdit2, FiSave,FiPlusCircle  ,FiPlus, FiTrash2 ,FiEdit, FiChevronDown} from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
@@ -29,6 +29,11 @@ export default function Dashboard() {
   
   const [accounts, setAccounts] = useState([]);
   const [activeTab, setActiveTab] = useState("transactions");
+  const [activeDashboard, setActiveDashboard] = useState(null);
+  const [dashboards, setDashboards] = useState([]);
+  
+// const [selectedDashboards, setSelectedDashboards] = useState([]);
+// const [transactions, setTransactions] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [exportType, setExportType] = useState("");
   const [activeFilterIndex, setActiveFilterIndex] = useState(null);
@@ -92,6 +97,15 @@ export default function Dashboard() {
     upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
   };
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
+// ..........................................................................................
+  // popup change dashboard
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedDashboards, setSelectedDashboards] = useState([]);
+  useEffect(() => {
+  if (showPopup && activeDashboard) {
+    setSelectedDashboards([activeDashboard]); // default active
+  }
+}, [showPopup, activeDashboard]);
 
   //  .............................................................................
   const [showEdit, setShowEdit] = useState(false);
@@ -100,9 +114,9 @@ export default function Dashboard() {
   useEffect(() => {
     document.body.style.overflow = showEdit ? "hidden" : "auto";
   }, [showEdit]);
-
-  const [dashboards, setDashboards] = useState([]);
-  const [activeDashboard, setActiveDashboard] = useState(null);
+  
+  // const [dashboards, setDashboards] = useState([]);
+  // const [activeDashboard, setActiveDashboard] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [dashboardName, setDashboardName] = useState("");
 
@@ -493,12 +507,21 @@ export default function Dashboard() {
   const addTransaction = async (e) => {
     e.preventDefault();
   
-      if (!activeDashboard) {
-    toast.error("Please select a dashboard first");
-    return;
-     }
+    if (!activeDashboard) {
+      toast.error("Please select a dashboard first");
+      return;
+    }
+    if (selectedDashboards.length === 0) {
+      toast.error("Please select at least one dashboard");
+      return;
+    }
     const formData = new FormData();
-     formData.append("dashboardId", activeDashboard);
+    //  formData.append("dashboardId", activeDashboard);
+      selectedDashboards.forEach(id => {
+      formData.append("dashboardIds[]", id);
+    });
+    
+   
     formData.append("type", form.type);
     formData.append("amount", amount);
     formData.append("person", form.person);
@@ -529,7 +552,7 @@ export default function Dashboard() {
           withCredentials: true 
         }
       );
-        api.get(`/account/home/${activeDashboard}`)
+      api.get(`/account/home/${activeDashboard}`)
      .then(res => setTransactions(res.data.transactions));
 
       // await fetchDashboard();
@@ -558,6 +581,8 @@ export default function Dashboard() {
       setSelectedMode(paymentModes[0]?.name || "cash"); // default payment mode
       setFile(null);
       setErrors({});
+      setSelectedDashboards([]);
+      setShowPopup(false);
       
 
     } catch (err) {
@@ -1071,6 +1096,9 @@ export default function Dashboard() {
     setPaymentModeColors(map);
   }, [paymentModes]);
 
+  
+  // add new dashboard..............................................
+
   const refreshDashboard = async () => {
     if (!activeDashboard) return;
 
@@ -1081,8 +1109,6 @@ export default function Dashboard() {
         : []
     );
   };
-
-  // add new dashboard..............................................
 
   const addDashboard = async () => {
     if (!dashboardName.trim()) return;
@@ -1135,6 +1161,33 @@ export default function Dashboard() {
       console.error(err);
     }
   };
+
+  const toggleDashboard = (id) => {
+  setSelectedDashboards(prev =>
+    prev.includes(id)
+      ? prev.filter(d => d !== id)
+      : [...prev, id]
+  );
+};
+
+const dropdownRef = useRef(null);
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(e.target)
+    ) {
+      setShowDropdown(false); // 👈 close dropdown
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
 
 
   return (
@@ -1851,6 +1904,81 @@ export default function Dashboard() {
             </div>
             <div className="popup-body">
               <form id="transactionForm" className="center" onSubmit={addTransaction} encType="multipart/form-data">
+
+<label>
+  Select Dashboard <span className="text-danger">*</span>
+</label>
+
+<div className="multi-select" ref={dropdownRef}>
+
+  {/* DROPDOWN HEADER */}
+  <div
+    className="dashboard-select mb-2"
+    onClick={() => setShowDropdown(prev => !prev)}
+  >
+    {/* {selectedDashboards.length > 0
+      ? `${dashboards
+          .filter(d => selectedDashboards.includes(d._id))
+          .map(d => d.name)
+          .join(" & ")} Selected `
+      : "Select Dashboard"} */}
+      {selectedDashboards.length > 0 ? (
+        <span>
+          {dashboards
+            .filter(d => selectedDashboards.includes(d._id))
+            .map(d => d.name)
+            .join(" & ")}
+          {" "}
+          <span className="selected-text">Selected</span>
+        </span>
+      ) : (
+        "Select Dashboard"
+      )}
+
+    <FiChevronDown className="dropdown-icon" />
+  </div>
+
+  {/* DROPDOWN LIST */}
+  {showDropdown && (
+    <div className="suggestionBox list-group mt-1">
+      {dashboards.map(d => (
+        <label key={d._id} className="multi-option">
+          <input
+            type="checkbox"
+            checked={selectedDashboards.includes(d._id)}
+            onChange={() => toggleDashboard(d._id)}
+          />
+          <span>{d.name}</span>
+        </label>
+      ))}
+    </div>
+  )}
+
+</div>
+
+{/* <label>
+  Select Dashboard <span className="text-danger">*</span>
+</label>
+
+<select
+  multiple
+  className="form-control"
+  value={selectedDashboards}
+  onChange={(e) => {
+    const values = Array.from(e.target.selectedOptions).map(o => o.value);
+    setSelectedDashboards(values);
+  }}
+>
+  {dashboards.map(d => (
+    <option key={d._id} value={d._id}>
+      {d.name}
+    </option>
+  ))}
+</select>
+
+<small className="text-muted">
+  Hold CTRL (or CMD) to select multiple dashboards
+</small> */}
               
                 <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
