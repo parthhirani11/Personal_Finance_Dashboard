@@ -32,14 +32,12 @@ export default function Dashboard() {
   const [activeDashboard, setActiveDashboard] = useState(null);
   const [dashboards, setDashboards] = useState([]);
   
-// const [selectedDashboards, setSelectedDashboards] = useState([]);
-// const [transactions, setTransactions] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [exportType, setExportType] = useState("");
   const [activeFilterIndex, setActiveFilterIndex] = useState(null);
   const [activeSuggestions, setActiveSuggestions] = useState([]);
   const [file, setFile] = useState(null);
- const [form, setForm] = useState({
+  const [form, setForm] = useState({
     type: "income",
     amount: "",
     person: "",
@@ -57,9 +55,9 @@ export default function Dashboard() {
   });
  
   const [confirmDelete, setConfirmDelete] = useState({
-  show: false,
-  id: null
-});
+    show: false,
+    id: null
+  });
   // categoury
   const fixedCategories = ["Goods", "Salary", "Rent", "Food", "Travel"];
   const [categoryInput, setCategoryInput] = useState("");
@@ -75,12 +73,11 @@ export default function Dashboard() {
   const [allTags, setAllTags] = useState([]);
   const [filteredTags, setFilteredTags] = useState([]); 
   const [selectedTags, setSelectedTags] = useState([]);
-  
+
   const tagRef = useRef(null);
 
   // POPUP SHOW
   const [showPopup, setShowPopup] = useState(false);
-  
   const [amount, setAmount] = useState("");
   const [errors, setErrors] = useState({});
 
@@ -97,15 +94,15 @@ export default function Dashboard() {
     upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
   };
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
-// ..........................................................................................
+  // ..........................................................................................
   // popup change dashboard
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedDashboards, setSelectedDashboards] = useState([]);
   useEffect(() => {
-  if (showPopup && activeDashboard) {
-    setSelectedDashboards([activeDashboard]); // default active
-  }
-}, [showPopup, activeDashboard]);
+    if (showPopup && activeDashboard) {
+      setSelectedDashboards([activeDashboard]); // default active
+    }
+  }, [showPopup, activeDashboard]);
 
   //  .............................................................................
   const [showEdit, setShowEdit] = useState(false);
@@ -114,12 +111,9 @@ export default function Dashboard() {
   useEffect(() => {
     document.body.style.overflow = showEdit ? "hidden" : "auto";
   }, [showEdit]);
-  
-  // const [dashboards, setDashboards] = useState([]);
-  // const [activeDashboard, setActiveDashboard] = useState(null);
+
   const [showAdd, setShowAdd] = useState(false);
   const [dashboardName, setDashboardName] = useState("");
-
   const [showConfirm, setShowConfirm] = useState(false);
   const [renamePopup, setRenamePopup] = useState(null);
   const [newName, setNewName] = useState("");
@@ -542,7 +536,7 @@ export default function Dashboard() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return; // ❌ stop submit
+      return; //  stop submit
     }
     try {
       await api.post(
@@ -1163,30 +1157,30 @@ export default function Dashboard() {
   };
 
   const toggleDashboard = (id) => {
-  setSelectedDashboards(prev =>
-    prev.includes(id)
-      ? prev.filter(d => d !== id)
-      : [...prev, id]
-  );
-};
-
-const dropdownRef = useRef(null);
-useEffect(() => {
-  const handleClickOutside = (e) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(e.target)
-    ) {
-      setShowDropdown(false); // 👈 close dropdown
-    }
+    setSelectedDashboards(prev =>
+      prev.includes(id)
+        ? prev.filter(d => d !== id)
+        : [...prev, id]
+    );
   };
 
-  document.addEventListener("mousedown", handleClickOutside);
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
+      ) {
+        setShowDropdown(false); // 👈 close dropdown
+      }
+    };
 
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
 
 
@@ -1905,80 +1899,58 @@ useEffect(() => {
             <div className="popup-body">
               <form id="transactionForm" className="center" onSubmit={addTransaction} encType="multipart/form-data">
 
-<label>
-  Select Dashboard <span className="text-danger">*</span>
-</label>
+                <label>
+                  Select Dashboard <span className="text-danger">*</span>
+                </label>
 
-<div className="multi-select" ref={dropdownRef}>
+                <div className="multi-select" ref={dropdownRef}>
 
-  {/* DROPDOWN HEADER */}
-  <div
-    className="dashboard-select mb-2"
-    onClick={() => setShowDropdown(prev => !prev)}
-  >
-    {/* {selectedDashboards.length > 0
-      ? `${dashboards
-          .filter(d => selectedDashboards.includes(d._id))
-          .map(d => d.name)
-          .join(" & ")} Selected `
-      : "Select Dashboard"} */}
-      {selectedDashboards.length > 0 ? (
-        <span>
-          {dashboards
-            .filter(d => selectedDashboards.includes(d._id))
-            .map(d => d.name)
-            .join(" & ")}
-          {" "}
-          <span className="selected-text">Selected</span>
-        </span>
-      ) : (
-        "Select Dashboard"
-      )}
+                  {/* DROPDOWN HEADER */}
+                  <div
+                    className="dashboard-select mb-2"
+                    onClick={() => setShowDropdown(prev => !prev)}
+                  >
+                    {/* {selectedDashboards.length > 0
+                      ? `${dashboards
+                          .filter(d => selectedDashboards.includes(d._id))
+                          .map(d => d.name)
+                          .join(" & ")} Selected `
+                      : "Select Dashboard"} */}
+                      {selectedDashboards.length > 0 ? (
+                        <span>
+                          {dashboards
+                            .filter(d => selectedDashboards.includes(d._id))
+                            .map(d => d.name)
+                            .join(" & ")}
+                          {" "}
+                          <span className="selected-text">Selected</span>
+                        </span>
+                      ) : (
+                        "Select Dashboard"
+                      )}
 
-    <FiChevronDown className="dropdown-icon" />
-  </div>
+                    <FiChevronDown className="dropdown-icon" />
+                  </div>
 
-  {/* DROPDOWN LIST */}
-  {showDropdown && (
-    <div className="suggestionBox list-group mt-1">
-      {dashboards.map(d => (
-        <label key={d._id} className="multi-option">
-          <input
-            type="checkbox"
-            checked={selectedDashboards.includes(d._id)}
-            onChange={() => toggleDashboard(d._id)}
-          />
-          <span>{d.name}</span>
-        </label>
-      ))}
-    </div>
-  )}
+                  {/* DROPDOWN LIST */}
+                  {showDropdown && (
+                    <div className="suggestionBox list-group mt-1">
+                      {dashboards.map(d => (
+                        <label key={d._id} className="multi-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedDashboards.includes(d._id)}
+                            onChange={() => toggleDashboard(d._id)}
+                          />
+                          <span>{d.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
 
-</div>
+                </div>
 
-{/* <label>
-  Select Dashboard <span className="text-danger">*</span>
-</label>
 
-<select
-  multiple
-  className="form-control"
-  value={selectedDashboards}
-  onChange={(e) => {
-    const values = Array.from(e.target.selectedOptions).map(o => o.value);
-    setSelectedDashboards(values);
-  }}
->
-  {dashboards.map(d => (
-    <option key={d._id} value={d._id}>
-      {d.name}
-    </option>
-  ))}
-</select>
-
-<small className="text-muted">
-  Hold CTRL (or CMD) to select multiple dashboards
-</small> */}
               
                 <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
