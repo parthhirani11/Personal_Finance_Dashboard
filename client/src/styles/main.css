@@ -2621,3 +2621,72 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .Toastify__toast-container {
   z-index: 99999 !important;
 }
+
+/* category setting css */
+
+.settings-spin {
+  color: #38bdf8;
+  cursor: pointer;
+  transition: transform 0.4s ease;
+}
+
+.settings-spin:hover {
+  transform: rotate(90deg);
+}
+
+.category-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.category-buttons,
+.tag-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-section,
+.tag-section {
+  display: grid;
+  grid-template-columns: auto 1fr; /* ⚙️ | buttons */
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* settings icon look */
+.settings-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+}
+
+
+/* POPUP */
+.popupp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.popupp-box {
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 14px;
+  width: 320px;
+   border: 1px solid #e7eaee; /* slate border */
+}
+
+.popupp-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}

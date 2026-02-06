@@ -6,7 +6,21 @@ import Edit from "./Edit";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../api/axios";
-import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter,FiDownload ,FiEdit2, FiSave,FiPlusCircle  ,FiPlus, FiTrash2 ,FiEdit, FiChevronDown} from "react-icons/fi";
+import { 
+  FiPieChart, 
+  FiBarChart2, 
+  FiTrendingUp, 
+  FiCreditCard, 
+  FiFilter,
+  FiDownload,
+  FiEdit2, 
+  FiSave,
+  FiPlusCircle,
+  FiPlus, 
+  FiTrash2 ,
+  FiEdit, 
+  FiChevronDown, 
+  FiSettings } from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
@@ -59,7 +73,15 @@ export default function Dashboard() {
     id: null
   });
   // categoury
-  const fixedCategories = ["Goods", "Salary", "Rent", "Food", "Travel"];
+  const [categories, setCategories] = useState([
+    "Goods",
+    "Salary",
+    "Rent",
+    "Food",
+    // "Travel",
+  ]);
+  const [showCatPopup, setShowCatPopup] = useState(false);
+  const [tempCategories, setTempCategories] = useState([...categories]);
   const [categoryInput, setCategoryInput] = useState("");
   const [allCategories, setAllCategories] = useState([]);       // DB
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -67,7 +89,15 @@ export default function Dashboard() {
   const [selectedCategories, setSelectedCategories] = useState([]);
 
   // sab tags
-  const fixedTags = ["office", "personal", "urgent", "family", "emi"];
+    const [fixedTags, setFixedTags] = useState([
+    "office",
+    "personal",
+    // "urgent",
+    "family",
+    "emi",
+  ]);
+  const [showTagPopup, setShowTagPopup] = useState(false);
+  const [tempTags, setTempTags] = useState([...fixedTags]);
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [allTags, setAllTags] = useState([]);
@@ -496,6 +526,12 @@ export default function Dashboard() {
         setTransactions([]);
       });
   }, [activeDashboard]);
+
+  // transection text 1st letter
+  const capitalizeFirst = (text = "") => {
+    if (!text) return "-";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
 
   /* ================= ADD TRANSACTION ================= */
   const addTransaction = async (e) => {
@@ -1760,17 +1796,17 @@ export default function Dashboard() {
 
                       <div className="row">
                         <span className="label">Recipient :</span>
-                        <span className="value" >{item.person || "-"}</span>
+                        <span className="value" >{capitalizeFirst(item.person) || "-"}</span>
                       </div>
 
                       <div className="row">
                         <span className="label">Category :</span>
-                        <span className="value">{item.description || "-"}</span>
+                        <span className="value">{capitalizeFirst(item.description) || "-"}</span>
                       </div>
 
                       <div className="row">
                         <span className="label">Tags :</span>
-                        <span className="value wrap">{item.tags?.join(", ") || "-"}</span>
+                        <span className="value wrap">{item.tags?.map(tag => capitalizeFirst(tag)).join(", ") || "-"}</span>
                       </div>
 
                       {item.attachment && item.attachment !== "No File" && (
@@ -1950,8 +1986,6 @@ export default function Dashboard() {
 
                 </div>
 
-
-              
                 <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
                   <div
@@ -2138,10 +2172,8 @@ export default function Dashboard() {
                         )}
                     </div>
                   </div>
-
                 </div>
 
-                
                 {/* <div className="d-flex align-items-center gap-2 mb-2"> */}
                 <div className="row mb-2">
                   {/* add category and suggestion list  */}
@@ -2198,21 +2230,77 @@ export default function Dashboard() {
                         </div>
                       )}
                       {/* add category 5 btn  */}
+                     
                       {!showSuggestions && (
-                        <div className="category-buttons mt-2">
-                          {fixedCategories.map((cat, i) => (
-                            <button
-                              key={i}
-                              type="button"
-                              className="btn btn-outline-secondary btn-sm me-2"
-                              onClick={() => addCategory(cat)}
-                            >
-                              + {cat}
-                            </button>
-                          ))}
+                        <div className="category-section mt-2">
+                          {/* SETTINGS ICON */}
+                          <button
+                            className="settings-btn"
+                            title="Edit Categories"
+                            onClick={() => setShowCatPopup(true)}
+                          >
+                            <FiSettings size={20} className="settings-spin" />
+                          </button>
+
+                          {/* CATEGORY BUTTONS */}
+                          <div className="category-buttons">
+                            {categories.map((cat, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() => addCategory(cat)}
+                              >
+                                + {cat}
+                              </button>
+                            ))}
+                          </div>
                         </div>
+
                       )}
 
+                      {showCatPopup && (
+                        <div className="popupp-overlay">
+                          <div className="popupp-box">
+                            <h5 className=" mb-3" style={{ color: "#38bdf8" }}>Edit Categories</h5>
+
+                            {tempCategories.map((cat, i) => (
+                              <input
+                                key={i}
+                                className="form-control mb-2"
+                                value={cat}
+                                onChange={(e) => {
+                                  const updated = [...tempCategories];
+                                  updated[i] = e.target.value;
+                                  setTempCategories(updated);
+                                }}
+                              />
+                            ))}
+
+                            <div className="d-flex justify-content-end gap-2 mt-3">
+                              <button
+                                className="btn btn-secondary btn-sm"
+                                onClick={() => {
+                                  setTempCategories([...categories]);
+                                  setShowCatPopup(false);
+                                }}
+                              >
+                                Cancel
+                              </button>
+
+                              <button
+                                className="btn btn-success btn-sm"
+                                onClick={() => {
+                                  setCategories(tempCategories);
+                                  setShowCatPopup(false);
+                                }}
+                              >
+                                Update
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="col-md-6 mt-2">
@@ -2270,34 +2358,82 @@ export default function Dashboard() {
                       )}
                     </div>
 
-                      {/* 5 FIXED TAG BUTTONS */}
-                      {!showTagSuggestions && (
-                        <div className="mt-2">
+                    {/* 5 FIXED TAG BUTTONS */}
+                    {!showTagSuggestions && (
+                      <div className="tag-section mt-2">
+                        <button
+                          className="settings-btn"
+                          title="Edit Tags"
+                          onClick={() => setShowTagPopup(true)}
+                        >
+                          <FiSettings size={20} className="settings-spin" />
+                        </button>
+
+                        <div className="tag-buttons">
                           {fixedTags.map((tag, i) => (
                             <button
                               key={i}
-                              type="button"
-                              className="btn btn-outline-secondary btn-sm me-2"
+                              className="btn btn-outline-secondary btn-sm"
                               onClick={() => addTag(tag)}
                             >
                               + {tag}
                             </button>
                           ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
+                    {/* TAG POPUP */}
+                    {showTagPopup && (
+                      <div className="popupp-overlay">
+                        <div className="popupp-box">
+                          <h5 className=" mb-3" style={{ color: "#38bdf8" }}>Edit Tags</h5>
+
+                          {tempTags.map((tag, i) => (
+                            <input
+                              key={i}
+                              className="form-control mb-2"
+                              value={tag}
+                              onChange={(e) => {
+                                const updated = [...tempTags];
+                                updated[i] = e.target.value;
+                                setTempTags(updated);
+                              }}
+                            />
+                          ))}
+
+                          <div className="popupp-actions">
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => {
+                                setTempTags([...fixedTags]);
+                                setShowTagPopup(false);
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => {
+                                setFixedTags(tempTags);
+                                setShowTagPopup(false);
+                              }}
+                            >
+                              Update
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>   
                 </div>
-                
                 <div className="mb-1">
                   <label>Attachment</label>
                   <input type="file" className="form-control" onChange={(e) => setFile(e.target.files[0])} />
                 </div>
-
                 <div id="tagHolder" className="mt-3"></div>
-
+                
               </form>
-            
             </div>
             <div className="popup-footer">
               <button type="submit" form="transactionForm"  className="btn btn-primary align-items-centerd-inline-flex gap-2 ">
