@@ -14,10 +14,9 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// "https://phpstack-1249340-6098543.cloudwaysapps.com/ "
-// process.env.FRONTEND_URL,
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 }));
 
@@ -28,7 +27,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       httpOnly: true,
       sameSite: "lax",
       secure: false, // true only for HTTPS

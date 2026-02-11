@@ -21,23 +21,27 @@ api.defaults.withCredentials = true;
 function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-useEffect(() => {
-  const checkSession = async () => {
-    try {
-      const res = await api.get(
-        "/auth/me",
-        { withCredentials: true }
-      );
-      setUser(res.data);
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false); 
-    }
-  };
 
-  checkSession();
-}, []);
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await api.get("/auth/me", {
+          withCredentials: true,
+        });
+
+        setUser(res.data.user); // 🔥 MOST IMPORTANT CHANGE
+      } catch (err) {
+        console.log("Session check failed:", err?.response?.status);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSession();
+  }, []);
+
+
  if (loading) {
     return <div>Loading...</div>; 
   }
@@ -46,18 +50,17 @@ useEffect(() => {
     <Router>
       <ScrollToTop />
       <Header user={user} setUser={setUser}/>
+      {/* {user && <Header user={user} setUser={setUser} />} */}
         
       <Routes>
         
-        <Route path="/login"element={ user ? <Navigate to="/home" replace /> : <Login setUser={setUser} /> }/>
-        <Route path="/login" element={<Login setUser={setUser}/>} />
+        <Route path="/login" element={user ? <Navigate to="/home" replace /> : <Login setUser={setUser} />} />
         <Route path="/signup" element={<Register />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/reset" element={<Reset />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        
 
         {/* Navbar only on Home */}
-        {/* <Route path="/home"element={ user ?  <Home user={user} /> : <Navigate to="/login" replace /> }/> */}
         <Route
           path="/home"
           element={
@@ -72,6 +75,7 @@ useEffect(() => {
         />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="*" element={<Navigate to="/login" />} />
         {/* <Route path="/edit/:id" element={<Edit />} /> */}
        
       </Routes>

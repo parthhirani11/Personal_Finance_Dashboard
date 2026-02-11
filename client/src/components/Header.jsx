@@ -4,15 +4,17 @@ import api from "../api/axios";
 import logo from "../assets/logo2.png"; 
 import { NavLink } from "react-router-dom";
 import { FiHome, FiInfo, FiPhone,FiLogOut  } from "react-icons/fi";
+
 export default function TopHeader({ user, setUser }) {
   const navigate = useNavigate();
 
   // logout user
   const logout = async () => {
-    await api.post("/auth/logout");
+    await api.post("/auth/logout", {}, { withCredentials: true });
     setUser(null);
     navigate("/login");
   };
+
 
   return (
    <div className="top-header">

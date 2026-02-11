@@ -85,37 +85,48 @@ router.post("/signup", async (req, res) => {
 /* LOGIN */
 
 router.post("/login", async (req, res) => {
-const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user)
-    return res.status(400).json({ msg: "User not found" });
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ msg: "User not found" });
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match)
-    return res.status(400).json({ msg: "Wrong password" });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
+      return res.status(400).json({ msg: "Wrong password" });
 
-  req.session.user = {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-  };
+    req.session.user = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    };
 
-  res.json({ msg: "Login success", user: req.session.user });
+    res.json({ msg: "Login success", user: req.session.user });
+  } catch (err) {
+    res.status(500).json({ msg: "Login failed" });
+  }
 });
 
 
+
 // Get session user
+
 router.get("/me", (req, res) => {
-   res.json(req.session.user || null);
+  res.json({ user: req.session.user || null });
 });
 
 // Logout
 router.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie("session-id");
-    res.json({ msg: "Logged out" });
-  });
+  
+  req.session.destroy(err => {
+  if (err) {
+    return res.status(500).json({ msg: "Logout failed" });
+  }
+  res.clearCookie("session-id");
+  res.json({ msg: "Logged out" });
+});
+  // });
 });
 
 

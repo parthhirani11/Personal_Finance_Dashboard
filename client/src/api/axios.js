@@ -6,6 +6,11 @@ const api = axios.create({
   withCredentials: true
 });
 
-export default api;
+api.interceptors.response.use(
+  res => res,
+  err => {
+    return Promise.reject(err); // ❌ no redirect here
+  }
+);
 
- // https://phpstack-1249340-6098543.cloudwaysapps.com
+export default api;

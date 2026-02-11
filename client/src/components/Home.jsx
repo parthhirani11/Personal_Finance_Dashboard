@@ -622,7 +622,7 @@ export default function Dashboard() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       // ✅ Remove deleted transaction from UI instantly
       setTransactions(prev => prev.filter(t => t._id !== id));
 
@@ -1962,7 +1962,7 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-                
+
                 <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
                   <div
