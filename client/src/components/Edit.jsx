@@ -1,13 +1,13 @@
 // edit transection recode
 import { useState, useEffect, useRef, useMemo } from "react";
-import { FiX, FiSave, FiPlusCircle } from "react-icons/fi";
+import { FiX, FiSave, FiPlusCircle,FiChevronDown  } from "react-icons/fi";
 import api from "../api/axios";
 import "../styles/edit.css";
 import { toast } from "react-toastify";
 import { useCategoryTag } from "../context/CategoryTagContext";
 
 
-export default function EditPopup({ id, onClose,transactions ,dashboardId }){
+export default function EditPopup({ id, onClose,transactions ,dashboardId,dashboards }){
 
   /* ================= STATE ================= */
   const [record, setRecord] = useState(null);
@@ -20,7 +20,10 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId }){
     tags: "",
 
   });
-  
+  const [selectedDashboard, setSelectedDashboard] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const safeDashboards = dashboards || [];
 
   const [showModal, setShowModal] = useState(false);
   const [customMode, setCustomMode] = useState("");
@@ -91,7 +94,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId }){
         type: r.type,
         
       });
-
+      setSelectedDashboard(r.dashboardIds?.[0] || dashboardId);
       setSelectedMode(mode);
       setSelectedCategories(
         r.description
@@ -230,6 +233,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId }){
     e.preventDefault();
 
     const data = new FormData();
+    data.append("dashboardId", selectedDashboard);
 
     // basic fields
     data.append("type", form.type);
@@ -315,6 +319,20 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId }){
     }
   };
   
+  useEffect(() => {
+  if (!showDropdown) return;
+
+  const handleClickOutside = (e) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      setShowDropdown(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showDropdown]);
 
   return (
     <div className="edit-popup-overlay">
@@ -332,6 +350,37 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId }){
         {/* BODY (ONLY THIS SCROLLS) */}
         <div className="edit-popup-body">
           <form onSubmit={handleSubmit}>
+            <label>Select Dashboard <span className="text-danger">*</span></label>
+
+<div className="single-select mb-2" ref={dropdownRef}>
+  <div
+    className="dashboard-select"
+    onClick={() => setShowDropdown(prev => !prev)}
+  >
+    {dashboards.find(d => d._id === selectedDashboard)?.name || "Select Dashboard"}
+    <FiChevronDown />
+  </div>
+
+  {showDropdown && (
+    <div className="suggestionBox list-group mt-1">
+      {dashboards.map(d => (
+        <div
+          key={d._id}
+          className={`list-group-item ${
+            selectedDashboard === d._id ? "active" : ""
+          }`}
+          onClick={() => {
+            setSelectedDashboard(d._id);
+            setShowDropdown(false);
+          }}
+        >
+          {d.name}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
             {/* TYPE */}
             <label className="edit-label">Type <span className="text-danger">*</span></label>

@@ -141,6 +141,7 @@ export const updateTransaction = async (req, res) => {
       paymentMode,
       description,
       tags,
+      dashboardId,
     } = req.body;
 
     const updateData = {
@@ -154,6 +155,10 @@ export const updateTransaction = async (req, res) => {
   ? (Array.isArray(tags) ? tags : [tags])
   : [],
     };
+     // 🔥 DASHBOARD MOVE LOGIC
+    if (dashboardId) {
+      updateData.dashboardIds = [dashboardId];
+    }
 
     if (req.file) {
       updateData.attachment = req.file.filename;

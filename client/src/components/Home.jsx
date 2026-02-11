@@ -1888,6 +1888,7 @@ export default function Dashboard() {
                     id={editId}
                     transactions={transactions}
                     dashboardId={activeDashboard}
+                    dashboards={dashboards}
                     onClose={() => {
                       setShowEdit(false);
                       setPaymentModeVersion(v => v + 1);
