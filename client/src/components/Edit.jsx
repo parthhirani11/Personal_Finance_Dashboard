@@ -50,8 +50,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
   const [modeError, setModeError] = useState("");
   const tagRef = useRef(null);
 
-
-
   /* ================= COLORS ================= */
 
   const paymentColors = {
@@ -71,6 +69,8 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
+
+  // ...............................................................................................
   
   const normalize = (val = "") =>
     val.toString().trim().toLowerCase().replace(/\s+/g, "");
@@ -116,21 +116,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
   
   /* ================= FETCH PAYMENT MODES ================= */
-
-  // const fetchPaymentModes = async () => {
-  //   try {
-  //     const res = await api.get("/account/payment-modes", {
-  //       withCredentials: true,
-  //     });
-
-  //     const modes = res.data.map(i => i._id.toLowerCase());
-  //     const unique = [...new Set(modes)];
-
-  //     setPaymentModes(unique);
-  //   } catch (err) {
-  //     console.error("Payment mode fetch error", err);
-  //   }
-  // };
 
   const fetchPaymentModes = async () => {
     if (!dashboardId) return;
@@ -204,28 +189,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     ];
   }, [transactions]);
 
-  // tags and category change handle 
-  const handleCategoryChange = (value) => {
-    setCategoryInput(value);
-    setShowSuggestions(true);
-
-    setFilteredCategories(
-      transactionCategories.filter(cat =>
-        cat.includes(value.toLowerCase())
-      )
-    );
-  };
-
-  const handleTagChange = (value) => {
-    setTagInput(value);
-    setShowTagSuggestions(true);
-
-    setFilteredTags(
-      transactionTags.filter(tag =>
-        tag.includes(value.toLowerCase())
-      )
-    );
-  };
 
   /* ================= SUBMIT ================= */
 
@@ -264,7 +227,30 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     }
   };
 
-  // ADD NEW CATEGORY.......
+   // tags and category change handle 
+  const handleCategoryChange = (value) => {
+    setCategoryInput(value);
+    setShowSuggestions(true);
+
+    setFilteredCategories(
+      transactionCategories.filter(cat =>
+        cat.includes(value.toLowerCase())
+      )
+    );
+  };
+
+  const handleTagChange = (value) => {
+    setTagInput(value);
+    setShowTagSuggestions(true);
+
+    setFilteredTags(
+      transactionTags.filter(tag =>
+        tag.includes(value.toLowerCase())
+      )
+    );
+  };
+
+  // ADD NEW CATEGORY...........................................................
   const addCategory = (cat) => {
     const value = cat.trim();
     if (!value) return;
@@ -318,21 +304,22 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       addTag(tagInput);
     }
   };
-  
+
+  // dropdown open in select dashboard
   useEffect(() => {
-  if (!showDropdown) return;
+    if (!showDropdown) return;
 
-  const handleClickOutside = (e) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-      setShowDropdown(false);
-    }
-  };
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [showDropdown]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
 
   return (
     <div className="edit-popup-overlay">
@@ -352,34 +339,34 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
           <form onSubmit={handleSubmit}>
             <label>Select Dashboard <span className="text-danger">*</span></label>
 
-<div className="single-select mb-2" ref={dropdownRef}>
-  <div
-    className="dashboard-select"
-    onClick={() => setShowDropdown(prev => !prev)}
-  >
-    {dashboards.find(d => d._id === selectedDashboard)?.name || "Select Dashboard"}
-    <FiChevronDown />
-  </div>
+            <div className="single-select mb-2" ref={dropdownRef}>
+              <div
+                className="dashboard-select"
+                onClick={() => setShowDropdown(prev => !prev)}
+              >
+                {dashboards.find(d => d._id === selectedDashboard)?.name || "Select Dashboard"}
+                <FiChevronDown />
+              </div>
 
-  {showDropdown && (
-    <div className="suggestionBox list-group mt-1">
-      {dashboards.map(d => (
-        <div
-          key={d._id}
-          className={`list-group-item ${
-            selectedDashboard === d._id ? "active" : ""
-          }`}
-          onClick={() => {
-            setSelectedDashboard(d._id);
-            setShowDropdown(false);
-          }}
-        >
-          {d.name}
-        </div>
-      ))}
-    </div>
-  )}
-</div>
+              {showDropdown && (
+                <div className="suggestionBox list-group mt-1">
+                  {dashboards.map(d => (
+                    <div
+                      key={d._id}
+                      className={`list-group-item ${
+                        selectedDashboard === d._id ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedDashboard(d._id);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      {d.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
 
             {/* TYPE */}

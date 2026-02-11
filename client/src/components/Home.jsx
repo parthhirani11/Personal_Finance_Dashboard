@@ -99,23 +99,19 @@ export default function Dashboard() {
   const [selectedMode, setSelectedMode] = useState("");
   const [customMode, setCustomMode] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [paymentModeVersion, setPaymentModeVersion] = useState(0);
   
-  // ............................................................................. 
-
   const PAYMENT_COLORS = {
     cash: { bg: "#e5e7eb33", text: "#e5e7eb" },      // light grey
     bank: { bg: "#3b82f633", text: "#3b82f6" },      // blue
     upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
   };
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
-  // ..........................................................................................
-  const [paymentModeVersion, setPaymentModeVersion] = useState(0);
 
   // popup change dashboard
 
   const [dashboards, setDashboards] = useState([]);
   const [activeDashboard, setActiveDashboard] = useState(null);
-
   const [showPopup, setShowPopup] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -128,7 +124,7 @@ export default function Dashboard() {
     }
   }, [showPopup, activeDashboard, dashboards]);
 
-  //  .............................................................................
+  // Edit page 
   const [showEdit, setShowEdit] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -141,6 +137,9 @@ export default function Dashboard() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [renamePopup, setRenamePopup] = useState(null);
   const [newName, setNewName] = useState("");
+
+
+  // ...........................................................................................
 
   // add new dashboard
  
@@ -1640,8 +1639,7 @@ export default function Dashboard() {
                     </select>
                   )}
 
-                 
-                  
+
                   {/* RECIPIENT / CATEGORY / TAGS */}
                   {(f.type === "recipient" || f.type === "category" || f.type === "tags" || f.type === "paymentMode") && (
                     <>
@@ -1833,7 +1831,6 @@ export default function Dashboard() {
                         <FiEdit2 /> Edit
                       </button>
                      
-
                       <button
                         className="delete-btn d-flex align-items-center gap-1"
                         onClick={() => setConfirmDelete({ show: true, id: item._id })}
@@ -1841,9 +1838,6 @@ export default function Dashboard() {
                         <FiTrash2 size={14} />
                         Delete
                       </button>
-
-                      
-
                     </div>
                   </div>
 
@@ -1968,8 +1962,7 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-
-
+                
                 <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
                   <div

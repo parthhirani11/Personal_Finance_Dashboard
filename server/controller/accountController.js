@@ -250,41 +250,6 @@ export const updateUserTags = async (req, res) => {
 
 
 // SUGGESTION PAYMENT MODE DATA
-// export const getPaymentModeStats = async (req, res) => {
-//   try {
-//     const userId = req.session.user.id;
-
-//     const stats = await Account.aggregate([
-//       {
-//         $match: {
-//           userId: new mongoose.Types.ObjectId(userId),
-//           paymentMode: { $ne: null }
-//         }
-//       },
-//       {
-//         // NORMALIZE CASE
-//         $project: {
-//           paymentMode: { $toLower: "$paymentMode" }
-//         }
-//       },
-//       {
-//         $group: {
-//           _id: "$paymentMode",
-//           count: { $sum: 1 }
-//         }
-//       },
-//       {
-//         // SORT MAX → MIN
-//         $sort: { count: -1 }
-//       }
-//     ]);
-
-//     res.json(stats);
-//   } catch (err) {
-//     console.error("Payment mode stats error:", err);
-//     res.status(500).json({ msg: "Server error" });
-//   }
-// };
 
 export const getPaymentModeStats = async (req, res) => {
   try {

@@ -72,11 +72,7 @@ export const deleteDashboard = async (req, res) => {
     }
 
     // delete transactions
-    // await Account.deleteMany({ dashboardId: id, userId });
-    await Account.deleteMany({
-      dashboardIds: id,
-      userId
-    });
+    await Account.deleteMany({ dashboardIds: id, userId });
 
 
     // delete dashboard
