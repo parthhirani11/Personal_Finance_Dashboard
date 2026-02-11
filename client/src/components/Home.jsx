@@ -109,6 +109,8 @@ export default function Dashboard() {
   };
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
   // ..........................................................................................
+  const [paymentModeVersion, setPaymentModeVersion] = useState(0);
+
   // popup change dashboard
 
   const [dashboards, setDashboards] = useState([]);
@@ -1075,7 +1077,7 @@ export default function Dashboard() {
     };
 
     fetchModes();
-  }, [activeDashboard]);
+  }, [activeDashboard,paymentModeVersion]);
 
 
   //  .............................................................................
@@ -1888,6 +1890,7 @@ export default function Dashboard() {
                     dashboardId={activeDashboard}
                     onClose={() => {
                       setShowEdit(false);
+                      setPaymentModeVersion(v => v + 1);
                        refreshDashboard();
                     }}
                   />
