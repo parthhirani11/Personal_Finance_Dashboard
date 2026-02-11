@@ -1741,6 +1741,38 @@ p a:hover {
     opacity: 0.9;
   }
 
+  .file-wrapper {
+  position: relative;
+  width: fit-content;
+  width: 100%;
+}
+
+/* Tooltip */
+.file-wrapper::after {
+  content: "Upload file (PDF, JPG, PNG)";
+  position: absolute;
+  bottom: -36px;
+  left: 0;
+  background: #0f172a;
+  border: 1px solid #64748b;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.25s;
+  z-index: 9999;
+}
+
+/* Show on hover */
+.file-wrapper:hover::after {
+  opacity: 1;
+}
+
+
+
 /* popup btn add transection */
 .robot-add-btn {
   position: fixed;
@@ -2109,6 +2141,9 @@ p a:hover {
   color: #0f172a;
   /* transform: scale(1.02); */
   border-radius: 8px;
+}
+.single-select {
+  position: relative;
 }
 
 /* Close button for filter */
@@ -2663,6 +2698,58 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
+.settings-btn::after {
+  content: "Category Edit Setting";
+  position: absolute;
+  bottom: -40px;
+  right: 80%;
+  transform: translateX(50%);
+  background: #0f172a;
+  border: 1px solid #64748b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.25s;
+}
+
+.settings-btn:hover::after {
+  opacity: 1;
+}
+
+.settings-btn-tags {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+.settings-btn-tags::after {
+  content: "Tags Edit Setting";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f172a;
+  border: 1px solid #64748b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.25s;
+  z-index: 9999;
+}
+
+.settings-btn-tags:hover::after {
+  opacity: 1;
+}
 
 /* POPUP */
 .popupp-overlay {

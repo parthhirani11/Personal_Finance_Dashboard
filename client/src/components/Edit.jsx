@@ -1,14 +1,16 @@
 // edit transection recode
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { FiX, FiSave, FiPlusCircle } from "react-icons/fi";
 import api from "../api/axios";
 import "../styles/edit.css";
 import { toast } from "react-toastify";
+import { useCategoryTag } from "../context/CategoryTagContext";
 
-export default function EditPopup({ id, onClose }){
+
+export default function EditPopup({ id, onClose,transactions ,dashboardId }){
 
   /* ================= STATE ================= */
-
+  const [record, setRecord] = useState(null);
   const [form, setForm] = useState({
     type: "income",
     amount: "",
@@ -18,8 +20,8 @@ export default function EditPopup({ id, onClose }){
     tags: "",
 
   });
-
   
+
   const [showModal, setShowModal] = useState(false);
   const [customMode, setCustomMode] = useState("");
   const [selectedMode, setSelectedMode] = useState("cash");
@@ -29,26 +31,23 @@ export default function EditPopup({ id, onClose }){
   const [currentFile, setCurrentFile] = useState(null);
 
   // ---------- CATEGORY ----------
-  const fixedCategories = ["Goods", "Salary", "Rent", "Food", "Travel"];
-
+  const { categories, tags } = useCategoryTag();
+  
   const [categoryInput, setCategoryInput] = useState("");
-  const [allCategories, setAllCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
   // ---------- TAGS ----------
-  const fixedTags = ["office", "personal", "urgent", "family", "emi"];
-
   const [tagInput, setTagInput] = useState("");
-  const [allTags, setAllTags] = useState([]);
   const [filteredTags, setFilteredTags] = useState([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
 
   const [modeError, setModeError] = useState("");
-
   const tagRef = useRef(null);
+
+
 
   /* ================= COLORS ================= */
 
@@ -58,17 +57,18 @@ export default function EditPopup({ id, onClose }){
   upi: { bg: "#22c55e33", text: "#6ee7b7" },
   };
 
- const getRandomColor = () => {
-  const colors = [
-    { bg: "#facc1533", text: "#fbbf24" }, // yellow
-    { bg: "#3b82f633", text: "#3b82f6" }, // blue
-    { bg: "#ec489933", text: "#f87171" }, // red
-    { bg: "#8b5cf633", text: "#c084fc" }, // purple
-    { bg: "#f9731633", text: "#fb923c" }, // orange
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
+  const getRandomColor = () => {
+    const colors = [
+      { bg: "#facc1533", text: "#fbbf24" }, // yellow
+      { bg: "#3b82f633", text: "#3b82f6" }, // blue
+      { bg: "#ec489933", text: "#f87171" }, // red
+      { bg: "#8b5cf633", text: "#c084fc" }, // purple
+      { bg: "#f9731633", text: "#fb923c" }, // orange
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
+  
   const normalize = (val = "") =>
     val.toString().trim().toLowerCase().replace(/\s+/g, "");
 
@@ -81,6 +81,7 @@ export default function EditPopup({ id, onClose }){
       });
 
       const r = res.data;
+       setRecord(r);
       const mode = r.paymentMode?.toLowerCase() || "cash";
 
       setForm({
@@ -110,18 +111,56 @@ export default function EditPopup({ id, onClose }){
     }
   };
 
+  
   /* ================= FETCH PAYMENT MODES ================= */
 
+  // const fetchPaymentModes = async () => {
+  //   try {
+  //     const res = await api.get("/account/payment-modes", {
+  //       withCredentials: true,
+  //     });
+
+  //     const modes = res.data.map(i => i._id.toLowerCase());
+  //     const unique = [...new Set(modes)];
+
+  //     setPaymentModes(unique);
+  //   } catch (err) {
+  //     console.error("Payment mode fetch error", err);
+  //   }
+  // };
+
   const fetchPaymentModes = async () => {
+    if (!dashboardId) return;
+
     try {
-      const res = await api.get("/account/payment-modes", {
-        withCredentials: true,
+      const res = await api.get(
+        `/account/payment-modes/${dashboardId}`,
+        { withCredentials: true }
+      );
+
+      const usageMap = {};
+      res.data.forEach(item => {
+        if (item._id) {
+          usageMap[item._id.toLowerCase()] = item.count;
+        }
       });
 
-      const modes = res.data.map(i => i._id.toLowerCase());
-      const unique = [...new Set(modes)];
+      // CASH always default
+      const modeSet = new Set(["cash"]);
+      Object.keys(usageMap).forEach(m => modeSet.add(m));
 
-      setPaymentModes(unique);
+      const finalModes = Array.from(modeSet);
+
+      setPaymentModes(finalModes);
+
+      // 🔥 ensure selected mode valid
+      setForm(prev => ({
+        ...prev,
+        paymentMode: finalModes.includes(prev.paymentMode)
+          ? prev.paymentMode
+          : "cash"
+      }));
+
     } catch (err) {
       console.error("Payment mode fetch error", err);
     }
@@ -129,31 +168,60 @@ export default function EditPopup({ id, onClose }){
 
   useEffect(() => {
     fetchRecord();
-    fetchPaymentModes();
-  }, []);
+  }, [id]);
 
+  useEffect(() => {
+    fetchPaymentModes();
+  }, [dashboardId]); // 🔥 dashboard change → modes change
+
+  // transection tags and category data fetch and showing in suggestion box
+  const transactionCategories = useMemo(() => {
+    return [
+      ...new Set(
+        transactions
+          .flatMap(t =>
+            t.description
+              ? t.description.split(",").map(c => c.trim())
+              : []
+          )
+          .filter(Boolean)
+          .map(c => c.toLowerCase())
+      )
+    ];
+  }, [transactions]);
+
+  const transactionTags = useMemo(() => {
+    return [
+      ...new Set(
+        transactions
+          .flatMap(t => t.tags || [])
+          .filter(Boolean)
+          .map(t => t.toLowerCase())
+      )
+    ];
+  }, [transactions]);
+
+  // tags and category change handle 
   const handleCategoryChange = (value) => {
     setCategoryInput(value);
     setShowSuggestions(true);
 
-    const keyword = normalize(value);
-
     setFilteredCategories(
-      allCategories.filter(cat =>
-        normalize(cat).includes(keyword) &&
-        !selectedCategories.some(
-          sel => normalize(sel) === normalize(cat)
-        )
+      transactionCategories.filter(cat =>
+        cat.includes(value.toLowerCase())
       )
     );
   };
 
-  //  Type the word and press enter.(CATEGORY)
-  const handleCategoryKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addCategory(categoryInput);
-    }
+  const handleTagChange = (value) => {
+    setTagInput(value);
+    setShowTagSuggestions(true);
+
+    setFilteredTags(
+      transactionTags.filter(tag =>
+        tag.includes(value.toLowerCase())
+      )
+    );
   };
 
   /* ================= SUBMIT ================= */
@@ -191,30 +259,8 @@ export default function EditPopup({ id, onClose }){
       toast.error("Update failed");
     }
   };
-  // fetch Categories
-  const fetchCategories = async () => {
-    const res = await api.get("/account/categories", { withCredentials: true });
 
-    // ✅ DIRECT STRINGS
-    setAllCategories(res.data);
-    setFilteredCategories(res.data);
-  };
-
-
-  // tags list and 5 btn suggestions
-  const fetchTags = async () => {
-    const res = await api.get("/account/tags", { withCredentials: true });
-
-    // ✅ DIRECT STRINGS
-    setAllTags(res.data);
-    setFilteredTags(res.data);
-  };
-
-  useEffect(() => {
-    fetchCategories();
-    fetchTags();
-  }, []);
-  // ADD NEW CATEGORY
+  // ADD NEW CATEGORY.......
   const addCategory = (cat) => {
     const value = cat.trim();
     if (!value) return;
@@ -228,12 +274,21 @@ export default function EditPopup({ id, onClose }){
     setCategoryInput("");
     setShowSuggestions(false);
   };
+
   // REMOVE CATEGORY
   const removeCategory = (cat) => {
     setSelectedCategories(prev => prev.filter(c => c !== cat));
   };
 
-  // ADD NEW TAGS
+   //  Type the word and press enter.(CATEGORY)
+  const handleCategoryKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addCategory(categoryInput);
+    }
+  };
+
+  // ADD NEW TAGS.....................................
   const addTag = (tag) => {
     const value = tag.trim();
     if (!value) return;
@@ -250,21 +305,8 @@ export default function EditPopup({ id, onClose }){
   const removeTag = (tag) => {
     setSelectedTags(prev => prev.filter(t => t !== tag));
   };
-  // CHANGE TAGS VALUE
-  const handleTagChange = (value) => {
-    setTagInput(value);
-    setShowTagSuggestions(true);
+  
 
-    const keyword = normalize(value);
-    setFilteredTags(
-      allTags.filter(tag =>
-        normalize(tag).includes(keyword) &&
-        !selectedTags.some(
-          sel => normalize(sel) === normalize(tag)
-        )
-      )
-    );
-  };
   //  Type the word and press enter.(TAGS)
   const handleTagKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -272,6 +314,7 @@ export default function EditPopup({ id, onClose }){
       addTag(tagInput);
     }
   };
+  
 
   return (
     <div className="edit-popup-overlay">
@@ -381,14 +424,7 @@ export default function EditPopup({ id, onClose }){
                        
                 })}
 
-                {/* <button
-                  type="button"
-                  className="add-mode-btn d-flex align-items-center gap-1"
-                  onClick={() => setShowModal(true)}
-                >
-                  <FiPlusCircle size={16} />
-                  Add
-                </button> */}
+                
                 {showModal && (
                   <div className="tag-modal-backdrop">
                     <div className="tag-modal">
@@ -489,13 +525,7 @@ export default function EditPopup({ id, onClose }){
                     placeholder="Type category & press Enter"
                     onFocus={() => {
                       setShowSuggestions(true);
-                      setFilteredCategories(
-                        allCategories.filter(
-                          c => !selectedCategories.some(
-                            s => normalize(s) === normalize(c)
-                          )
-                        )
-                      );
+                      setFilteredCategories(transactionCategories);
                     }}
                     onChange={(e) => handleCategoryChange(e.target.value)}
                     onKeyDown={handleCategoryKeyDown}
@@ -528,7 +558,7 @@ export default function EditPopup({ id, onClose }){
                 {/* SUGGESTION 5 CATEGOURY BTN */}
                 {!showSuggestions && (
                   <div className="mt-2">
-                    {fixedCategories.map((cat, i) => (
+                    {categories.map((cat, i) => (
                       <button
                         key={i}
                         type="button"
@@ -563,7 +593,7 @@ export default function EditPopup({ id, onClose }){
                     onKeyDown={handleTagKeyDown}
                     onFocus={() => {
                       setShowTagSuggestions(true);
-                      setFilteredTags(allTags);
+                      setFilteredTags(transactionTags);
                     }}
                     onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
                   />
@@ -594,7 +624,7 @@ export default function EditPopup({ id, onClose }){
                 {/* SUGGESTION 5  TAGS BTN */}
                 {!showTagSuggestions && (
                   <div className="mt-2">
-                    {fixedTags.map((tag, i) => (
+                    {tags.map((tag, i) => (
                       <button
                         key={i}
                         type="button"

@@ -35,17 +35,14 @@ import {
   PieChart, Pie, Cell,
   LineChart, Line,
 } from "recharts";
+import { useCategoryTag } from "../context/CategoryTagContext";
 
 /* ================= DASHBOARD ================= */
 export default function Dashboard() {
 
   const navigate = useNavigate();
   
-  const [accounts, setAccounts] = useState([]);
   const [activeTab, setActiveTab] = useState("transactions");
-  const [activeDashboard, setActiveDashboard] = useState(null);
-  const [dashboards, setDashboards] = useState([]);
-  
   const [transactions, setTransactions] = useState([]);
   const [exportType, setExportType] = useState("");
   const [activeFilterIndex, setActiveFilterIndex] = useState(null);
@@ -73,13 +70,8 @@ export default function Dashboard() {
     id: null
   });
   // categoury
-  const [categories, setCategories] = useState([
-    "Goods",
-    "Salary",
-    "Rent",
-    "Food",
-    // "Travel",
-  ]);
+
+  const { categories, tags, updateCategories, updateTags} = useCategoryTag();
   const [showCatPopup, setShowCatPopup] = useState(false);
   const [tempCategories, setTempCategories] = useState([...categories]);
   const [categoryInput, setCategoryInput] = useState("");
@@ -88,16 +80,8 @@ export default function Dashboard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // sab tags
-    const [fixedTags, setFixedTags] = useState([
-    "office",
-    "personal",
-    // "urgent",
-    "family",
-    "emi",
-  ]);
   const [showTagPopup, setShowTagPopup] = useState(false);
-  const [tempTags, setTempTags] = useState([...fixedTags]);
+  const [tempTags, setTempTags] = useState([...tags]);
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [allTags, setAllTags] = useState([]);
@@ -107,7 +91,6 @@ export default function Dashboard() {
   const tagRef = useRef(null);
 
   // POPUP SHOW
-  const [showPopup, setShowPopup] = useState(false);
   const [amount, setAmount] = useState("");
   const [errors, setErrors] = useState({});
 
@@ -116,6 +99,7 @@ export default function Dashboard() {
   const [selectedMode, setSelectedMode] = useState("");
   const [customMode, setCustomMode] = useState("");
   const [showModal, setShowModal] = useState(false);
+  
   // ............................................................................. 
 
   const PAYMENT_COLORS = {
@@ -126,13 +110,21 @@ export default function Dashboard() {
   const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
   // ..........................................................................................
   // popup change dashboard
+
+  const [dashboards, setDashboards] = useState([]);
+  const [activeDashboard, setActiveDashboard] = useState(null);
+
+  const [showPopup, setShowPopup] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedDashboards, setSelectedDashboards] = useState([]);
+
+  // 🔥 SINGLE selected dashboard for transaction
+  const [selectedDashboard, setSelectedDashboard] = useState(null);
+
   useEffect(() => {
-    if (showPopup && activeDashboard) {
-      setSelectedDashboards([activeDashboard]); // default active
+    if (showPopup && activeDashboard && dashboards.length > 0) {
+      setSelectedDashboard(activeDashboard);
     }
-  }, [showPopup, activeDashboard]);
+  }, [showPopup, activeDashboard, dashboards]);
 
   //  .............................................................................
   const [showEdit, setShowEdit] = useState(false);
@@ -149,21 +141,25 @@ export default function Dashboard() {
   const [newName, setNewName] = useState("");
 
   // add new dashboard
+ 
   useEffect(() => {
     api.get("/dashboard").then(res => {
       setDashboards(res.data);
 
-      // default dashboard
       if (res.data.length > 0) {
-        setActiveDashboard(res.data[0]._id);
+        const savedId = localStorage.getItem("activeDashboardId");
+        const exists = res.data.find(d => d._id === savedId);
+
+        setActiveDashboard(exists ? savedId : res.data[0]._id);
       }
     });
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     fetchDashboard();
   }, [activeDashboard]);
-    const fetchDashboard = async () => {
+
+  const fetchDashboard = async () => {
     if (!activeDashboard) return;
 
     const res = await api.get(`/account/home/${activeDashboard}`);
@@ -537,21 +533,12 @@ export default function Dashboard() {
   const addTransaction = async (e) => {
     e.preventDefault();
   
-    if (!activeDashboard) {
-      toast.error("Please select a dashboard first");
-      return;
-    }
-    if (selectedDashboards.length === 0) {
-      toast.error("Please select at least one dashboard");
+    if (!selectedDashboard) {
+      toast.error("Please select a dashboard");
       return;
     }
     const formData = new FormData();
-    //  formData.append("dashboardId", activeDashboard);
-      selectedDashboards.forEach(id => {
-      formData.append("dashboardIds[]", id);
-    });
-    
-   
+    formData.append("dashboardIds[]", selectedDashboard);
     formData.append("type", form.type);
     formData.append("amount", amount);
     formData.append("person", form.person);
@@ -575,19 +562,18 @@ export default function Dashboard() {
       return; //  stop submit
     }
     try {
-      await api.post(
-        "/account/add",
-        formData,
-        { 
-          withCredentials: true 
-        }
-      );
-      api.get(`/account/home/${activeDashboard}`)
-     .then(res => setTransactions(res.data.transactions));
+      const res = await api.post("/account/add", formData, {
+        withCredentials: true,
+      });
 
-      // await fetchDashboard();
+      toast.success(res.data.message || "Transaction added");
+      
       await fetchCategories();
       setShowPopup(false);
+
+      if (selectedDashboard === activeDashboard) {
+          await fetchDashboard();
+      }
 
       // Reset all states
       setForm({
@@ -611,10 +597,7 @@ export default function Dashboard() {
       setSelectedMode(paymentModes[0]?.name || "cash"); // default payment mode
       setFile(null);
       setErrors({});
-      setSelectedDashboards([]);
-      setShowPopup(false);
       
-
     } catch (err) {
       const msg =
       err.response?.data?.msg ||
@@ -869,15 +852,60 @@ export default function Dashboard() {
 
   //  .............................................................................
 
-  
+ const transactionCategories = useMemo(() => {
+    return [
+      ...new Set(
+        transactions
+          .flatMap(t =>
+            t.description
+              ? t.description.split(",").map(c => c.trim())
+              : []
+          )
+          .filter(Boolean)
+          .map(c => c.toLowerCase())
+      )
+    ];
+  }, [transactions]);
+
+
+  const transactionTags = useMemo(() => {
+    return [
+      ...new Set(
+        transactions
+          .flatMap(t => t.tags || [])
+          .filter(Boolean)
+          .map(t => t.toLowerCase())
+      )
+    ];
+  }, [transactions]);
+
+  const handleCategoryChange = (value) => {
+    setCategoryInput(value);
+    setShowSuggestions(true);
+
+    const filtered = transactionCategories.filter(cat =>
+      cat.includes(value.toLowerCase())
+    );
+
+    setFilteredCategories(filtered);
+  };
+
+  const handleTagChange = (value) => {
+    setTagInput(value);
+    setShowTagSuggestions(true);
+
+    const filtered = transactionTags.filter(tag =>
+      tag.includes(value.toLowerCase())
+    );
+
+    setFilteredTags(filtered);
+  };
+
+
   // categories filter and add ..........
   useEffect(() => {
     fetchCategories();
   }, []);
-
-  useEffect(() => {
-    setFilteredCategories(allCategories);
-  }, [allCategories]);
 
   const fetchCategories = async () => {
     try {
@@ -907,7 +935,7 @@ export default function Dashboard() {
     setShowSuggestions(false);
   };
 
- const removeCategory = (value) => {
+  const removeCategory = (value) => {
     setSelectedCategories((prev) =>
       prev.filter((cat) => cat !== value)
     );
@@ -924,21 +952,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleCategoryChange = (value) => {
-    setCategoryInput(value);
-    setShowSuggestions(true);
-
-    const keyword = normalize(value);
-
-    setFilteredCategories(
-      allCategories.filter(cat =>
-        normalize(cat).includes(keyword) &&
-        !selectedCategories.some(
-          sel => normalize(sel) === normalize(cat)
-        )
-      )
-    );
-  };
 
   //  .............................................................................
   // sub tags filter and add  
@@ -987,11 +1000,6 @@ export default function Dashboard() {
     fetchTags();
   }, []);
 
-  useEffect(() => {
-    setFilteredTags(allTags);
-  }, [allTags]);
-
-
   const removeTag = (tag) => {
     setSelectedTags((prev) => prev.filter((t) => t !== tag));
   };
@@ -1004,23 +1012,6 @@ export default function Dashboard() {
 
       addTag(value);
     }
-  };
-
-
-  const handleTagChange = (value) => {
-    setTagInput(value);
-    setShowTagSuggestions(true);
-
-    const keyword = normalize(value);
-
-    setFilteredTags(
-      allTags.filter(tag =>
-        normalize(tag).includes(keyword) &&
-        !selectedTags.some(
-          sel => normalize(sel) === normalize(tag)
-        )
-      )
-    );
   };
 
   useEffect(() => {
@@ -1049,21 +1040,23 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    const fetchModes = async () => {
-      const res = await api.get("/account/payment-modes");
+    if (!activeDashboard) return;
 
-      // API → [{ _id: "cash", count: 3 }, { _id: "upi", count: 2 }]
+    const fetchModes = async () => {
+      const res = await api.get(
+        `/account/payment-modes/${activeDashboard}`
+      );
+
       const usageMap = {};
       res.data.forEach(item => {
         if (item._id) {
-          usageMap[normalize(item._id)] = item.count;
+          usageMap[item._id] = item.count;
         }
       });
 
-      // CASH ALWAYS DEFAULT
+      // CASH always default
       const modeSet = new Set(["cash"]);
 
-      // add used modes
       Object.keys(usageMap).forEach(m => modeSet.add(m));
 
       const finalModes = Array.from(modeSet).map(name => ({
@@ -1071,18 +1064,18 @@ export default function Dashboard() {
         count: usageMap[name] || 0,
       }));
 
-      // sort by usage (cash stays if equal)
       finalModes.sort((a, b) => b.count - a.count);
 
       setPaymentModes(finalModes);
-
-      // default select
-      setSelectedMode(prev => prev || "cash");
-      setForm(prev => ({ ...prev, paymentMode: prev.paymentMode || "cash" }));
+      setSelectedMode(finalModes[0]?.name || "cash");
+      setForm(prev => ({
+        ...prev,
+        paymentMode: finalModes[0]?.name || "cash"
+      }));
     };
 
     fetchModes();
-  }, []);
+  }, [activeDashboard]);
 
 
   //  .............................................................................
@@ -1165,6 +1158,7 @@ export default function Dashboard() {
   const confirmDeletee = async () => {
     try {
       await api.delete(`/dashboard/${activeDashboard}`);
+       localStorage.removeItem("activeDashboardId");
 
       const updated = dashboards.filter(d => d._id !== activeDashboard);
       setDashboards(updated);
@@ -1192,22 +1186,14 @@ export default function Dashboard() {
     }
   };
 
-  const toggleDashboard = (id) => {
-    setSelectedDashboards(prev =>
-      prev.includes(id)
-        ? prev.filter(d => d !== id)
-        : [...prev, id]
-    );
-  };
-
   const dropdownRef = useRef(null);
+ 
   useEffect(() => {
+    if (!showDropdown) return;
+
     const handleClickOutside = (e) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target)
-      ) {
-        setShowDropdown(false); // 👈 close dropdown
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
       }
     };
 
@@ -1216,9 +1202,7 @@ export default function Dashboard() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
-
-
+  }, [showDropdown]);
 
   return (
     <div className="container">
@@ -1229,7 +1213,11 @@ export default function Dashboard() {
           <select
             className="form-selectt border-2"
             value={activeDashboard || ""}
-            onChange={(e) => setActiveDashboard(e.target.value)}
+            onChange={(e) => {
+              const id = e.target.value;
+              setActiveDashboard(id);
+              localStorage.setItem("activeDashboardId", id); // ✅ SAVE
+            }}
           >
             {dashboards.map(d => (
               <option key={d._id} value={d._id}>
@@ -1896,6 +1884,8 @@ export default function Dashboard() {
                 <div className="edit-modal">
                   <Edit
                     id={editId}
+                    transactions={transactions}
+                    dashboardId={activeDashboard}
                     onClose={() => {
                       setShowEdit(false);
                        refreshDashboard();
@@ -1934,57 +1924,47 @@ export default function Dashboard() {
             </div>
             <div className="popup-body">
               <form id="transactionForm" className="center" onSubmit={addTransaction} encType="multipart/form-data">
-
                 <label>
                   Select Dashboard <span className="text-danger">*</span>
                 </label>
 
-                <div className="multi-select" ref={dropdownRef}>
-
-                  {/* DROPDOWN HEADER */}
+                <div className="single-select" ref={dropdownRef}>
+                  {/* HEADER */}
                   <div
                     className="dashboard-select mb-2"
-                    onClick={() => setShowDropdown(prev => !prev)}
+                    onClick={(e) => {
+                      e.stopPropagation();      // 🔥 important
+                      setShowDropdown(prev => !prev);
+                    }}
                   >
-                    {/* {selectedDashboards.length > 0
-                      ? `${dashboards
-                          .filter(d => selectedDashboards.includes(d._id))
-                          .map(d => d.name)
-                          .join(" & ")} Selected `
-                      : "Select Dashboard"} */}
-                      {selectedDashboards.length > 0 ? (
-                        <span>
-                          {dashboards
-                            .filter(d => selectedDashboards.includes(d._id))
-                            .map(d => d.name)
-                            .join(" & ")}
-                          {" "}
-                          <span className="selected-text">Selected</span>
-                        </span>
-                      ) : (
-                        "Select Dashboard"
-                      )}
+                  {selectedDashboard
+                      ? dashboards.find(d => d._id === selectedDashboard)?.name
+                      : "Select Dashboard"}
 
                     <FiChevronDown className="dropdown-icon" />
                   </div>
 
-                  {/* DROPDOWN LIST */}
+                  {/* LIST */}
                   {showDropdown && (
                     <div className="suggestionBox list-group mt-1">
                       {dashboards.map(d => (
-                        <label key={d._id} className="multi-option">
-                          <input
-                            type="checkbox"
-                            checked={selectedDashboards.includes(d._id)}
-                            onChange={() => toggleDashboard(d._id)}
-                          />
-                          <span>{d.name}</span>
-                        </label>
+                        <div
+                          key={d._id}
+                          className={`list-group-item list-group-item-action ${
+                            selectedDashboard === d._id ? "active" : ""
+                          }`}
+                          onClick={() => {
+                            setSelectedDashboard(d._id); // 🔥 change selection
+                            setShowDropdown(false);
+                          }}
+                        >
+                          {d.name}
+                        </div>
                       ))}
                     </div>
                   )}
-
                 </div>
+
 
                 <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
@@ -2201,7 +2181,7 @@ export default function Dashboard() {
                           placeholder="Type category & press Enter"
                           onFocus={() => {
                             setShowSuggestions(true);
-                            setFilteredCategories(allCategories);
+                            setFilteredCategories( [...new Set([...transactionCategories])]); 
                           }}
                           onChange={(e) => handleCategoryChange(e.target.value)}
                           onKeyDown={handleKeyDown}
@@ -2219,7 +2199,7 @@ export default function Dashboard() {
                                 className="list-group-item list-group-item-action"
                                 onMouseDown={() => addCategory(cat)}
                               >
-                                {cat}
+                                {capitalizeFirst(cat)}
                               </button>
                             ))
                           ) : (
@@ -2236,8 +2216,11 @@ export default function Dashboard() {
                           {/* SETTINGS ICON */}
                           <button
                             className="settings-btn"
-                            title="Edit Categories"
-                            onClick={() => setShowCatPopup(true)}
+                            // title="Edit Categories"
+                           onClick={() => {
+                            setTempCategories([...categories]); // 🔥 MUST
+                            setShowCatPopup(true);
+                          }}
                           >
                             <FiSettings size={20} className="settings-spin" />
                           </button>
@@ -2251,7 +2234,7 @@ export default function Dashboard() {
                                 className="btn btn-outline-secondary btn-sm"
                                 onClick={() => addCategory(cat)}
                               >
-                                + {cat}
+                                + {capitalizeFirst(cat)}
                               </button>
                             ))}
                           </div>
@@ -2291,7 +2274,7 @@ export default function Dashboard() {
                               <button
                                 className="btn btn-success btn-sm"
                                 onClick={() => {
-                                  setCategories(tempCategories);
+                                  updateCategories(tempCategories);
                                   setShowCatPopup(false);
                                 }}
                               >
@@ -2329,7 +2312,7 @@ export default function Dashboard() {
                         placeholder="Type tag & press Enter"
                         onFocus={() => {
                           setShowTagSuggestions(true);
-                          setFilteredTags(allTags);
+                          setFilteredTags( [...new Set([...transactionTags])]);
                         }}
                         onChange={(e) => handleTagChange(e.target.value)}
                         onKeyDown={handleTagKeyDown}
@@ -2346,7 +2329,7 @@ export default function Dashboard() {
                                 className="list-group-item list-group-item-action"
                                 onMouseDown={() => addTag(tag)}
                               >
-                                {tag}
+                                {capitalizeFirst(tag)}
                               </button>
                             ))
                           ) : (
@@ -2362,21 +2345,25 @@ export default function Dashboard() {
                     {!showTagSuggestions && (
                       <div className="tag-section mt-2">
                         <button
-                          className="settings-btn"
-                          title="Edit Tags"
-                          onClick={() => setShowTagPopup(true)}
+                          className="settings-btn-tags"
+                          // title="Edit Tags"
+                          onClick={() => {
+                            setTempTags([...tags]); // 🔥 MUST
+                            setShowTagPopup(true);
+                          }}
                         >
-                          <FiSettings size={20} className="settings-spin" />
+                          <FiSettings size={20} className="settings-spin " />
                         </button>
 
                         <div className="tag-buttons">
-                          {fixedTags.map((tag, i) => (
+                          {tags.map((tag, i) => (
                             <button
                               key={i}
+                              type="button"
                               className="btn btn-outline-secondary btn-sm"
                               onClick={() => addTag(tag)}
                             >
-                              + {tag}
+                              + {capitalizeFirst(tag)}
                             </button>
                           ))}
                         </div>
@@ -2406,16 +2393,17 @@ export default function Dashboard() {
                             <button
                               className="btn btn-secondary btn-sm"
                               onClick={() => {
-                                setTempTags([...fixedTags]);
+                                setTempTags([...tags]);
                                 setShowTagPopup(false);
                               }}
                             >
                               Cancel
                             </button>
+
                             <button
                               className="btn btn-success btn-sm"
                               onClick={() => {
-                                setFixedTags(tempTags);
+                                updateTags(tempTags);
                                 setShowTagPopup(false);
                               }}
                             >
@@ -2427,9 +2415,10 @@ export default function Dashboard() {
                     )}
                   </div>   
                 </div>
-                <div className="mb-1">
-                  <label>Attachment</label>
-                  <input type="file" className="form-control" onChange={(e) => setFile(e.target.files[0])} />
+                
+                <label>Attachment</label>
+                <div className="mb-1 file-wrapper">
+                  <input type="file" className="form-control file-input" onChange={(e) => setFile(e.target.files[0])} />
                 </div>
                 <div id="tagHolder" className="mt-3"></div>
                 

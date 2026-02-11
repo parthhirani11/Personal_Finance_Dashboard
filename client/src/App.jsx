@@ -15,6 +15,7 @@ import Reset from "./components/Reset";
 import Footer from "./components/Footer";
 import "./styles/main.css";
 import ScrollToTop from "./components/ScrollToTop";
+import { CategoryTagProvider } from "./context/CategoryTagContext";
 api.defaults.withCredentials = true;
 
 function App() {
@@ -47,22 +48,36 @@ useEffect(() => {
       <Header user={user} setUser={setUser}/>
         
       <Routes>
+        
         <Route path="/login"element={ user ? <Navigate to="/home" replace /> : <Login setUser={setUser} /> }/>
         <Route path="/login" element={<Login setUser={setUser}/>} />
         <Route path="/signup" element={<Register />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/reset" element={<Reset />} />
+        <Route path="*" element={<Navigate to="/login" />} />
 
         {/* Navbar only on Home */}
-        <Route path="/home"element={ user ?  <Home user={user} /> : <Navigate to="/login" replace /> }/>
+        {/* <Route path="/home"element={ user ?  <Home user={user} /> : <Navigate to="/login" replace /> }/> */}
+        <Route
+          path="/home"
+          element={
+            user ? (
+              <CategoryTagProvider>
+                <Home user={user} />
+              </CategoryTagProvider>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         {/* <Route path="/edit/:id" element={<Edit />} /> */}
-        <Route path="*" element={<Navigate to="/login" />} />
+       
       </Routes>
-        <Footer />
+      <Footer />
     </Router>
-  
+ 
   );
 }
 

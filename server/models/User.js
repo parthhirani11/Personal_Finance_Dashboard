@@ -5,6 +5,18 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+
+
+   
+  categories: {
+    type: [String],
+    default: ["goods", "salary", "rent", "food"],
+  },
+
+  tags: {
+    type: [String],
+    default: ["personal", "office", "emi","home"],
+  },
 });
 
 export default mongoose.model("User", userSchema);

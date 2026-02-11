@@ -1,6 +1,7 @@
 
 import Account from "../models/Account.js";
 import Dashboard from "../models/Dashboard.js";
+import User from "../models/User.js";
 import mongoose from "mongoose";
 
 // DASHBOARD OUTPUT
@@ -194,74 +195,110 @@ export const getSingleRecord = async (req, res) => {
   }
 };
 
-// SUGGESTED TAGS
-export const getSuggestedTags = async (req, res) => {
+
+export const getUserCategories = async (req, res) => {
   try {
-    const records = await Account.find(
-      { userId: req.session.user.id },
-      { tags: 1 }
-    );
-
-    const tagSet = new Set();
-
-    records.forEach(r => {
-      if (Array.isArray(r.tags)) {
-        r.tags.forEach(tag => tagSet.add(tag));
-      }
-    });
-
-    res.json([...tagSet]); //  unique tags
-
+    const user = await User.findById(req.session.user.id);
+    res.json(user.categories || []);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch tags" });
-  }
-};
-
-// GET ALL CATEGORIES (for suggestion box)
-export const getAllCategories = async (req, res) => {
-  try {
-    
-
-    const userId = req.session.user.id; // ❌ optional chaining 
-
-    const records = await Account.find(
-      { userId },
-      { description: 1 }
-    );
-
-    const set = new Set();
-
-    records.forEach(r => {
-      if (r.description) {
-        r.description
-          .split(",")
-          .map(c => c.trim().toLowerCase())
-          .filter(Boolean)
-          .forEach(c => set.add(c));
-      }
-    });
-
-    res.json([...set]);
-  } catch (err) {
-    console.error("CATEGORY API ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };
 
+export const updateUserCategories = async (req, res) => {
+  try {
+    const { categories } = req.body;
+
+    await User.findByIdAndUpdate(req.session.user.id, {
+      categories: categories.map(c => c.toLowerCase().trim()),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+export const getUserTags = async (req, res) => {
+  try {
+    const user = await User.findById(req.session.user.id);
+    res.json(user.tags || []);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const updateUserTags = async (req, res) => {
+  try {
+    const { tags } = req.body;
+
+    await User.findByIdAndUpdate(req.session.user.id, {
+      tags: tags.map(t => t.toLowerCase().trim()),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
 // SUGGESTION PAYMENT MODE DATA
+// export const getPaymentModeStats = async (req, res) => {
+//   try {
+//     const userId = req.session.user.id;
+
+//     const stats = await Account.aggregate([
+//       {
+//         $match: {
+//           userId: new mongoose.Types.ObjectId(userId),
+//           paymentMode: { $ne: null }
+//         }
+//       },
+//       {
+//         // NORMALIZE CASE
+//         $project: {
+//           paymentMode: { $toLower: "$paymentMode" }
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: "$paymentMode",
+//           count: { $sum: 1 }
+//         }
+//       },
+//       {
+//         // SORT MAX → MIN
+//         $sort: { count: -1 }
+//       }
+//     ]);
+
+//     res.json(stats);
+//   } catch (err) {
+//     console.error("Payment mode stats error:", err);
+//     res.status(500).json({ msg: "Server error" });
+//   }
+// };
+
 export const getPaymentModeStats = async (req, res) => {
   try {
     const userId = req.session.user.id;
+    const { dashboardId } = req.params;
+
+    if (!dashboardId) {
+      return res.status(400).json({ msg: "DashboardId required" });
+    }
 
     const stats = await Account.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
+          dashboardIds: new mongoose.Types.ObjectId(dashboardId),
           paymentMode: { $ne: null }
         }
       },
       {
-        // NORMALIZE CASE
         $project: {
           paymentMode: { $toLower: "$paymentMode" }
         }
@@ -273,7 +310,6 @@ export const getPaymentModeStats = async (req, res) => {
         }
       },
       {
-        // SORT MAX → MIN
         $sort: { count: -1 }
       }
     ]);
