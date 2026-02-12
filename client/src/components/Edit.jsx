@@ -337,7 +337,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         {/* BODY (ONLY THIS SCROLLS) */}
         <div className="edit-popup-body">
           <form onSubmit={handleSubmit}>
-            <label>Select Dashboard <span className="text-danger">*</span></label>
+            <label>Select Acconut <span className="text-danger">*</span></label>
 
             <div className="single-select mb-2" ref={dropdownRef}>
               <div

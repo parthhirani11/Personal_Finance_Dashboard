@@ -1256,7 +1256,7 @@ export default function Dashboard() {
         
             <button className="edit-btn" onClick={() => setShowAdd(true)}>
             <FiPlus size={18} style={{ marginRight: "6px" }} />
-            Add Dashboard
+            Add Acconut
           </button>
         </div>
       </div>
@@ -1264,7 +1264,7 @@ export default function Dashboard() {
       {renamePopup && (
         <div className="modal-backdrop">
           <div className="modal-box">
-            <h4>Rename Dashboard</h4>
+            <h4>Rename Acconut </h4>
 
             <input
               type="text"
@@ -1299,7 +1299,7 @@ export default function Dashboard() {
       {showAdd && (
         <div className="modal-backdrop">
           <div className="modal-box">
-            <h4>Add Dashboard</h4>
+            <h4>Add Acconut</h4>
 
             <input
               className="form-inputt mb-3"
@@ -1325,7 +1325,7 @@ export default function Dashboard() {
           <div className="modal-box danger">
             <h4>Confirm Delete</h4>
             <b> "{dashboards.find(d => d._id === activeDashboard)?.name}" </b>
-            <p> This dashboard and all its transactions will be deleted.</p>
+            <p> This Acconut and all its transactions will be deleted.</p>
 
             <div className="modal-actions">
               <button className="btn btn-danger" onClick={confirmDeletee}>
@@ -1923,7 +1923,7 @@ export default function Dashboard() {
             <div className="popup-body">
               <form id="transactionForm" className="center" onSubmit={addTransaction} encType="multipart/form-data">
                 <label>
-                  Select Dashboard <span className="text-danger">*</span>
+                  Select Acconut <span className="text-danger">*</span>
                 </label>
 
                 <div className="single-select" ref={dropdownRef}>
