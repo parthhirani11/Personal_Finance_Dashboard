@@ -12,14 +12,18 @@ function Login({ setUser }) {
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   // fetch  data and navigete ih home page
    const handleLogin = async (e) => {
     e.preventDefault();
 
-    let newErrors = {};
+     let newErrors = {};
 
     if (!email.trim()) {
       newErrors.email = "Email is required";
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = "Enter a valid email address";
     }
 
     if (!password.trim()) {
@@ -30,7 +34,6 @@ function Login({ setUser }) {
       setErrors(newErrors);
       return;
     }
-
     try {
       const res = await api.post("/auth/login", { email, password },{ withCredentials: true });
       setUser(res.data.user);
@@ -63,7 +66,7 @@ function Login({ setUser }) {
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
-            className={`form-input mb-3 ${errors.password ? "input-error" : ""}`}
+            className={`form-input ${errors.password ? "input-error" : ""}`}
             value={password}
             onChange={e => {
               setPassword(e.target.value);
@@ -81,11 +84,11 @@ function Login({ setUser }) {
         </div>
 
 
-        <button type="submit" className="btn btn-primary w-100 mb-1">
+        <button type="submit" className="btn btn-primary w-100 mt-3">
           Login
         </button>
 
-        <p className="mb-3">
+        <p className="mt-3">
           Don’t have an account? <Link to="/signup">Signup</Link>
         </p>
 

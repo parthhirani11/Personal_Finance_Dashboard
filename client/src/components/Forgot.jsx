@@ -14,7 +14,7 @@ function Forgot() {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   // send otp funtion 
   const sendOtp = async (e) => {
     e.preventDefault();
@@ -22,6 +22,8 @@ function Forgot() {
 
     if (!email.trim()) {
       newErrors.email = "Email is required";
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = "Enter a valid email address";
     }
 
     if (Object.keys(newErrors).length > 0) {

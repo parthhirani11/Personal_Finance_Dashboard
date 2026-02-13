@@ -69,8 +69,16 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-
-  // ...............................................................................................
+  const capitalizeFirst = (text = "") => {
+    return text
+    .toLowerCase()
+    .split(" ")
+    .map(word =>
+      word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(" ");
+  }
+  // ..............................................................................................
   
   const normalize = (val = "") =>
     val.toString().trim().toLowerCase().replace(/\s+/g, "");
@@ -344,7 +352,13 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 className="dashboard-select"
                 onClick={() => setShowDropdown(prev => !prev)}
               >
-                {dashboards.find(d => d._id === selectedDashboard)?.name || "Select Dashboard"}
+                {/* {dashboards.find(d => d._id === selectedDashboard)?.name || "Select Dashboard"} */}
+                {selectedDashboard
+                  ? capitalizeFirst(
+                      dashboards.find(d => d._id === selectedDashboard)?.name || ""
+                    )
+                  : "Select Dashboard"
+                }
                 <FiChevronDown />
               </div>
 
@@ -361,7 +375,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                         setShowDropdown(false);
                       }}
                     >
-                      {d.name}
+                      {capitalizeFirst(d.name)}
                     </div>
                   ))}
                 </div>
@@ -405,10 +419,16 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
               <div>
                 <label >Account Holder Name</label>
+                
                 <input
                   className="form-control"
-                  value={form.person}
-                  onChange={e => setForm(p => ({ ...p, person: e.target.value }))}
+                  value={capitalizeFirst(form.person)}
+                  onChange={e =>
+                    setForm(p => ({
+                      ...p,
+                      person:e.target.value
+                    }))
+                  }
                 />
               </div>
             </div>
@@ -542,7 +562,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                   {/* Selected categories */}
                   {selectedCategories.map((cat, i) => (
                     <span key={i} className="tag-chip">
-                      {cat}
+                      {capitalizeFirst(cat)}
                       <button
                         type="button"
                         className="remove-btn"
@@ -579,7 +599,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                             className="list-group-item list-group-item-action"
                             onMouseDown={() => addCategory(cat)}
                           >
-                            {cat}
+                            {capitalizeFirst(cat)}
                           </button>
                         ))
                       ) : (
@@ -601,7 +621,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                         className="btn btn-outline-secondary btn-sm me-2"
                         onClick={() => addCategory(cat)}
                       >
-                        + {cat}
+                        + {capitalizeFirst(cat)}
                       </button>
                     ))}
                   </div>
@@ -616,7 +636,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 <div className="tag-input-wrapper" ref={tagRef}>
                   {selectedTags.map((tag, i) => (
                     <span key={i} className="tag-chip">
-                      {tag}
+                      {capitalizeFirst(tag)}
                       <button className="remove-btn" type="button" onClick={() => removeTag(tag)}>×</button>
                     </span>
                   ))}
@@ -645,7 +665,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                             className="list-group-item list-group-item-action"
                             onMouseDown={() => addTag(tag)}
                           >
-                            {tag}
+                            {capitalizeFirst(tag)}
                           </button>
                         ))
                       ) : (
@@ -667,7 +687,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                         className="btn btn-outline-secondary btn-sm me-2"
                         onClick={() => addTag(tag)}
                       >
-                       + {tag}
+                       + {capitalizeFirst(tag)}
                       </button>
                     ))}
                   </div>

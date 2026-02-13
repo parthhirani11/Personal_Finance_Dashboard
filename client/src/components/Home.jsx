@@ -525,9 +525,14 @@ export default function Dashboard() {
   }, [activeDashboard]);
 
   // transection text 1st letter
-  const capitalizeFirst = (text = "") => {
-    if (!text) return "-";
-    return text.charAt(0).toUpperCase() + text.slice(1);
+ const capitalizeFirst = (text = "") => {
+      return text
+    .toLowerCase()
+    .split(" ")
+    .map(word =>
+      word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(" ");
   };
 
   /* ================= ADD TRANSACTION ================= */
@@ -1233,22 +1238,22 @@ export default function Dashboard() {
           >
             {dashboards.map(d => (
               <option key={d._id} value={d._id}>
-                {d.name} {d.isDefault ? "(Default)" : ""}
+                {capitalizeFirst(d.name)} {d.isDefault ? "(Default)" : ""}
               </option>
             ))}
           </select>
 
           <button
-        className="rename-btn"
-        disabled={!activeDashboard}
-        onClick={() => {
-          const d = dashboards.find(x => x._id === activeDashboard);
-          setRenamePopup(d);
-          setNewName(d.name);
-        }}
-      >
-        <FiEdit size={18} /> Rename
-      </button>
+            className="rename-btn"
+            disabled={!activeDashboard}
+            onClick={() => {
+              const d = dashboards.find(x => x._id === activeDashboard);
+              setRenamePopup(d);
+              setNewName(d.name);
+            }}
+          >
+            <FiEdit size={18} /> Rename
+          </button>
 
 
           <button
@@ -1280,7 +1285,7 @@ export default function Dashboard() {
             <input
               type="text"
               className="form-inputt mb-3"
-              value={newName}
+              value={capitalizeFirst(newName)}
               onChange={(e) => setNewName(e.target.value)}
             />
 
@@ -1335,7 +1340,7 @@ export default function Dashboard() {
         <div className="modal-backdrop">
           <div className="modal-box danger">
             <h4>Confirm Delete</h4>
-            <b> "{dashboards.find(d => d._id === activeDashboard)?.name}" </b>
+            <b> "{capitalizeFirst(dashboards.find(d => d._id === activeDashboard)?.name)}" </b>
             <p> This Acconut and all its transactions will be deleted.</p>
 
             <div className="modal-actions">
@@ -1956,8 +1961,10 @@ export default function Dashboard() {
                     }}
                   >
                   {selectedDashboard
-                      ? dashboards.find(d => d._id === selectedDashboard)?.name
-                      : "Select Dashboard"}
+                    ? capitalizeFirst(
+                        dashboards.find(d => d._id === selectedDashboard)?.name || ""
+                      )
+                    : "Select Dashboard"}
 
                     <FiChevronDown className="dropdown-icon" />
                   </div>
@@ -1976,7 +1983,7 @@ export default function Dashboard() {
                             setShowDropdown(false);
                           }}
                         >
-                          {d.name}
+                          {capitalizeFirst(d.name)}
                         </div>
                       ))}
                     </div>
@@ -2180,7 +2187,7 @@ export default function Dashboard() {
                       <div className="tag-input-wrapper">
                         {selectedCategories.map((cat, i) => (
                           <span key={i} className="tag-chip">
-                            {cat}
+                            {capitalizeFirst(cat)}
                             <button
                               type="button"
                               className="remove-btn"
@@ -2310,7 +2317,7 @@ export default function Dashboard() {
                       {/* SELECTED TAGS */}
                       {selectedTags.map((tag, i) => (
                         <span key={i} className="tag-chip">
-                          {tag}
+                          {capitalizeFirst(tag)}
                           <button
                             type="button"
                             className="remove-btn"
