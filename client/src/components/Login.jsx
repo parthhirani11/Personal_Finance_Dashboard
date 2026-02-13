@@ -10,10 +10,27 @@ function Login({ setUser }) {
   const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   // fetch  data and navigete ih home page
    const handleLogin = async (e) => {
     e.preventDefault();
+
+    let newErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     try {
       const res = await api.post("/auth/login", { email, password },{ withCredentials: true });
       setUser(res.data.user);
@@ -25,28 +42,34 @@ function Login({ setUser }) {
 
   return (
     <div className="container-center">
-      <form className="auth-box" onSubmit={handleLogin}>
+      <form className="auth-box" onSubmit={handleLogin} noValidate>
         <h3>Login</h3>
 
         {error && <p className="text-danger">{error}</p>}
-
+        {errors.email && <p className="error-text">{errors.email}</p>}
         <input
           type="email"
           placeholder="Email"
-          className="form-input"
+          className={`form-input mb-3 ${errors.email ? "input-error" : ""}`}
           value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
+          onChange={e =>{ 
+            setEmail(e.target.value);
+            setErrors({ ...errors, email: "" });
+          }}
+          
         />
-
-        <div className="password-wrapper mt-3">
+        {errors.password && <p className="error-text">{errors.password}</p>}
+        <div className="password-wrapper">
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
-            className="form-input"
+            className={`form-input mb-3 ${errors.password ? "input-error" : ""}`}
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
+            onChange={e => {
+              setPassword(e.target.value);
+              setErrors({ ...errors, password: "" });
+            }}
+           
           />
 
           <span
@@ -58,11 +81,11 @@ function Login({ setUser }) {
         </div>
 
 
-        <button type="submit" className="btn btn-primary w-100 mt-3">
+        <button type="submit" className="btn btn-primary w-100 mb-1">
           Login
         </button>
 
-        <p className="mt-3">
+        <p className="mb-3">
           Don’t have an account? <Link to="/signup">Signup</Link>
         </p>
 

@@ -199,12 +199,12 @@ export default function Dashboard() {
   /* ================= EXPORT FILE HANDLE ================= */
   const handleExport = async () => {
     if (!exportType) {
-      alert("Please select export type");
+      toast.warning("Please select export type");
       return;
     }
 
     if (!filteredData.length) {
-      alert("No data to export");
+     toast.info("No data to export");
       return;
     }
 
@@ -851,6 +851,17 @@ export default function Dashboard() {
     );
   }
 
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   //  .............................................................................
 
  const transactionCategories = useMemo(() => {
@@ -1386,7 +1397,7 @@ export default function Dashboard() {
               </h4>
               <p className="sub-text">Cash vs Bank vs UPI (Income + Expense)</p>
               {Array.isArray(transactions) && (
-              <ResponsiveContainer width="100%" height={235}>
+              <ResponsiveContainer width="100%" height={isMobile ? 190 : 235}>
                 <PieChart>
                   <text
                     x="50%"
@@ -1412,10 +1423,10 @@ export default function Dashboard() {
                     data={paymentPieData}
                     dataKey="value"
                     nameKey="name"
-                    innerRadius={55}
-                    outerRadius={110}
-                    paddingAngle={4}
-                    cornerRadius={4}
+                    innerRadius={isMobile ? 40 : 55}
+                    outerRadius={isMobile ? 75 : 110}
+                    paddingAngle={3}
+                    cornerRadius={3}
                   >
                     {paymentPieData.map((entry) => {
                       const key = entry.key;
@@ -1458,15 +1469,22 @@ export default function Dashboard() {
 
             {/* Savings Trend Chart*/}
             <div className="chart-card dark">
+            
               <h4 className="chart-title"><FiTrendingUp className="chart-icon line" />Savings Trend</h4>
               <p className="sub-text">12-month savings performance</p>
 
-                <ResponsiveContainer width="100%" height={235}>
+                <ResponsiveContainer width="100%" height={isMobile ? 190 : 235}>
                   <LineChart data={savingsTrend}>
 
                     <CartesianGrid stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="month" tick={{ fill: "#cbd5f5" }} />
-                    <YAxis tick={{ fill: "#cbd5f5" }} />
+                    <XAxis  dataKey="month"
+                      tick={{
+                        fill: "#cbd5f5",
+                        fontSize: isMobile ? 9 : 12
+                      }}
+                      interval={isMobile ? 1 : 0} 
+                    />
+                    <YAxis  tick={{ fill: "#cbd5f5", fontSize: isMobile ? 9 : 12 }} />
                       {/* ✅ PASTE HERE */}
                       <Tooltip  content={<DarkTooltip />} />
 
@@ -1474,8 +1492,8 @@ export default function Dashboard() {
                         type="monotone"
                         dataKey="savings"
                         stroke="#22c55e"
-                        strokeWidth={3}
-                        dot={true}
+                        strokeWidth={isMobile ? 2 : 3}
+                        dot={{ r: isMobile ? 3 : 5 }}
                       />
 
                   </LineChart>
@@ -1489,9 +1507,10 @@ export default function Dashboard() {
               Monthly Overview
             </h4>
             <p className="sub-text">12-month income vs expenses comparison</p>
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={isMobile ? 260 : 350}>
                 <BarChart
                   data={monthWiseChartData}
+                  barCategoryGap={isMobile ? "25%" : "15%"}
                   margin={{ top: 20, right: 30, left: 0, bottom: 50 }}
                 >
                   {/* ===== GRADIENTS ===== */}
@@ -1513,20 +1532,21 @@ export default function Dashboard() {
                   />
                   <XAxis
                     dataKey="month"
-                    interval={0}
-                    tick={{
-                      fill: "#cbd5f5",   
-                    }}
+                    interval={isMobile ? 1 : 0}   // Skip every alternate month on mobile
+                    angle={isMobile ? -35 : 0}
+                    textAnchor={isMobile ? "end" : "middle"}
+                    height={isMobile ? 60 : 40}
+                    tick={{ fill: "#cbd5f5", fontSize: isMobile ? 10 : 12 }}
                   />
-                  <YAxis tick={{ fill: "#cbd5f5", fontWeight: 100 }} />
+                  <YAxis tick={{ fill: "#cbd5f5", fontSize: isMobile ? 10 : 12 }} />
 
                   <Tooltip cursor={false} content={<CustomTooltip />} />
 
                   <Legend
                     wrapperStyle={{
-                      color: "#e5e7eb",
-                      fontWeight: 500,
+                      fontSize: isMobile ? "10px" : "13px",
                     }}
+
                   />
 
                   <Bar
@@ -1561,7 +1581,7 @@ export default function Dashboard() {
             {/* EXPORT + FILTER */}
             <div className="export-filter-container d-flex">
               <select
-                className="form-select border-2"
+                className="form-selectet border-2"
                 style={{ width: 200 }}
                 value={exportType}
                 onChange={(e) => setExportType(e.target.value)}
@@ -1573,7 +1593,7 @@ export default function Dashboard() {
               </select>
 
               <button
-                className="plus-btnnx d-flex align-items-center gap-1"
+                className="plus-btnnnx d-flex align-items-center gap-1"
                 onClick={handleExport}
               >
                 <FiDownload size={16} />
@@ -1582,7 +1602,7 @@ export default function Dashboard() {
             </div>
 
             {/* RIGHT SIDE – TITLE */}
-            <h3 className="text-white mb-0">Transactions...</h3>
+            <h2 className="text-white mb-0">Transactions...</h2>
 
           </div>
 
@@ -1736,7 +1756,7 @@ export default function Dashboard() {
                 
                 {/* ADD FILTER BUTTON (ONLY LAST ROW) */}
                 {index === filters.length - 1 && (
-                  <button className="plus-btnnnx d-flex align-items-center gap-1" onClick={addFilter}>
+                  <button className="plus-btnnx d-flex align-items-center gap-1" onClick={addFilter}>
                     <FiFilter size={15} />
                     Add Filter
                   </button>

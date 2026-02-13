@@ -13,6 +13,8 @@ function Register() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const navigate = useNavigate();
   //  store new user data
   const register = async () => {
@@ -34,49 +36,91 @@ function Register() {
     }
   };
   // seve new user data 
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   register();
+  // };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    let newErrors = {};
+
+    if (!form.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(form.email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+
+    if (!form.password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (form.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     register();
   };
+
 
   return (
     <div className="container-center">
       {/* Toast container */}
       <ToastContainer position="top-center" autoClose={3000} />
 
-      <form className="auth-box" onSubmit={handleSubmit}>
+      <form className="auth-box" onSubmit={handleSubmit} noValidate> 
         <h3>Register</h3>
 
+        {errors.name && <p className="error-text">{errors.name}</p>}
         <input
           type="text"
-          className="form-input"
+          className={`form-input mb-3${errors.name ? "input-error" : ""}`}
           placeholder="Name"
           value={form.name}
-          onChange={e => setForm({ ...form, name: e.target.value })}
-          required
+          onChange={e => {
+            setForm({ ...form, name: e.target.value });
+            setErrors({ ...errors, name: "" });
+          }}
         />
 
+
+        {errors.email && <p className="error-text">{errors.email}</p>}
         <input
           type="email"
-          className="form-input mt-3"
+          className={`form-input mb-3 ${errors.email ? "input-error" : ""}`}
           placeholder="Email"
           value={form.email}
-          onChange={e => setForm({ ...form, email: e.target.value })}
-          required
+          onChange={e => {
+            setForm({ ...form, email: e.target.value });
+            setErrors({ ...errors, email: "" });
+          }}
         />
 
+
+       {errors.password && <p className="error-text">{errors.password}</p>}
         <input
           type="password"
-          className="form-input mt-3"
+          className={`form-input mb-3 ${errors.password ? "input-error" : ""}`}
           placeholder="Password"
           value={form.password}
-          onChange={e => setForm({ ...form, password: e.target.value })}
-          required
+          onChange={e => {
+            setForm({ ...form, password: e.target.value });
+            setErrors({ ...errors, password: "" });
+          }}
         />
+
 
         <button
           type="submit"
-          className="btn btn-primary w-100 mt-3"
+          className="btn btn-primary w-100 mb-3"
           disabled={loading}>
           {loading ? "Registering..." : "Register"}
         </button>

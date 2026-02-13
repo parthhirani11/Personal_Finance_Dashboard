@@ -465,7 +465,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                   <div className="tag-modal-backdrop">
                     <div className="tag-modal">
                       <div className="modal-header mb-2">         
-                        <h5 style={{ color: "#d9d8e2" }}>Add Payment Mode</h5>
+                        <h5 className="modal-title" style={{color:"#d9d8e2"}}>Add Payment Mode</h5>
                         <button
                           type="button"
                           className="btn-close"
