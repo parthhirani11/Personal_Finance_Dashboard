@@ -159,168 +159,12 @@ body {
   font-size: 1.5rem;
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
-
-  .top-header .container-fluid {
-    flex-direction: column;
-    align-items: stretch !important;
-  }
-
-  .brand-wrap {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .brand-desc {
-    display: none;
-  }
-
-  .menu-toggle {
-    display: block;
-  }
-
-  /* Hide nav by default */
-  .nav-links {
-     display: none !important;
-    flex-direction: column;
-    gap: 8px;              /* 👈 controlled gap */
-    padding-top: 10px;
-  }
-
-  /* Show when open */
-  .nav-links.mobile-open {
-    display: flex !important;
-  }
-.page-link {
-    width: 100%;
-    padding: 14px 16px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-
-    background: linear-gradient(
-      145deg,
-      #020617,
-      #020617
-    );
-
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #e5e7eb;
-
-    transition: all 0.25s ease;
-  }
-    /* Hover / tap */
-  .page-link:active {
-    transform: scale(0.97);
-    background: linear-gradient(
-      145deg,
-      #020617,
-      #020617
-    );
-  }
-
-  /* Hover (desktop testing) */
-  .page-link:hover {
-    background: linear-gradient(
-      145deg,
-      #020617,
-      #020617
-    );
-  }
-    .page-link.active {
-    background: linear-gradient(
-      145deg,
-      #020617,
-      #020617
-    );
-    color: #38bdf8;
-  }
-
-  .mobile-logout {
-    width: 100%;
-    justify-content: center;
-    border-radius: 14px;
-    /* margin-top: 8px; */
-  }
-
-  /* Hide desktop user section */
-  .user-section {
-    display: none !important;
-  }
-}
-
-
 /* Hide mobile logout on desktop */
 .mobile-logout {
   display: none;
 }
 
-/* Show mobile logout only on mobile */
-@media (max-width: 768px) {
-  .mobile-logout {
-    display: flex;
-  }
-}
 
-
-@media (max-width: 768px) {
-
-  /* Container spacing */
-  .top-header {
-    padding: 10px 14px;
-  }
-
-  .top-header .container-fluid {
-    flex-direction: column;
-    align-items: stretch !important;
-    gap: 8px;
-  }
-
-  /* BRAND ROW */
-  .brand-wrap {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  /* Logo smaller */
-  .brand-logo {
-    height: 30px;
-    width: auto;
-  }
-
-  /* Text block compact */
-  .brand-text {
-    flex: 1;
-    min-width: 0;
-  }
-
-  /* Title smaller + single line */
-  .brand-title {
-    font-size: 0.73rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Hide description completely */
-  .brand-desc {
-    display: none;
-  }
-
-  /* Menu icon spacing */
-  .menu-toggle {
-    font-size: 1.4rem;
-    padding: 4px;
-  }
-}
 /* ......................................................................................................... */
 /* ================= ABOUT PAGE ================= */
 .about-page {
@@ -403,35 +247,6 @@ body {
   color: #22c55e;
   font-size: 0.8rem;
 }
-
-@media (max-width: 768px) {
-
-  .about-card {
-    grid-template-columns: 1fr;  /* stack */
-    padding: 25px 20px;
-    gap: 20px;
-    text-align: center;
-  }
-
-  .about-image img {
-    max-width: 240px;
-  }
-
-  .about-content h2 {
-    font-size: 1.3rem;
-  }
-
-  .about-content p {
-    font-size: 0.82rem;
-    /* text-align: center; */
-  }
-
-  .about-content li {
-    font-size: 0.8rem;
-    padding-left: 18px;
-  }
-}
-
 
 
 /* ================= CONTACT PAGE ================= */
@@ -532,35 +347,6 @@ body {
   opacity: 0.9;
 }
 
-@media (max-width: 768px) {
-
-  .contact-card {
-    grid-template-columns: 1fr;   /* stack */
-    padding: 24px 20px;
-    gap: 20px;
-    text-align: center;
-  }
-
-  .contact-image img {
-    max-width: 250px;
-    max-height: 200px;
-  }
-
-  .contact-form h2 {
-    font-size: 1.3rem;
-  }
-
-  .form-input,
-  .form-textarea {
-    font-size: 0.82rem;
-  }
-
-  .send-btn {
-    font-size: 0.82rem;
-    padding: 10px;
-  }
-}
-
 
 
 /* ................................................................................... */
@@ -581,7 +367,6 @@ body {
 .toast.error {
   background: #dc2626;
 }
-
 
 
 /* ================= LOGIN PAGE ================= */
@@ -760,87 +545,6 @@ body {
 .transection h4{
   color:#cbd5f5;
 }
-@media (max-width: 768px) {
-
-  /* ===== CENTER CONTAINER ===== */
-  .container-center {
-    /* min-height: auto; */
-    padding: 14px;
-    align-items: flex-start;
-    /* min-height: 69vh; */
-  }
-
-  /* ===== AUTH BOX (LOGIN / REGISTER CARD) ===== */
-  .auth-box {
-    max-width: 100%;
-    padding: 24px 20px;
-    border-radius: 18px;
-    margin-top: 40px;
-  }
-
-  .auth-box h3 {
-    font-size: 1.2rem;
-    margin-bottom: 16px;
-  }
-
-  /* ===== INPUTS ===== */
-  .form-inputt {
-    font-size: 0.85rem;
-    padding: 10px 12px;
-  }
-
-  .form-inputt::placeholder {
-    font-size: 0.8rem;
-  }
-
-  /* ===== BUTTON ===== */
-  .auth-box button {
-    font-size: 0.85rem;
-    padding: 10px;
-    border-radius: 10px;
-  }
-
-  /* ===== LINKS ===== */
-  .auth-box a {
-    font-size: 0.8rem;
-  }
-
-  /* ===== PASSWORD EYE ICON ===== */
-  .eye-icon {
-    font-size: 16px;
-    right: 10px;
-  }
-
-  /* ===== ERROR TEXT ===== */
-  .text-danger {
-    font-size: 0.75rem;
-  }
-
-  /* ===== BACK ICON ===== */
-  .back-icon-link {
-    width: 36px;
-    height: 36px;
-    top: 14px;
-    left: 14px;
-  }
-
-  .back-icon-link svg {
-    font-size: 1.1rem;
-  }
-
-  /* ===== FILE INPUT BUTTON ===== */
-  .container-center input[type="file"]::file-selector-button {
-    padding: 5px 12px;
-    font-size: 0.75rem;
-    border-radius: 10px 4px 4px 10px;
-  }
-
-  /* ===== TRANSACTION TITLE ===== */
-  .transection h4 {
-    font-size: 0.9rem;
-    text-align: center;
-  }
-}
 
 
 
@@ -996,67 +700,6 @@ body {
 }
 /* responsive layout in summary card */
 
-@media (max-width: 768px) {
-
-  /* ===== SUMMARY CARD ===== */
-  .summary-card {
-    padding: 16px 18px;
-    border-radius: 14px;
-    margin: 8px 0;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
-  }
-
-  .summary-card:hover {
-    transform: none; /* mobile ma jump avoid */
-  }
-
-  /* ===== LEFT CONTENT ===== */
-  .summary-content {
-    gap: 4px;
-  }
-
-  /* ===== TITLE ===== */
-  .summary-title {
-    font-size: 0.78rem;
-    margin-bottom: 4px;
-    font-weight: 500;
-  }
-
-  /* ===== VALUE ===== */
-  .summary-value {
-    font-size: 1.45rem;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  /* ===== SUB TEXT ===== */
-  .summary-sub {
-    font-size: 0.7rem;
-    opacity: 0.75;
-  }
-
-  /* ===== ICON ===== */
-  .summary-icon {
-    width: 34px;
-    height: 34px;
-    font-size: 1.15rem;
-    border-radius: 10px;
-  }
-
-  /* ===== REMOVE SHINE (mobile performance) ===== */
-  .summary-card::after {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .summary-value {
-    font-size: 1.3rem;
-  }
-  .summary-title {
-    font-size: 0.75rem;
-  }
-}
 
 
 /* ................tab transection list and graph overview.................... */
@@ -1101,28 +744,6 @@ body {
 
 .tab-slider.right {
   transform: translateX(98%);
-}
-
-@media (max-width: 768px) {
-
-  .dashboard-tabs {
-    padding: 3px;
-    border-radius: 10px;
-    margin-bottom: 16px;
-  }
-
-  .tab-btn {
-    font-size: 0.75rem;
-    padding: 8px 4px;
-    font-weight: 500;
-  }
-
-  .tab-slider {
-    top: 3px;
-    bottom: 3px;
-    margin-right: 8px;
-    border-radius: 8px;
-  }
 }
 
 
@@ -1465,92 +1086,7 @@ body {
   white-space: nowrap;
 }
 
-/* ============================= */
-/* ===== MOBILE RESPONSIVE ===== */
-/* ============================= */
-@media (max-width: 768px) {
 
-  /* CARD */
-  .transaction-card {
-    flex-direction: column;
-    padding: 18px;
-    gap: 3px;
-  }
-
-  /* HEADER FIX */
-  .transaction-header {
-    display: flex;
-    flex-direction: row !important;   /* FORCE SAME LINE */
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
-  .type-badge {
-    font-size: 0.85rem;
-    padding: 6px 16px;
-  }
-
-  .amount {
-    font-size: 1.1rem;
-    font-weight: 700;
-    white-space: nowrap;   /* PREVENT BREAK */
-  }
-
-  /* DETAILS FIX */
-  .transaction-details.fixed {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
-  .transaction-details.fixed .row {
-    display: flex;
-    flex-direction: row !important;   /* FORCE INLINE */
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
-  .transaction-details.fixed .label {
-    font-size: 0.7rem;
-    color: #94a3b8;
-    white-space: nowrap;
-  }
-
-  .transaction-details.fixed .value {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-align: right;
-    white-space: nowrap;   /* STOP GOING DOWN */
-  }
-
-  /* Date */
-  .transaction-side {
-    width: 100%;
-    align-items: flex-start;
-  }
-
-  .transaction-side small {
-    font-size: 0.75rem;
-  }
-
-  /* BUTTON FIX */
-  .action-buttons {
-    width: 100%;
-    display: flex;
-    gap: 12px;
-  }
-
-  .edit-btn,
-  .delete-btn {
-    flex: 1;
-    font-size: 0.75rem;   /* 0.3rem remove kari didhu */
-    padding: 12px;
-    border-radius: 12px;
-  }
-
-}
 
 
 
@@ -1864,108 +1400,7 @@ body {
   font-weight: 800;
 }
 
-/* ================= MOBILE RESPONSIVE ================= */
-@media (max-width: 768px) {
 
-  .dual-chart-grid {
-    grid-template-columns: 1fr;   /* Stack vertically */
-    gap: 16px;
-  }
-
-  .chart-grid {
-    grid-template-columns: 1fr;   /* If used */
-  }
-
-  .bar-chart-card {
-    padding: 14px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-
-  .chart-card.dark {
-    padding: 16px;
-  }
-}
-
-@media (max-width: 768px) {
-
-  .chart-title {
-    font-size: 0.95rem;
-  }
-
-  .sub-text {
-    font-size: 0.7rem;
-  }
-
-  .pie-center-title {
-    font-size: 0.7rem;
-  }
-
-  .pie-center-value {
-    font-size: 0.8rem;
-  }
-
-  .tooltip-label,
-  .tooltip-name,
-  .tooltip-value {
-    font-size: 0.7rem;
-  }
-
-  .legend-row {
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .pie-legend {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-}
-
-@media (max-width: 768px) {
-  .pie-center-title {
-    font-size: 0.6rem;
-  }
-
-  .pie-center-value {
-    font-size: 0.7rem;
-  }
-}
-
-@media (max-width: 768px) {
-
-  .chart-title {
-    font-size: 0.9rem;
-    gap: 6px;
-  }
-
-  .chart-icon {
-    font-size: 1rem;
-  }
-
-  .sub-text {
-    font-size: 0.65rem;
-    margin-bottom: 8px;
-  }
-}
-
-@media (max-width: 768px) {
-  .legend-row {
-    font-size: 0.7rem;
-  }
-
-  .legend-dot {
-    width: 7px;
-    height: 7px;
-  }
-}
-
-@media (max-width: 768px) {
-  .chart-card.dark {
-    padding: 14px;
-  }
-}
 
 /* ................................................................................................... */
 /* ===== EMPTY DATA ===== */
@@ -2301,50 +1736,6 @@ p a:hover {
   font-weight: 600;
 }
 
-/* ============================= */
-/* ===== MOBILE RESPONSIVE ===== */
-/* ============================= */
-
-@media (max-width: 768px) {
-
-  .transaction-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .export-filter-container {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  
-  .form-selectet {
-    padding: 5px 8px;
-    font-size: 12px;
-    height: 30px;
-    min-width: unset;
-  }
-
-  .plus-btnnnx {
-    padding: 5px 8px;
-    font-size: 12px;
-    height: 30px;
-    justify-content: center;
-  }
-
-  .plus-btnnnx svg {
-    font-size: 13px;
-  }
-
-  .transaction-title {
-    width: 100%;
-    margin-top: 6px;
-  }
-   h3 {
-    font-size: 18px;
-  }
-
-}
 
 /* ===== EXPORT BUTTON ===== */
 .plus-btnnx {
@@ -2382,80 +1773,6 @@ p a:hover {
 
 
 
-/* =====================================
-   MOBILE RESPONSIVE – EDIT / EXPORT
-===================================== */
-
-
-@media (max-width: 768px) {
-
-  /* ================= PAYMENT RADIO SMALL ================= */
-  .payment-mode-group {
-    gap: 12px;
-  }
-
-  .radio-item {
-    font-size: 12px;
-    gap: 6px;
-  }
-
-  .custom-radio {
-    width: 14px;
-    height: 14px;
-  }
-
-  .radio-item input:checked + .custom-radio::after {
-    width: 7px;
-    height: 7px;
-  }
-
-  /* ================= SELECT BOX SMALL ================= */
-  .form-select {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 8px;
-  }
-
-  /* ================= EXPORT + FILTER CONTAINER ================= */
-  .export-filter-container {
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  /* ================= EXPORT BUTTON SMALL ================= */
- 
- .plus-btnnx {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 8px;
-  }
-  /* ================= ALL INPUT TYPES SMALL ================= */
-  input[type="text"],
-  input[type="number"],
-  input[type="date"],
-  input[type="email"],
-  input[type="password"],
-  input[type="search"],
-  textarea {
-    padding: 6px 8px;
-    font-size: 12px;
-    border-radius: 8px;
-  }
-
-  /* Bootstrap form-control small override */
-  .form-control {
-    padding: 6px 8px !important;
-    font-size: 12px !important;
-  }
-
-  /* ================= ALL BUTTONS SMALL ================= */
-  .btn {
-    font-size: 12px;
-    padding: 5px 10px;
-    border-radius: 8px;
-  }
-
-}
 
 
 /* ..................................................... */
@@ -3060,90 +2377,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 768px) {
 
-  /* ===== EXPORT SECTION ===== */
-  .export-filter-container {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px;
-  }
-
-  .export-filter-container .form-select {
-    width: 100% !important;
-    font-size: 0.72rem;
-    padding: 7px 9px;
-  }
-
-  .plus-btnnx {
-    width: 100%;
-    font-size: 0.72rem;
-    padding: 8px;
-    justify-content: center;
-  }
-
-
-  /* ===== FILTER ROW ===== */
-  .filters-container > div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 12px !important;
-  }
-
-  /* FILTER SELECT */
-  .filters-container .form-select {
-    flex: 1;
-    font-size: 0.7rem;
-    padding: 6px 8px;
-    min-width: 120px;
-  }
-
-  /* INPUT */
-  .filters-container .form-control {
-    flex: 1.2;
-    font-size: 0.7rem;
-    padding: 6px 8px;
-    min-width: 140px;
-  }
-
-  /* DATE INPUTS */
-  .filters-container .d-flex.gap-1 {
-    display: flex;
-    gap: 6px;
-    width: 100%;
-  }
-
-  .filters-container input[type="date"] {
-    flex: 1;
-    font-size: 0.68rem;
-    padding: 6px 7px;
-  }
-
-  /* REMOVE (X) BUTTON */
-  .close-btn {
-    font-size: 18px;
-    margin-left: auto;
-  }
-
-  /* ===== SUGGESTION BOX ===== */
-  .suggestionBox {
-    max-height: 160px;
-    font-size: 0.7rem;
-  }
-
-  .suggestionBox .list-group-item {
-    padding: 6px 10px;
-  }
-}
-
-/* EXTRA SMALL PHONES */
-@media (max-width: 380px) {
-  
-  .plus-btnnx span {
-    display: none;
-  }
-}
 /* edit */
 
 .editt-btn,
@@ -3402,60 +2636,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 
-/* ===================================
-   MOBILE RESPONSIVE (FINAL FIX)
-=================================== */
-@media (max-width: 768px) {
-
-  /* GRID remove kari ne flex karo */
-  .category-section,
-  .tag-section {
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* Settings icon LEFT side */
-  .settings-btn,
-  .settings-btn-tags {
-    order: -1;          /* left side fix */
-    flex-shrink: 0;
-    padding: 2px;
-  }
-
-  .settings-spin {
-    font-size: 18px;
-  }
-
-  /* Buttons container */
-  .category-buttons,
-  .tag-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  /* Small buttons mobile */
-  .category-buttons .btn,
-  .tag-buttons .btn {
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 6px;
-  }
-
-  /* Hide tooltip in mobile */
-  .settings-btn::after,
-  .settings-btn-tags::after {
-    display: none;
-  }
-
-  /* Slight spacing adjustment */
-  .category-section.mt-2,
-  .tag-section.mt-2 {
-    margin-top: 6px !important;
-  }
-
-}
 
 
 /* ===== ADD PAYMENT MODE BUTTON ===== */
@@ -3501,163 +2681,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 
-@media (max-width: 768px) {
 
-  /* ================= POPUP BOX ================= */
-  .popup-box {
-    width: 95%;
-    max-height: 94vh;
-    border-radius: 16px;
-  }
-
-  .popup-header {
-    padding: 12px 16px;
-  }
-
-  .popup-header h3 {
-    font-size: 0.95rem;
-  }
-
-  .popup-header .close-btn {
-    font-size: 22px;
-    top: 8px;
-    right: 14px;
-  }
-
-  .popup-body {
-    padding: 14px;
-    max-height: 75vh;
-  }
-
-  .popup-body label {
-    font-size: 0.75rem;
-  }
-
-  /* ================= INPUTS SMALL ================= */
-  .popup-body .form-control,
-  .popup-body .form-select {
-    font-size: 0.75rem;
-    padding: 8px 10px;
-    border-radius: 10px;
-  }
-
-  input[type="date"] {
-    font-size: 0.72rem;
-    padding: 7px 8px;
-  }
-
-  /* ================= BUTTONS SMALL ================= */
-  .plus-btn,
-  .plus-btnn,
-  .editt-btn,
-  .editt-btnn,
-  .clo-btn,
-  .clo-btnn {
-    height: 36px;
-    font-size: 0.75rem;
-    padding: 6px 12px;
-    border-radius: 10px;
-  }
-
-  .popup-footer {
-    padding: 12px 16px;
-    text-align: center;
-  }
-
-  .popup-footer .btn-primary {
-    width: 100%;
-    padding: 8px;
-    font-size: 0.8rem;
-  }
-
-  /* ================= TYPE SLIDER ================= */
-  .type-slider {
-    height: 38px;
-  }
-
-  .slider-option {
-    font-size: 0.75rem;
-    line-height: 38px;
-  }
-
-  /* ================= PAYMENT MODE ================= */
-  .payment-mode {
-    gap: 6px;
-  }
-
-  .radio-item {
-    font-size: 0.75rem;
-    padding: 5px 8px;
-  }
-
-  .custom-radio {
-    width: 16px;
-    height: 16px;
-  }
-
-  /* ================= TAG INPUT ================= */
-  .tag-input-wrapper {
-    padding: 8px;
-  }
-
-  .tag-chip {
-    font-size: 11px;
-    padding: 3px 8px;
-  }
-
-  .tag-input {
-    font-size: 12px;
-    min-width: 90px;
-  }
-
-  .add-tag-btn {
-    width: 22px;
-    height: 22px;
-    font-size: 14px;
-  }
-
-  /* ================= ADD PAYMENT MODE BUTTON ================= */
-  .add-mode-btn {
-    height: 32px;
-    font-size: 12px;
-    padding: 0 10px;
-  }
-
-  .add-mode-btn .add-icon {
-    width: 16px;
-    height: 16px;
-    font-size: 12px;
-  }
-
-  /* ================= ROBOT BUTTON SMALL ================= */
-  .robot-add-btn {
-    bottom: 15px;
-    right: 15px;
-  }
-
-  .robot-add-btn img {
-    width: 65px;   /* 🔥 smaller robot */
-  }
-
-  .robot-msg {
-    font-size: 11px;
-    padding: 6px 8px;
-    right: 60px;
-    top: -12px;
-  }
-
-  .robot-msg::after {
-    right: 18px;
-    width: 10px;
-    height: 10px;
-  }
-
-  /* Hide hover tooltip on mobile */
-  .robot-add-btn::after {
-    display: none;
-  }
-
-}
 /* ........................................................................................................... */
 /* ================= FOOTER ================= */
 
@@ -3717,28 +2741,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 
-@media (max-width: 768px) {
-
-  .footer {
-    padding: 10px 14px; /* more compact */
-  }
-
-  .footer-social {
-    gap: 12px;
-    margin-bottom: 4px;
-  }
-
-  .footer-social a {
-    width: 28px;
-    height: 28px;
-    font-size: 0.85rem;
-  }
-
-  .footer-copy {
-    font-size: 0.7rem;
-    flex-direction: row; /* 🔴 same line confirm */
-  }
-}
 
 /* ........................................................................................................... */
 
@@ -3943,48 +2945,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   flex-shrink: 0;   /* 👈 icon squeeze nahi thase */
 }
 
-/* =================================
-   ALL DANGER + SECONDARY BUTTON FIX
-================================= */
-@media (max-width: 768px) {
-
-  /* Parent container force one line */
-  .modal-actions,
-  .confirm-buttons {
-    display: flex;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;   /* 👈 break nahi thay */
-    justify-content: center;
-    gap: 8px;
-  }
-
-  /* Small button size */
-  .btn-danger,
-  .btn-secondary {
-    font-size: 12px !important;
-    padding: 6px 10px !important;
-    border-radius: 6px;
-    white-space: nowrap;  /* 👈 text wrap nahi thay */
-  }
-
-}
-
-/* ===============================
-   DASHBOARD SELECT MOBILE
-================================ */
-@media (max-width: 768px) {
-
-  .dashboard-select {
-    padding: 6px 10px;      /* 🔥 smaller padding */
-    font-size: 12px;        /* 🔥 small text */
-    border-radius: 8px;     /* thodu compact */
-  }
-
-  .dropdown-icon {
-    font-size: 14px;        /* small icon */
-  }
-
-}
 
 
 .multi-option {
@@ -4013,88 +2973,3 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 
-/* ================= MOBILE DASHBOARD ================= */
-@media (max-width: 768px) {
-
-  .dashboard-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .dashboard-left,
-  .dashboard-right {
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .form-selectt {
-    width: 100%;
-    font-size: 0.85rem;
-    padding: 8px 12px;
-  }
-
-  .rename-btn,
-  .delete-btn,
-  .edit-btn {
-    flex: 1;
-    font-size: 0.8rem;
-    padding: 8px 10px;
-    border-radius: 10px;
-  }
-
-  .edit-btn {
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-
-  .modal-box {
-    padding: 16px;
-    width: 92%;
-  }
-
-  .modal-box h4 {
-    font-size: 1rem;
-  }
-
-  .modal-input,
-  .form-inputt {
-    font-size: 0.85rem;
-    padding: 8px 10px;
-  }
-
-  .modal-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .modal-actions button {
-    width: 100%;
-    font-size: 0.8rem;
-    padding: 8px;
-  }
-}
-
-
-
-/* ===============================
-   MODAL TITLE RESPONSIVE SIZE
-================================ */
-@media (max-width: 768px) {
-
-  .modal-title {
-    font-size: 16px !important;  /* h5 karta nani */
-  }
-
-}
-
-@media (max-width: 480px) {
-
-  .modal-title {
-    font-size: 14px !important;  /* ultra small mobile */
-  }
-
-}

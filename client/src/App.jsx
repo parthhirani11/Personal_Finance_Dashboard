@@ -14,6 +14,7 @@ import Reset from "./components/Reset";
 // import Edit from "./components/Edit";
 import Footer from "./components/Footer";
 import "./styles/main.css";
+import "./styles/responsive.css"
 import ScrollToTop from "./components/ScrollToTop";
 import { CategoryTagProvider } from "./context/CategoryTagContext";
 api.defaults.withCredentials = true;
