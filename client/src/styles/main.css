@@ -1126,6 +1126,7 @@ body {
 }
 
 
+
 /* ================= TRANSACTION LIST ================= */
 
 .transaction-summary {
@@ -1167,6 +1168,7 @@ body {
   gap: 20px;
   box-shadow: 0 14px 36px rgba(0,0,0,0.45);
   transition: transform 0.35s ease, box-shadow 0.35s ease;
+  align-items: stretch;
   /* margin-bottom: 5px; */
 }
 
@@ -1177,10 +1179,17 @@ body {
 
 /* ===== HEADER ===== */
 .transaction-header {
-  display: flex;
+  display: inline-flex; 
   align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 10px;       
+  margin-bottom: 12px;
+}
+.transaction-main {
+  flex: 1;
+}
+
+.transaction-main .transaction-header {
+  width: fit-content;   /* KEY FIX */
 }
 
 /* BADGES */
@@ -1231,7 +1240,7 @@ body {
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-between;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .transaction-side small {
@@ -1331,9 +1340,6 @@ body {
   color: #94a3b8;
 }
 
-
-
-
 /* new card css.....*/
 /* ===== FIXED TRANSACTION DETAILS ===== */
 .transaction-details.fixed {
@@ -1347,7 +1353,7 @@ body {
 /* each row */
 .transaction-details.fixed .row {
   display: grid;
-  grid-template-columns: 120px 1fr; /* FIXED LABEL + FLEX VALUE */
+  grid-template-columns: 110px 1fr; /* FIXED LABEL + FLEX VALUE */
   align-items: start;
 }
 
@@ -1459,245 +1465,93 @@ body {
   white-space: nowrap;
 }
 
+/* ============================= */
+/* ===== MOBILE RESPONSIVE ===== */
+/* ============================= */
 @media (max-width: 768px) {
 
-  /* ===== SUMMARY BAR ===== */
-  .transaction-summary {
-    padding: 10px 12px;
-    gap: 10px;
-    font-size: 0.75rem;
-    border-radius: 12px;
-  }
-
-  /* ===== CARD ===== */
+  /* CARD */
   .transaction-card {
     flex-direction: column;
-    padding: 14px;
-    gap: 14px;
-    border-radius: 14px;
+    padding: 18px;
+    gap: 3px;
   }
 
-  .transaction-card:hover {
-    transform: none;
-  }
-
-  /* ===== HEADER ===== */
+  /* HEADER FIX */
   .transaction-header {
-    gap: 8px;
-    margin-bottom: 6px;
+    display: flex;
+    flex-direction: row !important;   /* FORCE SAME LINE */
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
   }
 
   .type-badge {
-    font-size: 0.65rem;
-    padding: 3px 10px;
+    font-size: 0.85rem;
+    padding: 6px 16px;
   }
 
   .amount {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    white-space: nowrap;   /* PREVENT BREAK */
   }
 
-  /* ===== DETAILS GRID ===== */
+  /* DETAILS FIX */
   .transaction-details.fixed {
-    grid-template-columns: 1fr;
-    row-gap: 8px;
-    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
   }
 
   .transaction-details.fixed .row {
-    grid-template-columns: 90px 1fr;
+    display: flex;
+    flex-direction: row !important;   /* FORCE INLINE */
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
   }
 
   .transaction-details.fixed .label {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    white-space: nowrap;
   }
 
   .transaction-details.fixed .value {
     font-size: 0.75rem;
-    line-height: 1.3;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;   /* STOP GOING DOWN */
   }
 
-  /* ===== ATTACHMENT ===== */
-  .transaction-details.fixed .row.full {
-    grid-column: 1 / -1;
-  }
-
-  /* ===== RIGHT SIDE ===== */
+  /* Date */
   .transaction-side {
+    width: 100%;
     align-items: flex-start;
-    min-width: unset;
-    gap: 8px;
   }
 
   .transaction-side small {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
 
-  /* ===== ACTION BUTTONS ===== */
+  /* BUTTON FIX */
   .action-buttons {
     width: 100%;
-    justify-content: space-between;
+    display: flex;
+    gap: 12px;
   }
 
   .edit-btn,
   .delete-btn {
     flex: 1;
-    padding: 6px 10px;
-    font-size: 0.7rem;
-    border-radius: 8px;
-  }
-
-  .edit-btn svg,
-  .delete-btn svg {
-    font-size: 14px;
-  }
-
-  /* ===== PAYMENT BADGES ===== */
-  .pay-badge {
-    font-size: 0.65rem;
-    padding: 4px 10px;
-  }
-
-  .pay-detail {
-    font-size: 0.65rem;
-    padding: 4px 8px;
-  }
-
-  /* ===== EMPTY STATE ===== */
-  .no-records {
-    margin-top: 24px;
-    font-size: 0.8rem;
-  }
-}
-@media (max-width: 768px) {
-
-  /* ===== CARD BASE ===== */
-  .transaction-card {
-    padding: 14px 14px 16px;
-    border-radius: 16px;
-    gap: 12px;
-  }
-
-  /* ===== HEADER (TYPE + AMOUNT) ===== */
-  .transaction-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-
-  .type-badge {
-    font-size: 0.6rem;
-    padding: 4px 10px;
-    letter-spacing: 0.5px;
-  }
-
-  .amount {
-    font-size: 1.05rem;
-    font-weight: 700;
-  }
-
-  /* ===== DETAILS GRID (CLEAN) ===== */
-  .transaction-details.fixed {
-    grid-template-columns: 1fr 1fr;
-    column-gap: 16px;
-    row-gap: 10px;
-    margin-top: 6px;
-  }
-
-  .transaction-details.fixed .row {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
-
-  .transaction-details.fixed .label {
-    font-size: 0.6rem;
-    opacity: 0.7;
-  }
-
-  .transaction-details.fixed .value {
-    font-size: 0.78rem;
-    font-weight: 600;
-  }
-
-  /* FULL WIDTH ROWS */
-  .transaction-details.fixed .row.full {
-    grid-column: 1 / -1;
-  }
-
-  /* ===== DATE ===== */
-  .transaction-side {
-    margin-top: 6px;
-    align-items: flex-start;
-  }
-
-  .transaction-side small {
-    font-size: 0.6rem;
-    opacity: 0.6;
-  }
-
-  /* ===== ACTION BUTTONS (BOTTOM BAR) ===== */
-  .action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 10px;
-    width: 100%;
-  }
-
-  .edit-btn,
-  .delete-btn {
-    padding: 10px 0;
-    font-size: 0.7rem;
+    font-size: 0.75rem;   /* 0.3rem remove kari didhu */
+    padding: 12px;
     border-radius: 12px;
   }
 
-  .edit-btn {
-    background: linear-gradient(
-      135deg,
-      rgba(56,189,248,0.25),
-      rgba(56,189,248,0.15)
-    );
-  }
-
-  .delete-btn {
-    background: linear-gradient(
-      135deg,
-      rgba(239,68,68,0.25),
-      rgba(239,68,68,0.15)
-    );
-  }
-
 }
 
-
-@media (max-width: 480px) {
-
-  .transaction-card {
-    padding: 12px;
-  }
-
-  .amount {
-    font-size: 0.95rem;
-  }
-
-  .transaction-details.fixed .row {
-    grid-template-columns: 80px 1fr;
-  }
-
-  .transaction-details.fixed .label {
-    font-size: 0.6rem;
-  }
-
-  .transaction-details.fixed .value {
-    font-size: 0.7rem;
-  }
-
-  .edit-btn,
-  .delete-btn {
-    font-size: 0.65rem;
-    padding: 6px;
-  }
-}
 
 
 /* ===== ......FLOATING ADD BUTTON .....===== */
@@ -2290,18 +2144,30 @@ p a:hover {
 /* export css  */
 
 /* ===== EXPORT + FILTER CONTAINER ===== */
-.export-filter-container {
+/* .export-filter-container {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   margin-bottom: 20px;
-}
+} */
 
+/* .transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+} */
+
+/* Export row */
+/* .export-filter-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+} */
 /* =====................ SELECT BOX Popup Form ................===== */
 
 
-.form-selectet {
+/* .form-selectet {
   border-radius: 12px;
   border: 1px solid #64748b;
   background: #0f172a;
@@ -2315,10 +2181,10 @@ p a:hover {
   outline: none;
   border-color: #38bdf8;
   box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
-}
+} */
 
 /* ......add filter btn....... */
-.plus-btnnnx {
+/* .plus-btnnnx {
   background: linear-gradient(135deg, #38bdf8, #0ea5e9);
   border: none;
   border-radius: 12px;
@@ -2326,77 +2192,160 @@ p a:hover {
   font-weight: 600;
   padding: 10px 8px;
   cursor: pointer;
-  align-items: center !important;     /* vertical center */
-  justify-content: center !important; /* horizontal center */
+  align-items: center !important;    
+  justify-content: center !important; 
   transition: all 0.3s ease;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 .plus-btnnnx:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 28px rgba(0,0,0,0.4);
-}
+} */
 
-/* =========================================
-   MOBILE – EXPORT LINE + TITLE BELOW
-========================================= */
+/* ================= MOBILE ================= */
+/* @media (max-width: 768px) {
 
-@media (max-width: 768px) {
-
-  /* Parent vertical layout */
-  .d-flex.justify-content-between.align-items-center {
-    flex-direction: column !important;
-    align-items: stretch !important;
+  .transaction-header {
+    flex-direction: column;
+    align-items: stretch;
     gap: 12px;
   }
 
-  /* Export row FIX */
   .export-filter-container {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    gap: 8px;
     width: 100%;
+    display: flex;
+    flex-direction: row;
   }
 
-  /* IMPORTANT FIX – Bootstrap override */
-  .export-filter-container .form-selectet {
-    display: inline-block !important;   /* 👈 main fix */
-    width: auto !important;             /* full width remove */
-    flex: 1 1 auto !important;          /* space le */
-    min-width: 0 !important;
-    font-size: 13px;
-    padding: 6px 8px;
+  .export-filter-container select {
+    flex: 1;
+    width: auto !important;
   }
 
-  .export-filter-container .plus-btnnnx {
-    flex: 0 0 auto !important;          /* shrink na thay */
-    font-size: 13px;
-    padding: 6px 12px;
-    white-space: nowrap;
-  }
+  .export-filter-container button {
+    flex: 0 0 auto;
+  } */
 
-  /* Title below */
-  h2.text-white {
-    font-size: 18px;
-    margin: 0;
-  }
-
-}
-@media (max-width: 768px) {
-  .plus-btnnnx {
-    font-size: 2px;
-    padding: 6px 12px;
-  }
-}
-
-
-
-  /* Hide title on mobile (optional) */
-  /* h2 {
+  /* Hide Export text */
+  /* .export-text {
     display: none;
   }
-   */
+
+  h2 {
+    font-size: 18px;
+  }
+} */
+/* ============================= */
+/* ===== TRANSACTION HEADER ==== */
+/* ============================= */
+
+.transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ===== EXPORT CONTAINER ===== */
+.export-filter-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ===== SELECT DROPDOWN ===== */
+.form-selectet {
+  border-radius: 12px;
+  border: 1px solid #64748b;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-weight: 500;
+  padding: 10px 14px;
+  min-width: 180px;
+  transition: all 0.3s ease;
+}
+
+.form-selectet:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 221, 248, 0.5);
+}
+
+/* ===== EXPORT BUTTON ===== */
+.plus-btnnnx {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  border: none;
+  border-radius: 10px;
+  color: #0f172a;
+  font-weight: 600;
+  padding: 9px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.plus-btnnnx:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== TITLE ===== */
+.transaction-title {
+  color: white;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ============================= */
+/* ===== MOBILE RESPONSIVE ===== */
+/* ============================= */
+
+@media (max-width: 768px) {
+
+  .transaction-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .export-filter-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  
+  .form-selectet {
+    padding: 5px 8px;
+    font-size: 12px;
+    height: 30px;
+    min-width: unset;
+  }
+
+  .plus-btnnnx {
+    padding: 5px 8px;
+    font-size: 12px;
+    height: 30px;
+    justify-content: center;
+  }
+
+  .plus-btnnnx svg {
+    font-size: 13px;
+  }
+
+  .transaction-title {
+    width: 100%;
+    margin-top: 6px;
+  }
+   h3 {
+    font-size: 18px;
+  }
+
+}
+
 /* ===== EXPORT BUTTON ===== */
 .plus-btnnx {
   background: linear-gradient(135deg, #38bdf8, #0ea5e9);

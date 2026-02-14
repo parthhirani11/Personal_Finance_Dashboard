@@ -1578,16 +1578,15 @@ export default function Dashboard() {
       {/* ..........................................filter transection and export data................................................................. */}
       {activeTab === "transactions" && (
         <>
-          {/* TRANSACTION LIST */}
-          {/* <div className="transection"><h4 >Transactions...</h4></div> */}
-       
-          <div className="d-flex justify-content-between align-items-center  ">
-  
-            {/* EXPORT + FILTER */}
-            <div className="export-filter-container d-flex">
+         
+          {/* ===== TRANSACTION HEADER ===== */}
+          <div className="transaction-header mb-3">
+
+            {/* LEFT SIDE – EXPORT + FILTER */}
+            <div className="export-filter-container">
+
               <select
-                className="form-selectet border-2"
-                style={{ width: 200 }}
+                className="form-selectet"
                 value={exportType}
                 onChange={(e) => setExportType(e.target.value)}
               >
@@ -1598,19 +1597,21 @@ export default function Dashboard() {
               </select>
 
               <button
-                className="plus-btnnnx d-flex align-items-center gap-1"
+                className="plus-btnnnx"
                 onClick={handleExport}
               >
                 <FiDownload size={16} />
-                Export
+                <span className="export-text">Export</span>
               </button>
+
             </div>
 
             {/* RIGHT SIDE – TITLE */}
-            <h2 className="text-white mb-0">Transactions...</h2>
+            <h3 className="transaction-title">
+              Transactions...
+            </h3>
 
           </div>
-
 
           <div className="filters-container">
             {filters.map((f, index) => (
@@ -1785,7 +1786,9 @@ export default function Dashboard() {
 
                   {/* LEFT INFO */}
                   <div className="transaction-main">
+                   
                     <div className="transaction-header">
+                   
                       <span className={`type-badge ${item.type}`}>
                         {item.type.toUpperCase()}
                       </span>
@@ -1801,24 +1804,25 @@ export default function Dashboard() {
                       </span>
                     </div>
 
+
                     <div className="transaction-details fixed">
                       <div className="row">
-                        <span className="label">Payment Mode :</span>
+                        <span className="label">Payment Mode: </span>
                         <span className="value" >{item.paymentMode.toUpperCase() || "-"}</span>
                       </div>
 
                       <div className="row">
-                        <span className="label">Recipient :</span>
+                        <span className="label">Recipient: </span>
                         <span className="value" >{capitalizeFirst(item.person) || "-"}</span>
                       </div>
 
                       <div className="row">
-                        <span className="label">Category :</span>
+                        <span className="label">Category: </span>
                         <span className="value">{capitalizeFirst(item.description) || "-"}</span>
                       </div>
 
                       <div className="row">
-                        <span className="label">Tags :</span>
+                        <span className="label">Tags: </span>
                         <span className="value wrap">{item.tags?.map(tag => capitalizeFirst(tag)).join(", ") || "-"}</span>
                       </div>
 
