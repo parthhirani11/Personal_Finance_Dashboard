@@ -524,17 +524,16 @@ export default function Dashboard() {
       });
   }, [activeDashboard]);
 
-  // transection text 1st letter
- const capitalizeFirst = (text = "") => {
-      return text
-    .toLowerCase()
-    .split(" ")
-    .map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    )
-    .join(" ");
+  const capitalizeFirst = (text = "") => {
+    return text
+      .split(" ")
+      .map(word =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+      )
+      .join(" ");
   };
 
+  
   /* ================= ADD TRANSACTION ================= */
   const addTransaction = async (e) => {
     e.preventDefault();
@@ -869,7 +868,7 @@ export default function Dashboard() {
 
   //  .............................................................................
 
- const transactionCategories = useMemo(() => {
+  const transactionCategories = useMemo(() => {
     return [
       ...new Set(
         transactions
@@ -879,7 +878,6 @@ export default function Dashboard() {
               : []
           )
           .filter(Boolean)
-          .map(c => c.toLowerCase())
       )
     ];
   }, [transactions]);
@@ -891,17 +889,18 @@ export default function Dashboard() {
         transactions
           .flatMap(t => t.tags || [])
           .filter(Boolean)
-          .map(t => t.toLowerCase())
       )
     ];
   }, [transactions]);
+
+
 
   const handleCategoryChange = (value) => {
     setCategoryInput(value);
     setShowSuggestions(true);
 
     const filtered = transactionCategories.filter(cat =>
-      cat.includes(value.toLowerCase())
+      cat.toLowerCase().includes(value.toLowerCase())
     );
 
     setFilteredCategories(filtered);
@@ -912,7 +911,7 @@ export default function Dashboard() {
     setShowTagSuggestions(true);
 
     const filtered = transactionTags.filter(tag =>
-      tag.includes(value.toLowerCase())
+      tag.toLowerCase().includes(value.toLowerCase())
     );
 
     setFilteredTags(filtered);
@@ -1590,7 +1589,7 @@ export default function Dashboard() {
                 value={exportType}
                 onChange={(e) => setExportType(e.target.value)}
               >
-                <option value="">Select Export Type</option>
+                <option value="">Select Export Type...</option>
                 <option value="csv">CSV</option>
                 <option value="xlsx">Excel</option>
                 <option value="pdf">PDF</option>
@@ -1647,7 +1646,7 @@ export default function Dashboard() {
                     <input
                       className="form-control border-2"
                       placeholder="Search..."
-                      value={f.value || ""}
+                      value={capitalizeFirst(f.value) || ""}
                       onChange={(e) => handleSuggestionInputChange(e, f, index)}
                     />
                   )}
@@ -1685,7 +1684,7 @@ export default function Dashboard() {
                                 className="list-group-item list-group-item-action"
                                 onClick={() => selectSuggestion(index, s)}
                               >
-                                {s}
+                                {capitalizeFirst(s)}
                               </button>
                             ))}
                           </div>

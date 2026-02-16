@@ -80,14 +80,11 @@ export const addTransaction = async (req, res) => {
     }
 
     const parsedTags = tags
-      ? [...new Set(
-          tags.split(",").map(t => t.trim().toLowerCase()).filter(Boolean)
-        )]
-      : [];
-    
-    //   if (!dashboardId) {
-    //   return res.status(400).json({ msg: "Dashboard is required" });
-    // }
+    ? [...new Set(
+        tags.split(",").map(t => t.trim()).filter(Boolean)
+      )]
+    : [];
+
        const dashboards = Array.isArray(dashboardIds)
       ? dashboardIds
       : [dashboardIds];
@@ -150,10 +147,11 @@ export const updateTransaction = async (req, res) => {
       person,
       paymentMode,
       description: description || "",  
-     
       tags: tags
-  ? (Array.isArray(tags) ? tags : [tags])
-  : [],
+        ? (Array.isArray(tags)
+            ? tags.map(t => t.trim())
+            : [tags.trim()])
+        : [],
     };
      // 🔥 DASHBOARD MOVE LOGIC
     if (dashboardId) {
@@ -215,7 +213,7 @@ export const updateUserCategories = async (req, res) => {
     const { categories } = req.body;
 
     await User.findByIdAndUpdate(req.session.user.id, {
-      categories: categories.map(c => c.toLowerCase().trim()),
+      categories: categories.map(c => c.trim()),
     });
 
     res.json({ success: true });
@@ -239,7 +237,7 @@ export const updateUserTags = async (req, res) => {
     const { tags } = req.body;
 
     await User.findByIdAndUpdate(req.session.user.id, {
-      tags: tags.map(t => t.toLowerCase().trim()),
+      tags: tags.map(t => t.trim()),
     });
 
     res.json({ success: true });

@@ -1692,7 +1692,8 @@ p a:hover {
 /* ===== SELECT DROPDOWN ===== */
 .form-selectet {
   border-radius: 12px;
-  border: 1px solid #64748b;
+  border: 2px solid #64748b;
+  height:48px ;
   background: #0f172a;
   color: #f1f5f9;
   font-weight: 500;
@@ -1711,6 +1712,7 @@ p a:hover {
 .plus-btnnnx {
   display: flex;
   align-items: center;
+  height: 44px;
   gap: 6px;
   background: linear-gradient(135deg, #38bdf8, #0ea5e9);
   border: none;

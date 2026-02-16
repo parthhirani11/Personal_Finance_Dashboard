@@ -69,15 +69,14 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-  const capitalizeFirst = (text = "") => {
+ const capitalizeFirst = (text = "") => {
     return text
-    .toLowerCase()
-    .split(" ")
-    .map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    )
-    .join(" ");
-  }
+      .split(" ")
+      .map(word =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+      )
+      .join(" ");
+  };
   // ..............................................................................................
   
   const normalize = (val = "") =>
@@ -170,7 +169,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     fetchPaymentModes();
   }, [dashboardId]); // 🔥 dashboard change → modes change
 
-  // transection tags and category data fetch and showing in suggestion box
   const transactionCategories = useMemo(() => {
     return [
       ...new Set(
@@ -181,7 +179,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
               : []
           )
           .filter(Boolean)
-          .map(c => c.toLowerCase())
       )
     ];
   }, [transactions]);
@@ -192,10 +189,10 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         transactions
           .flatMap(t => t.tags || [])
           .filter(Boolean)
-          .map(t => t.toLowerCase())
       )
     ];
   }, [transactions]);
+
 
 
   /* ================= SUBMIT ================= */
