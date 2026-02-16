@@ -139,6 +139,19 @@ export default function Dashboard() {
   const [newName, setNewName] = useState("");
 
 
+
+  
+
+  const [exportFormat, setExportFormat] = useState("");
+
+  const handleFileExport = () => {
+    if (!exportFormat) {
+      alert("Please select export format");
+      return;
+    }
+
+    console.log("Exporting as:", exportFormat);
+  };
   // ...........................................................................................
 
   // add new dashboard
@@ -1367,6 +1380,7 @@ export default function Dashboard() {
             : "balance-zero"
         }  percentage={balancePercentage}/>
       </div>
+
        {/* tab transection list and graph */}
           <div className="dashboard-tabs">
             <button
@@ -1577,40 +1591,30 @@ export default function Dashboard() {
       {/* ..........................................filter transection and export data................................................................. */}
       {activeTab === "transactions" && (
         <>
-         
-          {/* ===== TRANSACTION HEADER ===== */}
-          <div className="transaction-header mb-3">
 
-            {/* LEFT SIDE – EXPORT + FILTER */}
-            <div className="export-filter-container">
+        <div className="export-box mb-3">
+  
+          <select
+            className="export-dropdown"
+            value={exportType}
+            onChange={(e) => setExportType(e.target.value)}
+          >
+            <option value="">Choose Export Format...</option>
+            <option value="csv">CSV File</option>
+            <option value="xlsx">Excel File</option>
+            <option value="pdf">PDF File</option>
+          </select>
 
-              <select
-                className="form-selectet"
-                value={exportType}
-                onChange={(e) => setExportType(e.target.value)}
-              >
-                <option value="">Select Export Type...</option>
-                <option value="csv">CSV</option>
-                <option value="xlsx">Excel</option>
-                <option value="pdf">PDF</option>
-              </select>
+          <button
+            className="export-action-btn"
+            onClick={handleExport}
+          >
+            <FiDownload size={18} />
+            <span className="btn-label">Export</span>
+          </button>
+          
 
-              <button
-                className="plus-btnnnx"
-                onClick={handleExport}
-              >
-                <FiDownload size={16} />
-                <span className="export-text">Export</span>
-              </button>
-
-            </div>
-
-            {/* RIGHT SIDE – TITLE */}
-            <h3 className="transaction-title">
-              Transactions...
-            </h3>
-
-          </div>
+        </div>
 
           <div className="filters-container">
             {filters.map((f, index) => (
@@ -1777,6 +1781,7 @@ export default function Dashboard() {
           {filteredData.length > 0 ? (
             
             <div className="transaction-wrapper mt-3">
+               {/* <h6 className="transaction-title"> Transactions list... </h6> */}
 
 
               {/* TRANSACTIONS */}

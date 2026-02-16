@@ -2975,3 +2975,99 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 
+
+
+/* ===== MAIN EXPORT WRAPPER ===== */
+/* .export-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+} */
+
+/* ===== DROPDOWN STYLE ===== */
+/* .export-dropdown {
+  flex: 1;
+  height: 50px;
+  border-radius: 12px;
+  border: 2px solid #64748b;
+  background: #0f172a;
+  color: #f1f5f9;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: 0.3s ease;
+} */
+
+.export-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* 👇 IMPORTANT CHANGE */
+.export-dropdown {
+  width: 280px;        /* Fixed width for laptop */
+  max-width: 100%;
+  height: 45px;
+  border-radius: 12px;
+  border: 2px solid #64748b;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.export-dropdown:focus {
+  outline: none;
+  border-color: #22d3ee;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+
+/* ===== BUTTON STYLE ===== */
+.export-action-btn {
+  height: 45px;
+  padding: 0 20px;
+  /* border: none; */
+  border-radius: 14px;
+  border: 1px solid #64748b;
+  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.export-action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 480px) {
+
+  .export-dropdown {
+    height: 34px;          /* smaller height */
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 13px;
+  }
+
+  .export-action-btn {
+    height: 35px;          /* same height as select */
+    font-size: 13px;
+    padding: 0 12px;
+    border-radius: 10px;
+    gap: 5px;
+  }
+
+  .btn-label {
+    display: none;         /* only icon on mobile */
+  }
+
+}
+
