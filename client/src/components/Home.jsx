@@ -1810,28 +1810,28 @@ export default function Dashboard() {
 
 
                     <div className="transaction-details fixed">
-                      <div className="row">
+                      <div className="rows">
                         <span className="label">Payment Mode: </span>
                         <span className="value" >{item.paymentMode.toUpperCase() || "-"}</span>
                       </div>
 
-                      <div className="row">
+                      <div className="rows">
                         <span className="label">Recipient: </span>
                         <span className="value" >{capitalizeFirst(item.person) || "-"}</span>
                       </div>
 
-                      <div className="row">
+                      <div className="rows">
                         <span className="label">Category: </span>
                         <span className="value">{capitalizeFirst(item.description) || "-"}</span>
                       </div>
 
-                      <div className="row">
+                      <div className="rows">
                         <span className="label">Tags: </span>
                         <span className="value wrap">{item.tags?.map(tag => capitalizeFirst(tag)).join(", ") || "-"}</span>
                       </div>
 
                       {item.attachment && item.attachment !== "No File" && (
-                        <div className="row full">
+                        <div className="rows full">
                           <span className="label">Attachment :</span>
                           <a
                             className="value link"

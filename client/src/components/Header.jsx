@@ -135,7 +135,7 @@ export default function TopHeader({ user, setUser }) {
         {/* NAV + USER (Desktop) */}
         {user && (
           <>
-            <div className={`d-flex gap-4 nav-links ${menuOpen ? "mobile-open" : ""}`}>
+            <div className={`d-flex nav-links ${menuOpen ? "mobile-open" : ""}`}>
               <NavItem
                 to="/home"
                 label="Home"
@@ -169,7 +169,7 @@ export default function TopHeader({ user, setUser }) {
               </span>
               <button
                 onClick={logout}
-                className="logout-btn d-flex align-items-center"
+                className="logout-btn d-flex align-items-center "
               >
                 <FiLogOut size={16} />
                 Logout
