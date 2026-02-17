@@ -1593,26 +1593,27 @@ export default function Dashboard() {
         <>
 
         <div className="export-box mb-3">
-  
-          <select
-            className="export-dropdown"
-            value={exportType}
-            onChange={(e) => setExportType(e.target.value)}
-          >
-            <option value="">Choose Export Format...</option>
-            <option value="csv">CSV File</option>
-            <option value="xlsx">Excel File</option>
-            <option value="pdf">PDF File</option>
-          </select>
+          <div className="export-left">
+            <select
+              className="export-dropdown"
+              value={exportType}
+              onChange={(e) => setExportType(e.target.value)}
+            >
+              <option value="">Choose Export Format...</option>
+              <option value="csv">CSV File</option>
+              <option value="xlsx">Excel File</option>
+              <option value="pdf">PDF File</option>
+            </select>
 
-          <button
-            className="export-action-btn"
-            onClick={handleExport}
-          >
-            <FiDownload size={18} />
-            <span className="btn-label">Export</span>
-          </button>
-          
+            <button
+              className="export-action-btn"
+              onClick={handleExport}
+            >
+              <FiDownload size={18} />
+              <span className="btn-label">Export</span>
+            </button>
+          </div>
+           <h5 className="transaction-title"> Transactions list... </h5>
 
         </div>
 

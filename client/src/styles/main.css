@@ -3004,6 +3004,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
   gap: 12px;
   width: 100%;
+  justify-content: space-between;
 }
 
 /* 👇 IMPORTANT CHANGE */
@@ -3017,6 +3018,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: #e2e8f0;
   padding: 0 16px;
   font-size: 15px;
+}
+
+.export-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .export-dropdown:focus {
@@ -3070,6 +3077,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
   .btn-label {
     display: none;         /* only icon on mobile */
+  }
+
+  .export-box {
+    flex-direction: column;      /* 🔥 vertical layout */
+    align-items: flex-start;     /* 🔥 left side align */
+    gap: 10px;
+  }
+  .export-left {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .transaction-title {
+    order: 2;        /* 🔥 niche aavse */
+    width: 100%;
+    text-align: left;
+     font-size: 14px;
+    margin: 0;
   }
 
 }
