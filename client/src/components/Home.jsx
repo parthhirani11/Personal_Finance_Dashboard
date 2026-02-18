@@ -1599,7 +1599,7 @@ export default function Dashboard() {
               value={exportType}
               onChange={(e) => setExportType(e.target.value)}
             >
-              <option value="">Choose Export Format...</option>
+              <option value="">Export Us..</option>
               <option value="csv">CSV File</option>
               <option value="xlsx">Excel File</option>
               <option value="pdf">PDF File</option>
@@ -1613,7 +1613,7 @@ export default function Dashboard() {
               <span className="btn-label">Export</span>
             </button>
           </div>
-           <h5 className="transaction-title"> Transactions list... </h5>
+           {/* <h5 className="transaction-title"> Transactions list... </h5> */}
 
         </div>
 
@@ -1634,7 +1634,7 @@ export default function Dashboard() {
                   <option value="all">-- Select Filter --</option>
                   <option value="type">Type</option>
                   <option value="paymentMode">Payment Method</option>
-                  <option value="recipient">Recipient</option>
+                  <option value="recipient">Receiver/Payer</option>
                   <option value="category">Category</option>
                   <option value="tags">Tags</option>
                   <option value="date">Start & End Date</option>
@@ -1760,7 +1760,7 @@ export default function Dashboard() {
                 {/* REMOVE */}
                 {filters.length > 1 && (
                   <button className="close-btn" onClick={() => removeFilter(f.id)}>
-                    ×
+                      <FiTrash2 size={17} color="red" />
                   </button>
                 )}
                 
@@ -1817,7 +1817,10 @@ export default function Dashboard() {
                       </div>
 
                       <div className="rows">
-                        <span className="label">Recipient: </span>
+                        {/* <span className="label">Recipient: </span> */}
+                        <span className="label">
+                          {item.type === "income" ? "Receiver: " : "Payer: "}
+                        </span>
                         <span className="value" >{capitalizeFirst(item.person) || "-"}</span>
                       </div>
 
@@ -2051,7 +2054,11 @@ export default function Dashboard() {
                       {/* </div> */}
                   </div>
                   <div className="col-md-6 mt-2">
-                    <label>Account Holder Name</label>
+                    {/* <label>Account Holder Name</label> */}
+                    <label>
+                      {form.type === "income" ? "Receiver Name" : "Payer Name"} 
+                      <span className="text-danger"> *</span>
+                    </label>
                     <input className="form-control"
                       type="text"
                       name="person"
@@ -2069,15 +2076,7 @@ export default function Dashboard() {
                     Payment Mode <span className="text-danger">*</span>
                   </label>
                   <div className="payment-mode">
-                    {/* add more payment mode */}
-                     <button
-                        type="button"
-                        className="add-mode-btn "
-                        onClick={() => setShowModal(true)}
-                      >
-                        <FiPlusCircle className="add-icon" />
-                        Add
-                      </button>
+                   
                     {/* redio btn payment mode */}
                     {paymentModes.map((m, i) => {
                       const modeName = m?.name;
@@ -2117,6 +2116,7 @@ export default function Dashboard() {
                           </span>
                         </label>
                       );
+                      
                     })}
 
                     {/* add payment mode popup box */}
@@ -2184,6 +2184,15 @@ export default function Dashboard() {
                           </div>
                         )}
                     </div>
+                     {/* add more payment mode */}
+                     <button
+                        type="button"
+                        className="add-mode-btn "
+                        onClick={() => setShowModal(true)}
+                      >
+                        <FiPlusCircle className="add-icon" />
+                        Add
+                      </button>
                   </div>
                 </div>
 

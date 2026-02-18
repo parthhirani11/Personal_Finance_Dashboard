@@ -2646,7 +2646,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
   justify-content: center;
 
-  height: 36px;                 /* ✅ FIX HEIGHT */
+  height: 40px;                 /* ✅ FIX HEIGHT */
   gap: 8px;
 
   padding: 0 14px;              /* ✅ REMOVE 0px TOP/BOTTOM */

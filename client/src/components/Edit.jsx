@@ -415,7 +415,11 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
               </div>
 
               <div>
-                <label >Account Holder Name</label>
+                {/* <label >Account Holder Name</label> */}
+                <label>
+                  {form.type === "income" ? "Receiver Name" : "Payer Name"} 
+                  <span className="text-danger">*</span>
+                </label>
                 
                 <input
                   className="form-control"
