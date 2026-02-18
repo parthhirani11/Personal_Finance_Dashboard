@@ -29,6 +29,7 @@
     /* background: linear-gradient(135deg, #181a68, #2aa6b9); */
     color:#38bdf8;;
     padding: 16px 22px;
+    border: 2px solid #64748b;
     position: relative;
 }
 .edit-popup-header .close-btn {
@@ -83,6 +84,7 @@
     /* background: linear-gradient(135deg, #6366f1, #1b5c66); */
     color: white;
     padding: 16px 22px;
+    border: 2px solid #64748b;
     position: relative;
     /* border-top: 2px solid #eaedf3; */
     text-align: right;

@@ -439,14 +439,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
               <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
 
               <div className="edit-payment-mode">
-                <button
-                  type="button"
-                  className="add-mode-btn d-flex align-items-center gap-1"
-                  onClick={() => setShowModal(true)}
-                >
-                  <FiPlusCircle size={16} />
-                  Add
-                </button>
+                
                 {paymentModes.map((mode, i) => {
                   const color =paymentColors[mode] || getRandomColor();
                     return (
@@ -547,11 +540,21 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                           Add
                         </button>
                       </div>
+                      
                     </div>
                   </div>
                 )}
-
+                <button
+                  type="button"
+                  className="add-mode-btn d-flex align-items-center gap-1"
+                  tabIndex={-1}
+                  onClick={() => setShowModal(true)}
+                >
+                  <FiPlusCircle size={16} />
+                  Add
+                </button>
               </div>
+              
             </div> 
 
             {/* CATEGORY + TAGS */}
@@ -567,6 +570,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                       <button
                         type="button"
                         className="remove-btn"
+                        tabIndex={-1}
                         onClick={() => removeCategory(cat)}
                       >
                         ×
@@ -597,6 +601,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                           <button
                             key={i}
                             type="button"
+                            tabIndex={-1}
                             className="list-group-item list-group-item-action"
                             onMouseDown={() => addCategory(cat)}
                           >
@@ -619,6 +624,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                       <button
                         key={i}
                         type="button"
+                        tabIndex={-1}
                         className="btn btn-outline-secondary btn-sm me-2"
                         onClick={() => addCategory(cat)}
                       >
@@ -638,7 +644,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                   {selectedTags.map((tag, i) => (
                     <span key={i} className="tag-chip">
                       {capitalizeFirst(tag)}
-                      <button className="remove-btn" type="button" onClick={() => removeTag(tag)}>×</button>
+                      <button className="remove-btn" type="button" tabIndex={-1} onClick={() => removeTag(tag)}>×</button>
                     </span>
                   ))}
 
@@ -662,6 +668,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                         filteredTags.map((tag, i) => (
                           <button
                             key={i}
+                            tabIndex={-1}
                             type="button"
                             className="list-group-item list-group-item-action"
                             onMouseDown={() => addTag(tag)}
@@ -684,6 +691,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                     {tags.map((tag, i) => (
                       <button
                         key={i}
+                        tabIndex={-1}
                         type="button"
                         className="btn btn-outline-secondary btn-sm me-2"
                         onClick={() => addTag(tag)}
@@ -708,7 +716,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
             {currentFile && (
               <p className="edit-label">
                 Current File:{" "}
-                <a href={`/uploads/${currentFile.filename}`} target="_blank">
+                <a href={`/uploads/${currentFile.filename}`} target="_blank" tabIndex={-1}>
                   {currentFile.originalName}
                 </a>
               </p>

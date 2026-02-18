@@ -58,7 +58,15 @@ export default function Dashboard() {
     date: "",
     tags: [],
   });
-  const [filters, setFilters] = useState([{ id: Date.now(), type: "all", value: "", start: "", end: "" }]);
+  // const [filters, setFilters] = useState([{ id: Date.now(), type: "all", value: "", start: "", end: "" }]);
+  const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
+  const suggestionWrapperRef = useRef(null);
+
+  const inputRefs = useRef({});
+
+  const [filters, setFilters] = useState([
+    { id: Date.now(), type: "all", value: "", values: [], start: "", end: "" }
+  ]);
   const [summary, setSummary] = useState({
     totalIncome: 0,
     totalExpense: 0,
@@ -137,10 +145,6 @@ export default function Dashboard() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [renamePopup, setRenamePopup] = useState(null);
   const [newName, setNewName] = useState("");
-
-
-
-  
 
   const [exportFormat, setExportFormat] = useState("");
 
@@ -253,6 +257,174 @@ export default function Dashboard() {
     }
   };
   // ...........................................................................
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        suggestionWrapperRef.current &&
+        !suggestionWrapperRef.current.contains(event.target)
+      ) {
+        setActiveSuggestions([]);
+        setActiveFilterIndex(null);
+        setFocusedSuggestionIndex(-1);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleKeyDown = (e, f, index) => {
+
+    if (e.key === "ArrowDown") {
+      if (!activeSuggestions.length) return;
+      e.preventDefault();
+      setFocusedSuggestionIndex(prev =>
+        prev < activeSuggestions.length - 1 ? prev + 1 : 0
+      );
+    }
+
+    if (e.key === "ArrowUp") {
+      if (!activeSuggestions.length) return;
+      e.preventDefault();
+      setFocusedSuggestionIndex(prev =>
+        prev > 0 ? prev - 1 : activeSuggestions.length - 1
+      );
+    }
+
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    // 🔥 1. Arrow selection active
+    if (
+      focusedSuggestionIndex >= 0 &&
+      activeSuggestions[focusedSuggestionIndex]
+    ) {
+      addChip(index, activeSuggestions[focusedSuggestionIndex]);
+      setActiveSuggestions([]);
+      setFocusedSuggestionIndex(-1);
+      return;
+    }
+
+    const typedValue = f.value.trim().toLowerCase();
+    if (!typedValue) return;
+
+    const data = getFilteredDataExcept(index);
+    const allSuggestions = getSuggestions(f.type, data);
+
+    // 🔥 2. Exact match
+    const exactMatch = allSuggestions.find(
+      s => s.toLowerCase() === typedValue
+    );
+
+    if (exactMatch) {
+      addChip(index, exactMatch);
+      setActiveSuggestions([]);
+      return;
+    }
+
+    // 🔥 3. Partial match (THIS FIXES YOUR ISSUE)
+    const partialMatch = allSuggestions.find(
+      s => s.toLowerCase().startsWith(typedValue)
+    );
+
+    if (partialMatch) {
+      addChip(index, partialMatch);
+      setActiveSuggestions([]);
+      return;
+    }
+
+    // 🔥 4. Otherwise add typed value
+    addChip(index, typedValue);
+    setActiveSuggestions([]);
+  }
+
+  if (e.key === "Tab") {
+
+    // 🔥 Only intercept if suggestion box is open
+    if (activeSuggestions.length > 0) {
+      e.preventDefault();
+
+      if (
+        focusedSuggestionIndex >= 0 &&
+        activeSuggestions[focusedSuggestionIndex]
+      ) {
+        addChip(index, activeSuggestions[focusedSuggestionIndex]);
+      } else {
+        const typedValue = f.value.trim().toLowerCase();
+        if (!typedValue) return;
+
+        const data = getFilteredDataExcept(index);
+        const allSuggestions = getSuggestions(f.type, data);
+
+        const match = allSuggestions.find(s =>
+          s.toLowerCase().startsWith(typedValue)
+        );
+
+        if (match) {
+          addChip(index, match);
+        } else {
+          addChip(index, typedValue);
+        }
+      }
+
+      setActiveSuggestions([]);
+      setFocusedSuggestionIndex(-1);
+
+      // 🔥 Important: manually move focus to next element
+      setTimeout(() => {
+        e.target.blur();
+      }, 0);
+    }
+
+    // 🔥 If no suggestion open → let Tab behave normally
+  }
+
+
+    if (e.key === "Escape") {
+      setActiveSuggestions([]);
+    }
+  };
+
+
+  const addChip = (index, value) => {
+  
+
+    setFilters(prev => {
+      const updated = [...prev];
+
+      if (!updated[index].values.includes(value)) {
+        updated[index].values = [...updated[index].values, value];
+      }
+
+      updated[index].value = "";
+      return updated;
+    });
+
+    setFocusedSuggestionIndex(-1);
+
+    // 🔥 auto focus back to input
+    setTimeout(() => {
+      inputRefs.current[index]?.focus();
+
+      const data = getFilteredDataExcept(index);
+      const suggestions = getSuggestions(filters[index].type, data);
+      setActiveSuggestions(suggestions);
+    }, 0);
+  };
+
+
+  const removeChip = (filterIndex, chipValue) => {
+    setFilters(prev => {
+      const updated = [...prev];
+      updated[filterIndex].values =
+        updated[filterIndex].values.filter(v => v !== chipValue);
+      return updated;
+    });
+  };
+
 
   /* ================= Filter Transection ================= */
   const filteredData = useMemo(() => {
@@ -329,10 +501,16 @@ export default function Dashboard() {
         });
         return;
       }
+      if (f.type === "type" && f.value) {
+        data = data.filter(item => item.type === f.value);
+        return;
+      }
 
-      if (!f.value) return;
+      // 🔥 Multi-value filters (chips)
+      if (!f.values || f.values.length === 0) return;
 
-      const values = f.value.split(",").map(v => v.trim().toLowerCase());
+      const values = f.values.map(v => v.toLowerCase());
+
 
       data = data.filter(item => {
         if (f.type === "recipient")
@@ -361,6 +539,7 @@ export default function Dashboard() {
     return data;
   }, [transactions, filters]);
 
+  
   /* =================Filter data Excepted or not  ================= */
   const getFilteredDataExcept = (activeIndex) => {
     let data = [...transactions];
@@ -393,6 +572,20 @@ export default function Dashboard() {
 
     return data;
   };
+  // ............................................................
+  const getUniqueCaseInsensitive = (arr) => {
+    const map = new Map();
+
+    arr.forEach(item => {
+      if (!item) return;
+      const lower = item.toLowerCase();
+      if (!map.has(lower)) {
+        map.set(lower, item);
+      }
+    });
+
+    return Array.from(map.values());
+  };
 
   /* ================= SUGGESTIONS DATA ================= */
   const getSuggestions = (type, data) => {
@@ -418,31 +611,30 @@ export default function Dashboard() {
       return [...values];
     }
     if (type === "year") {
-      return [
-        ...new Set(
-          data.map(i => new Date(i.date).getFullYear())
-        )
-      ].map(String);
+      return [ ...new Set(data.map(i => new Date(i.date).getFullYear()))].map(String);
     }
     if (type === "recipient")
-      return [...new Set(data.map(i => i.person).filter(Boolean))];
+      return getUniqueCaseInsensitive(
+        data.map(i => i.person).filter(Boolean)
+      );
 
     if (type === "category")
-      return [...new Set(data.map(i => i.description).filter(Boolean))];
+      return getUniqueCaseInsensitive(
+        data.map(i => i.description).filter(Boolean)
+      );
 
     if (type === "tags")
-      return [...new Set(data.flatMap(i => i.tags || []))];
+      return getUniqueCaseInsensitive(
+        data.flatMap(i => i.tags || [])
+      );
+
 
     if (type === "paymentMode") {
-      return [
-        ...new Set(
-          data
-            .map(i => i.paymentMode)
-            .filter(Boolean)
-            .map(v => v.toLowerCase())
-        )
-      ];
+      return getUniqueCaseInsensitive(
+        data.map(i => i.paymentMode).filter(Boolean)
+      );
     }
+
 
     
     return [];
@@ -478,24 +670,24 @@ export default function Dashboard() {
   };
 
   
-  /* ================= Select Suggestion Data Name ================= */
-  const selectSuggestion = (index, suggestion) => {
-    setFilters(prev => {
-      const updated = [...prev];
-      const value = updated[index].value || "";
+  // /* ================= Select Suggestion Data Name ================= */
+  // const selectSuggestion = (index, suggestion) => {
+  //   setFilters(prev => {
+  //     const updated = [...prev];
+  //     const value = updated[index].value || "";
 
-      const parts = value.split(",");
-      parts[parts.length - 1] = " " + suggestion;
+  //     const parts = value.split(",");
+  //     parts[parts.length - 1] = " " + suggestion;
 
-      updated[index] = {
-        ...updated[index],
-        value: parts.join(",").trimStart()
-      };
+  //     updated[index] = {
+  //       ...updated[index],
+  //       value: parts.join(",").trimStart()
+  //     };
 
-      return updated;
-    });
-    setActiveSuggestions([]);
-  };
+  //     return updated;
+  //   });
+  //   setActiveSuggestions([]);
+  // };
 
   //  .............................................................................
 
@@ -505,20 +697,44 @@ export default function Dashboard() {
     setSummary(s);
   }, [filteredData]);
 
-  /* ================= FILTER CONTROLS ================= */
   const addFilter = () => {
-   setFilters(prev => [...prev, { id: Date.now(), type: "all", value: "", start: "", end: "" }]);
+    setFilters(prev => [...prev, { 
+      id: Date.now(), 
+      type: "all", 
+      value: "", 
+      values: [],   // 🔥 important
+      start: "", 
+      end: "" 
+    }]);
   };
+
 
   const removeFilter = (id) => {
     setFilters((prev) => prev.filter((f) => f.id !== id));
   };
 
   const updateFilter = (id, field, value) => {
-   setFilters(prev =>
-      prev.map(f => (f.id === id ? { ...f, [field]: value } : f))
+    setFilters(prev =>
+      prev.map(f =>
+        f.id === id
+          ? {
+              ...f,
+              [field]: value,
+              ...(field === "type" && { value: "", values: [] })
+            }
+          : f
+      )
     );
+
+    // 🔥 close suggestion box when type changes
+    if (field === "type") {
+      setActiveSuggestions([]);
+      setActiveFilterIndex(null);
+      setFocusedSuggestionIndex(-1);
+    }
   };
+
+
 
   useEffect(() => {
     if (!activeDashboard) return;
@@ -652,7 +868,7 @@ export default function Dashboard() {
             : []
         );
       }
-
+       setPaymentModeVersion(prev => prev + 1);
       // Optional refresh helpers
       fetchCategories();
       await fetchTags();
@@ -895,6 +1111,29 @@ export default function Dashboard() {
     ];
   }, [transactions]);
 
+  const allCategoryOptions = useMemo(() => {
+    const merged = [
+      ...transactionCategories,
+      ...categories,
+      ...allCategories
+    ];
+
+    const unique = [];
+    const seen = new Set();
+
+    merged.forEach(cat => {
+      const normalized = cat.trim().toLowerCase();
+
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+        unique.push(cat.trim());
+      }
+    });
+
+    return unique;
+  }, [transactionCategories, categories, allCategories]);
+
+
 
   const transactionTags = useMemo(() => {
     return [
@@ -906,13 +1145,34 @@ export default function Dashboard() {
     ];
   }, [transactions]);
 
+  const allTagOptions = useMemo(() => {
+    const merged = [
+      ...transactionTags,
+      ...tags,
+      ...allTags
+    ];
+
+    const unique = [];
+    const seen = new Set();
+
+    merged.forEach(tag => {
+      const normalized = tag.trim().toLowerCase();
+
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+        unique.push(tag.trim());
+      }
+    });
+
+    return unique;
+  }, [transactionTags, tags, allTags]);
 
 
   const handleCategoryChange = (value) => {
     setCategoryInput(value);
     setShowSuggestions(true);
 
-    const filtered = transactionCategories.filter(cat =>
+    const filtered = allCategoryOptions.filter(cat =>
       cat.toLowerCase().includes(value.toLowerCase())
     );
 
@@ -923,12 +1183,53 @@ export default function Dashboard() {
     setTagInput(value);
     setShowTagSuggestions(true);
 
-    const filtered = transactionTags.filter(tag =>
+    const filtered = allTagOptions.filter(tag =>
       tag.toLowerCase().includes(value.toLowerCase())
     );
 
     setFilteredTags(filtered);
   };
+
+
+
+  const [focusedCategoryIndex, setFocusedCategoryIndex] = useState(-1);
+  const [focusedTagIndex, setFocusedTagIndex] = useState(-1);
+
+  const handleCateKeyDown = (e) => {
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedCategoryIndex(prev =>
+        prev < filteredCategories.length - 1 ? prev + 1 : 0
+      );
+    }
+
+    else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedCategoryIndex(prev =>
+        prev > 0 ? prev - 1 : filteredCategories.length - 1
+      );
+    }
+
+    else if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (focusedCategoryIndex >= 0) {
+        addCategory(filteredCategories[focusedCategoryIndex]);
+      } else {
+        addCategory(categoryInput);
+      }
+
+      setFocusedCategoryIndex(-1);
+    }
+
+    else if (e.key === "Tab") {
+      if (categoryInput.trim()) {
+        addCategory(categoryInput);
+      }
+    }
+  };
+
 
 
   // categories filter and add ..........
@@ -968,17 +1269,6 @@ export default function Dashboard() {
     setSelectedCategories((prev) =>
       prev.filter((cat) => cat !== value)
     );
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      const value = categoryInput.trim();
-      if (!value) return;
-
-      addCategory(value);
-    }
   };
 
 
@@ -1033,15 +1323,43 @@ export default function Dashboard() {
     setSelectedTags((prev) => prev.filter((t) => t !== tag));
   };
 
- const handleTagKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const value = tagInput.trim();
-      if (!value) return;
 
-      addTag(value);
+
+  const handleTagKeyDown = (e) => {
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedTagIndex(prev =>
+        prev < filteredTags.length - 1 ? prev + 1 : 0
+      );
+    }
+
+    else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedTagIndex(prev =>
+        prev > 0 ? prev - 1 : filteredTags.length - 1
+      );
+    }
+
+    else if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (focusedTagIndex >= 0) {
+        addTag(filteredTags[focusedTagIndex]);
+      } else {
+        addTag(tagInput);
+      }
+
+      setFocusedTagIndex(-1);
+    }
+
+    else if (e.key === "Tab") {
+      if (tagInput.trim()) {
+        addTag(tagInput);
+      }
     }
   };
+
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -1673,27 +1991,48 @@ export default function Dashboard() {
                   {/* RECIPIENT / CATEGORY / TAGS */}
                   {(f.type === "recipient" || f.type === "category" || f.type === "tags" || f.type === "paymentMode") && (
                     <>
+                      <div className="chip-wrapper"ref={suggestionWrapperRef}>
+                      {f.values?.map((val, i) => (
+                        <div key={i} className="chip">
+                          {capitalizeFirst(val)}
+                          <span onClick={() => removeChip(index, val)}>✕</span>
+                        </div>
+                      ))}
                       <input
-                        className="form-control border-3"
-                        placeholder="Search multiple values (comma separated)"
+                        className="tag-input"
+                        ref={el => inputRefs.current[index] = el}
+                        placeholder="Search..."
                         value={f.value || ""}
-                        onChange={(e) => {
-                          handleSuggestionInputChange(e, f, index)}}
+                        onClick={() => {
+                          setActiveFilterIndex(index);
+                          setFocusedSuggestionIndex(-1);
+
+                          const data = getFilteredDataExcept(index);
+                          setActiveSuggestions(getSuggestions(f.type, data));
+                        }}
+
+                        onChange={(e) => handleSuggestionInputChange(e, f, index)}
+                        onKeyDown={(e) => handleKeyDown(e, f, index)}
                       />
-                        {activeFilterIndex === index && activeSuggestions.length > 0 && (
-                          <div className="suggestionBox list-group">
-                            {activeSuggestions.map((s, i) => (
-                              <button
-                                key={i}
-                                type="button"
-                                className="list-group-item list-group-item-action"
-                                onClick={() => selectSuggestion(index, s)}
-                              >
-                                {capitalizeFirst(s)}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                       
+                      {/* SUGGESTION BOX */}
+                      {activeFilterIndex === index && activeSuggestions.length > 0 && (
+                        <div className="suggestionBox list-group">
+                          {activeSuggestions.map((s, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              className={`list-group-item list-group-item-action ${
+                                i === focusedSuggestionIndex ? "active" : ""
+                              }`}
+                              onClick={() => addChip(index, s)}
+                            >
+                              {capitalizeFirst(s)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      </div>
                     </>
                   )}
 
@@ -2188,6 +2527,7 @@ export default function Dashboard() {
                      <button
                         type="button"
                         className="add-mode-btn "
+                        tabIndex={-1}
                         onClick={() => setShowModal(true)}
                       >
                         <FiPlusCircle className="add-icon" />
@@ -2209,6 +2549,7 @@ export default function Dashboard() {
                             <button
                               type="button"
                               className="remove-btn"
+                              tabIndex={-1}
                               onClick={() => removeCategory(cat)}
                             >
                               ×
@@ -2220,14 +2561,25 @@ export default function Dashboard() {
                           className="tag-input"
                           value={categoryInput}
                           autoComplete="off"
-                          placeholder="Type category & press Enter"
+                          placeholder="Type Category "
                           onFocus={() => {
                             setShowSuggestions(true);
-                            setFilteredCategories( [...new Set([...transactionCategories])]); 
+                            setFilteredCategories(allCategoryOptions);
                           }}
+
                           onChange={(e) => handleCategoryChange(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                          onKeyDown={handleCateKeyDown}
+                          // onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                          onBlur={() => {
+                            setTimeout(() => {
+                              if (categoryInput.trim()) {
+                                addCategory(categoryInput);
+                              }
+                              setFocusedCategoryIndex(-1);
+                              setShowSuggestions(false);
+                            }, 150);
+                          }}
+
                         />
                       </div>
                       {/*  category suggestion list  */}
@@ -2238,8 +2590,12 @@ export default function Dashboard() {
                               <button
                                 key={i}
                                 type="button"
-                                className="list-group-item list-group-item-action"
-                                onMouseDown={() => addCategory(cat)}
+                                tabIndex={-1}
+                                // className="list-group-item list-group-item-action"
+                                 className={`list-group-item list-group-item-action ${
+                                    i === focusedCategoryIndex ? "active" : ""
+                                  }`}
+                                  onMouseDown={() => addCategory(cat)}
                               >
                                 {capitalizeFirst(cat)}
                               </button>
@@ -2258,6 +2614,7 @@ export default function Dashboard() {
                           {/* SETTINGS ICON */}
                           <button
                             className="settings-btn"
+                            tabIndex={-1}
                             // title="Edit Categories"
                            onClick={() => {
                             setTempCategories([...categories]); // 🔥 MUST
@@ -2273,6 +2630,7 @@ export default function Dashboard() {
                               <button
                                 key={i}
                                 type="button"
+                                tabIndex={-1}
                                 className="btn btn-outline-secondary btn-sm"
                                 onClick={() => addCategory(cat)}
                               >
@@ -2339,6 +2697,7 @@ export default function Dashboard() {
                           <button
                             type="button"
                             className="remove-btn"
+                            tabIndex={-1}
                             onClick={() => removeTag(tag)}
                           >
                             ×
@@ -2351,13 +2710,23 @@ export default function Dashboard() {
                         className="tag-input"
                         value={tagInput}
                         autoComplete="off"
-                        placeholder="Type tag & press Enter"
+                        placeholder="Type Tag"
                         onFocus={() => {
                           setShowTagSuggestions(true);
-                          setFilteredTags( [...new Set([...transactionTags])]);
+                          setFilteredTags(allTagOptions);
                         }}
                         onChange={(e) => handleTagChange(e.target.value)}
                         onKeyDown={handleTagKeyDown}
+                        onBlur={() => {
+                          setTimeout(() => {
+                            if (tagInput.trim()) {
+                              addTag(tagInput);
+                            }
+                            setFocusedTagIndex(-1);
+                            setShowTagSuggestions(false);
+                          }, 150);
+                        }}
+
                       />
 
                       {/* ✅ SUGGESTION BOX TAGS */}
@@ -2367,8 +2736,13 @@ export default function Dashboard() {
                             filteredTags.map((tag, i) => (
                               <button
                                 key={i}
+                                tabIndex={-1}
                                 type="button"
-                                className="list-group-item list-group-item-action"
+                                // className="list-group-item list-group-item-action"
+                                className={`list-group-item list-group-item-action ${
+                                  i === focusedTagIndex ? "active" : ""
+                                }`}
+
                                 onMouseDown={() => addTag(tag)}
                               >
                                 {capitalizeFirst(tag)}
@@ -2388,6 +2762,7 @@ export default function Dashboard() {
                       <div className="tag-section mt-2">
                         <button
                           className="settings-btn-tags"
+                          tabIndex={-1}
                           // title="Edit Tags"
                           onClick={() => {
                             setTempTags([...tags]); // 🔥 MUST
@@ -2402,6 +2777,7 @@ export default function Dashboard() {
                             <button
                               key={i}
                               type="button"
+                              tabIndex={-1}
                               className="btn btn-outline-secondary btn-sm"
                               onClick={() => addTag(tag)}
                             >
@@ -2489,6 +2865,10 @@ function SummaryCard({ title, value, color, percentage }) {
     "balance-zero": <FiTrendingUp />,
   };
 
+ 
+
+const hasAnimated = useRef(false);
+
  const getDuration = (val) => {
   const amount = Math.abs(val);
 
@@ -2511,14 +2891,19 @@ function SummaryCard({ title, value, color, percentage }) {
 
           <h3 className="summary-value">
             {value < 0 && "-"}₹
-            <CountUp
-              end={Math.abs(value)}
-              duration={getDuration(value)}
-              separator=","
-              formattingFn={(n) =>
-                n.toLocaleString("en-IN", { minimumFractionDigits: 2 })
-              }
-            />
+          <CountUp
+            end={Math.abs(value)}
+            duration={!hasAnimated.current ? getDuration(value) : 0}
+            separator=","
+            formattingFn={(n) =>
+              n.toLocaleString("en-IN", { minimumFractionDigits: 2 })
+            }
+            onEnd={() => {
+              hasAnimated.current = true;   // after first animation stop future animations
+            }}
+          />
+
+
           </h3>
 
           <span className="summary-sub">

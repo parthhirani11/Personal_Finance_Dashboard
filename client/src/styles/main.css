@@ -1816,6 +1816,7 @@ p a:hover {
     color:#38bdf8;;
     padding: 16px 22px;
     position: relative;
+    border: 2px solid #64748b;
     /* border-bottom: 1px solid #eaedf3; */
     
   }
@@ -1911,6 +1912,7 @@ p a:hover {
     color: white;
     padding: 16px 22px;
     position: relative;
+    border: 2px solid #64748b;
     /* border-top: 2px solid #eaedf3; */
     text-align: right;
   }
@@ -2345,6 +2347,12 @@ p a:hover {
   /* transform: scale(1.02); */
   border-radius: 8px;
 }
+.suggestionBox .list-group-item.active {
+  background: #38bdf8 !important;
+  color: #0f172a !important;
+  border-radius: 8px;
+}
+
 .single-select {
   position: relative;
 }
@@ -2646,7 +2654,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
   justify-content: center;
 
-  height: 40px;                 /* ✅ FIX HEIGHT */
+  height: 38px;                 /* ✅ FIX HEIGHT */
   gap: 8px;
 
   padding: 0 14px;              /* ✅ REMOVE 0px TOP/BOTTOM */
@@ -3100,3 +3108,37 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 }
 
+
+.chip-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border: 2px solid #64748b;
+  border-radius: 12px;
+  padding: 6px 10px;
+  min-height: 47px;
+  background: #0f172a;
+}
+
+.chip-wrapper input {
+  border: none !important;
+  outline: none !important;
+  flex: 1;
+  min-width: 120px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  background: #0d6efd;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.chip span {
+  margin-left: 6px;
+  cursor: pointer;
+}
