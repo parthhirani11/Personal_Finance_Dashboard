@@ -233,26 +233,73 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
   };
 
    // tags and category change handle 
+
+   const [focusedCategoryIndex, setFocusedCategoryIndex] = useState(-1);
+  const [focusedTagIndex, setFocusedTagIndex] = useState(-1);
+
+
+   const allCategoryOptions = useMemo(() => {
+    const merged = [
+      ...transactionCategories,
+      ...categories
+    ];
+
+    const unique = [];
+    const seen = new Set();
+
+    merged.forEach(cat => {
+      const normalized = cat.trim().toLowerCase();
+
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+        unique.push(cat.trim());
+      }
+    });
+
+    return unique;
+  }, [transactionCategories, categories]);
+
+  const allTagOptions = useMemo(() => {
+    const merged = [
+      ...transactionTags,
+      ...tags
+    ];
+
+    const unique = [];
+    const seen = new Set();
+
+    merged.forEach(tag => {
+      const normalized = tag.trim().toLowerCase();
+
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+        unique.push(tag.trim());
+      }
+    });
+
+    return unique;
+  }, [transactionTags, tags]);
+
   const handleCategoryChange = (value) => {
     setCategoryInput(value);
     setShowSuggestions(true);
 
-    setFilteredCategories(
-      transactionCategories.filter(cat =>
-        cat.includes(value.toLowerCase())
-      )
-    );
+    const filtered = allCategoryOptions.filter(cat =>
+    cat.toLowerCase().includes(value.toLowerCase())
+  );
+  setFilteredCategories(filtered);
   };
 
   const handleTagChange = (value) => {
     setTagInput(value);
     setShowTagSuggestions(true);
 
-    setFilteredTags(
-      transactionTags.filter(tag =>
-        tag.includes(value.toLowerCase())
-      )
+    const filtered = allTagOptions.filter(tag =>
+      tag.toLowerCase().includes(value.toLowerCase())
     );
+
+    setFilteredTags(filtered);
+
   };
 
   // ADD NEW CATEGORY...........................................................
@@ -276,12 +323,42 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
   };
 
    //  Type the word and press enter.(CATEGORY)
+ 
   const handleCategoryKeyDown = (e) => {
-    if (e.key === "Enter") {
+
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      addCategory(categoryInput);
+      setFocusedCategoryIndex(prev =>
+        prev < filteredCategories.length - 1 ? prev + 1 : 0
+      );
+    }
+
+    else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedCategoryIndex(prev =>
+        prev > 0 ? prev - 1 : filteredCategories.length - 1
+      );
+    }
+
+    else if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (focusedCategoryIndex >= 0) {
+        addCategory(filteredCategories[focusedCategoryIndex]);
+      } else {
+        addCategory(categoryInput);
+      }
+
+      setFocusedCategoryIndex(-1);
+    }
+
+    else if (e.key === "Tab") {
+      if (categoryInput.trim()) {
+        addCategory(categoryInput);
+      }
     }
   };
+
 
   // ADD NEW TAGS.....................................
   const addTag = (tag) => {
@@ -303,12 +380,42 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
   
 
   //  Type the word and press enter.(TAGS)
+
   const handleTagKeyDown = (e) => {
-    if (e.key === "Enter") {
+
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      addTag(tagInput);
+      setFocusedTagIndex(prev =>
+        prev < filteredTags.length - 1 ? prev + 1 : 0
+      );
+    }
+
+    else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedTagIndex(prev =>
+        prev > 0 ? prev - 1 : filteredTags.length - 1
+      );
+    }
+
+    else if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (focusedTagIndex >= 0) {
+        addTag(filteredTags[focusedTagIndex]);
+      } else {
+        addTag(tagInput);
+      }
+
+      setFocusedTagIndex(-1);
+    }
+
+    else if (e.key === "Tab") {
+      if (tagInput.trim()) {
+        addTag(tagInput);
+      }
     }
   };
+
 
   // dropdown open in select dashboard
   useEffect(() => {
@@ -586,11 +693,23 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                     placeholder="Type category & press Enter"
                     onFocus={() => {
                       setShowSuggestions(true);
-                      setFilteredCategories(transactionCategories);
+                      // setFilteredCategories(transactionCategories);
+                      setFilteredCategories(allCategoryOptions);
+
                     }}
                     onChange={(e) => handleCategoryChange(e.target.value)}
                     onKeyDown={handleCategoryKeyDown}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    // onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        if (categoryInput.trim()) {
+                          addCategory(categoryInput);
+                        }
+                        setFocusedCategoryIndex(-1);
+                        setShowSuggestions(false);
+                      }, 150);
+                    }}
+
                   />
 
                   {/* ✅ SUGGESTION DROPDOWN LIST IN CATEGORY */}
@@ -602,7 +721,11 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                             key={i}
                             type="button"
                             tabIndex={-1}
-                            className="list-group-item list-group-item-action"
+                            // className="list-group-item list-group-item-action"
+                            className={`list-group-item list-group-item-action ${
+                              i === focusedCategoryIndex ? "active" : ""
+                            }`}
+
                             onMouseDown={() => addCategory(cat)}
                           >
                             {capitalizeFirst(cat)}
@@ -656,9 +779,21 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                     onKeyDown={handleTagKeyDown}
                     onFocus={() => {
                       setShowTagSuggestions(true);
-                      setFilteredTags(transactionTags);
+                      // setFilteredTags(transactionTags);
+                      setFilteredTags(allTagOptions);
+
                     }}
-                    onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+                    // onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        if (tagInput.trim()) {
+                          addTag(tagInput);
+                        }
+                        setFocusedTagIndex(-1);
+                        setShowTagSuggestions(false);
+                      }, 150);
+                    }}
+
                   />
 
                   {/* SUGGESTION TAGS LIST */}
@@ -670,7 +805,11 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                             key={i}
                             tabIndex={-1}
                             type="button"
-                            className="list-group-item list-group-item-action"
+                            // className="list-group-item list-group-item-action"
+                            className={`list-group-item list-group-item-action ${
+                              i === focusedTagIndex ? "active" : ""
+                            }`}
+
                             onMouseDown={() => addTag(tag)}
                           >
                             {capitalizeFirst(tag)}
