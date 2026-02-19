@@ -2631,73 +2631,86 @@ export default function Dashboard() {
 
                       )}
 
+                 
                       {showCatPopup && (
                         <div className="popupp-overlay">
                           <div className="popupp-box">
-                            <h5 className=" mb-3" style={{ color: "#38bdf8" }}>Edit Categories</h5>
 
-                            {tempCategories.map((cat, i) => (
-                              <div key={i} className="d-flex gap-2 mb-2">
-                                <input
-                                  className="form-control"
-                                  value={cat}
-                                  onChange={(e) => {
-                                    const updated = [...tempCategories];
-                                    updated[i] = e.target.value;
-                                    setTempCategories(updated);
-                                  }}
-                                />
+                            {/* 🔹 HEADER */}
+                            <div className="popupp-header">
+                              <h5 style={{ color: "#38bdf8" }}>Edit Categories</h5>
 
+                            </div>
+
+                            {/* 🔹 BODY (SCROLLABLE INPUT AREA) */}
+                            <div className="popupp-body">
+                              {tempCategories.map((cat, i) => (
+                                <div key={i} className="tag-input-row">
+                                  <input
+                                    className="form-control"
+                                    value={cat}
+                                    onChange={(e) => {
+                                      const updated = [...tempCategories];
+                                      updated[i] = e.target.value;
+                                      setTempCategories(updated);
+                                    }}
+                                  />
+
+                                  <button
+                                    type="button"
+                                    className="close-btn"
+                                    onClick={() => {
+                                      const updated = tempCategories.filter((_, index) => index !== i);
+                                      setTempCategories(updated);
+                                    }}
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* 🔹 FOOTER */}
+                            <div className="popupp-footer">
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                onClick={() => setTempCategories([...tempCategories, ""])}
+                              >
+                                + Add Category
+                              </button>
+
+                              <div className="footer-actions">
                                 <button
-                                  type="button"
-                                  className="close-btn"
+                                  className="btn btn-secondary btn-sm"
                                   onClick={() => {
-                                    const updated = tempCategories.filter((_, index) => index !== i);
-                                    setTempCategories(updated);
+                                    setTempCategories([...categories]);
+                                    setShowCatPopup(false);
                                   }}
                                 >
-                                  ×
+                                  Cancel
+                                </button>
+
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  onClick={() => {
+                                    const cleaned = tempCategories
+                                      .map(c => c.trim())
+                                      .filter(Boolean);
+
+                                    updateCategories(cleaned);
+                                    setShowCatPopup(false);
+                                  }}
+                                >
+                                  Update
                                 </button>
                               </div>
-                            ))}
-
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-sm mt-2"
-                              onClick={() => setTempCategories([...tempCategories, ""])}
-                            >
-                              + Add New Category
-                            </button>
-                            <div className="d-flex justify-content-end gap-2 mt-3">
-                              <button
-                                className="btn btn-secondary btn-sm"
-                                onClick={() => {
-                                  setTempCategories([...categories]);
-                                  setShowCatPopup(false);
-                                }}
-                              >
-                                Cancel
-                              </button>
-
-                              <button
-                                className="btn btn-success btn-sm"
-                             
-                                onClick={() => {
-                                  const cleaned = tempCategories
-                                    .map(c => c.trim())
-                                    .filter(Boolean);
-
-                                  updateCategories(cleaned);
-                                  setShowCatPopup(false);
-                                }}
-
-                              >
-                                Update
-                              </button>
                             </div>
+
                           </div>
                         </div>
                       )}
+
                     </div>
                   </div>
                   <div className="col-md-6 mt-2">
@@ -2803,74 +2816,85 @@ export default function Dashboard() {
                       </div>
                     )}
 
-                    {/* TAG POPUP */}
                     {showTagPopup && (
                       <div className="popupp-overlay">
                         <div className="popupp-box">
-                          <h5 className=" mb-3" style={{ color: "#38bdf8" }}>Edit Tags</h5>
 
-                          {tempTags.map((tag, i) => (
-                            <div key={i} className="d-flex gap-2 mb-2">
-                              <input
-                                className="form-control"
-                                value={tag}
-                                onChange={(e) => {
-                                  const updated = [...tempTags];
-                                  updated[i] = e.target.value;
-                                  setTempTags(updated);
-                                }}
-                              />
+                          {/* 🔹 HEADER */}
+                          <div className="popupp-header">
+                            <h5 className=" mb-3" style={{ color: "#38bdf8" }}>Edit Tags</h5>
+                          
+                          </div>
 
+                          {/* 🔹 BODY (SCROLLABLE INPUT AREA) */}
+                          <div className="popupp-body">
+                            {tempTags.map((tag, i) => (
+                              <div key={i} className="tag-input-row">
+                                <input
+                                  className="form-control"
+                                  value={tag}
+                                  onChange={(e) => {
+                                    const updated = [...tempTags];
+                                    updated[i] = e.target.value;
+                                    setTempTags(updated);
+                                  }}
+                                />
+
+                                <button
+                                  type="button"
+                                  className="close-btn"
+                                  onClick={() => {
+                                    const updated = tempTags.filter((_, index) => index !== i);
+                                    setTempTags(updated);
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* 🔹 FOOTER */}
+                          <div className="popupp-footer">
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm"
+                              onClick={() => setTempTags([...tempTags, ""])}
+                            >
+                              + Add Tag
+                            </button>
+
+                            <div className="footer-actions">
                               <button
-                                type="button"
-                                className="close-btn"
+                                className="btn btn-secondary btn-sm"
                                 onClick={() => {
-                                  const updated = tempTags.filter((_, index) => index !== i);
-                                  setTempTags(updated);
+                                  setTempTags([...tags]);
+                                  setShowTagPopup(false);
                                 }}
                               >
-                                ×
+                                Cancel
+                              </button>
+
+                              <button
+                                className="btn btn-success btn-sm"
+                                onClick={() => {
+                                  const cleaned = tempTags
+                                    .map(t => t.trim())
+                                    .filter(Boolean);
+
+                                  updateTags(cleaned);
+                                  setShowTagPopup(false);
+                                }}
+                              >
+                                Update
                               </button>
                             </div>
-
-                          ))}
-
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-sm mt-2"
-                            onClick={() => setTempTags([...tempTags, ""])}
-                          >
-                            + Add New Tag
-                          </button>
-                          <div className="popupp-actions">
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => {
-                                setTempTags([...tags]);
-                                setShowTagPopup(false);
-                              }}
-                            >
-                              Cancel
-                            </button>
-
-                            <button
-                              className="btn btn-success btn-sm"
-                              onClick={() => {
-                                const cleaned = tempTags
-                                  .map(t => t.trim())
-                                  .filter(Boolean);
-
-                                updateTags(cleaned);
-                                setShowTagPopup(false);
-                              }}
-
-                            >
-                              Update
-                            </button>
                           </div>
+
                         </div>
                       </div>
                     )}
+
                   </div>   
                 </div>
                 
