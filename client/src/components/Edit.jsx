@@ -7,10 +7,14 @@ import { toast } from "react-toastify";
 import { useCategoryTag } from "../context/CategoryTagContext";
 
 
-export default function EditPopup({ id, onClose,transactions ,dashboardId,dashboards }){
+export default function EditPopup({ id, onClose,transactions ,dashboardId,dashboards, onDashboardSwitch }){
 
   /* ================= STATE ================= */
   const [record, setRecord] = useState(null);
+  const [selectedDashboard, setSelectedDashboard] = useState(dashboardId);
+  const [originalDashboard, setOriginalDashboard] = useState(null);
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
+  const [pendingDashboard, setPendingDashboard] = useState(null);
   const [form, setForm] = useState({
     type: "income",
     amount: "",
@@ -20,7 +24,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     tags: "",
 
   });
-  const [selectedDashboard, setSelectedDashboard] = useState(null);
+
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const safeDashboards = dashboards || [];
@@ -77,6 +81,10 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       )
       .join(" ");
   };
+
+   useEffect(() => {
+    fetchRecord();
+  }, [id]);
   // ..............................................................................................
   
   const normalize = (val = "") =>
@@ -89,7 +97,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       const res = await api.get(`/account/${id}`, {
         withCredentials: true,
       });
-
+      
       const r = res.data;
        setRecord(r);
       const mode = r.paymentMode?.toLowerCase() || "cash";
@@ -101,7 +109,13 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         type: r.type,
         
       });
-      setSelectedDashboard(r.dashboardIds?.[0] || dashboardId);
+      const initialDash = r.dashboardIds?.[0] || dashboardId;
+      setSelectedDashboard(initialDash);
+      setOriginalDashboard(initialDash);  // ✅ correct
+
+      // setSelectedDashboard(r.dashboardIds?.[0] || dashboardId);
+      // setOriginalDashboard(dashId);
+
       setSelectedMode(mode);
       setSelectedCategories(
         r.description
@@ -162,10 +176,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
   };
 
   useEffect(() => {
-    fetchRecord();
-  }, [id]);
-
-  useEffect(() => {
     fetchPaymentModes();
   }, [dashboardId]); // 🔥 dashboard change → modes change
 
@@ -223,9 +233,17 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+        // 🔥 Dashboard changed?
+    if (selectedDashboard !== originalDashboard) {
+      setPendingDashboard(selectedDashboard);
+      setShowSwitchConfirm(true);
+    } else {
       toast.success("Transaction updated");
       onClose();
+    }
+
+      // toast.success("Transaction updated");
+      // onClose();
     } catch (err) {
       console.error("Update error:", err);
       toast.error("Update failed");
@@ -872,6 +890,44 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         </div>
 
       </div>
+      {showSwitchConfirm && (
+        <div className="modal-backdrop">
+          <div className="modal-box danger">
+            <h4>Switch Dashboard?</h4>
+            <p>
+              You changed the selected account.
+              Do you want to switch to that dashboard?
+            </p>
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowSwitchConfirm(false);
+                  toast.success("Transaction updated");
+                  onClose();
+                }}
+
+              >
+                No
+              </button>
+
+              <button
+                className="btn btn-success"
+                onClick={() => {
+                  onDashboardSwitch?.(pendingDashboard); 
+                  toast.success("Transaction updated");
+                  setShowSwitchConfirm(false);
+                  onClose();
+                }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

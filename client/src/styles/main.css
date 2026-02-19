@@ -1503,6 +1503,19 @@ input[type="file"] {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
+
+.btn-primaryy {
+  background: #38bdf8;
+  border: none;
+  color: #0f172a;
+}
+
+.btn-primaryy:hover {
+  background: #0ea5e9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
 .btn-secondary {
   background: #64748b;
   border: none;
@@ -1511,6 +1524,31 @@ input[type="file"] {
 
 .btn-secondary:hover {
   background: #475569;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+
+.btn-success {
+  background: #146c43;
+  border: none;
+  color: #f8fafc;
+}
+
+.btn-success:hover {
+  background: #196441;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-danger {
+  background: #dc3545;
+  border: none;
+  color: #f8fafc;
+}
+
+.btn-danger:hover {
+  background: #a51e2b;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }

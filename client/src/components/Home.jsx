@@ -122,6 +122,11 @@ export default function Dashboard() {
   const [activeDashboard, setActiveDashboard] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [originalDashboard, setOriginalDashboard] = useState(null);
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
+  const [pendingDashboard, setPendingDashboard] = useState(null);
+
+
 
   // 🔥 SINGLE selected dashboard for transaction
   const [selectedDashboard, setSelectedDashboard] = useState(null);
@@ -146,16 +151,7 @@ export default function Dashboard() {
   const [renamePopup, setRenamePopup] = useState(null);
   const [newName, setNewName] = useState("");
 
-  const [exportFormat, setExportFormat] = useState("");
 
-  const handleFileExport = () => {
-    if (!exportFormat) {
-      alert("Please select export format");
-      return;
-    }
-
-    console.log("Exporting as:", exportFormat);
-  };
   // ...........................................................................................
 
   // add new dashboard
@@ -187,6 +183,14 @@ export default function Dashboard() {
         : []
     );
   };
+
+  useEffect(() => {
+    if (showPopup && activeDashboard) {
+      setSelectedDashboard(activeDashboard);
+      setOriginalDashboard(activeDashboard);   // 🔥 store original
+    }
+  }, [showPopup, activeDashboard]);
+
 
  //  .............................................................................
 
@@ -669,28 +673,6 @@ export default function Dashboard() {
     setActiveSuggestions(suggestions);
   };
 
-  
-  // /* ================= Select Suggestion Data Name ================= */
-  // const selectSuggestion = (index, suggestion) => {
-  //   setFilters(prev => {
-  //     const updated = [...prev];
-  //     const value = updated[index].value || "";
-
-  //     const parts = value.split(",");
-  //     parts[parts.length - 1] = " " + suggestion;
-
-  //     updated[index] = {
-  //       ...updated[index],
-  //       value: parts.join(",").trimStart()
-  //     };
-
-  //     return updated;
-  //   });
-  //   setActiveSuggestions([]);
-  // };
-
-  //  .............................................................................
-
   /* ================= UPDATE SUMMARY WHEN FILTERS CHANGE ================= */
   useEffect(() => {
     const s = calculateSummary(filteredData);
@@ -707,7 +689,6 @@ export default function Dashboard() {
       end: "" 
     }]);
   };
-
 
   const removeFilter = (id) => {
     setFilters((prev) => prev.filter((f) => f.id !== id));
@@ -733,8 +714,6 @@ export default function Dashboard() {
       setFocusedSuggestionIndex(-1);
     }
   };
-
-
 
   useEffect(() => {
     if (!activeDashboard) return;
@@ -800,13 +779,17 @@ export default function Dashboard() {
         withCredentials: true,
       });
 
-      toast.success(res.data.message || "Transaction added");
-      
       await fetchCategories();
-      setShowPopup(false);
 
-      if (selectedDashboard === activeDashboard) {
-          await fetchDashboard();
+      // 🔥 If dashboard changed → ask first
+      if (selectedDashboard !== originalDashboard) {
+        setPendingDashboard(selectedDashboard);
+        setShowSwitchConfirm(true);
+      } else {
+        // Same dashboard → close + refresh
+        setShowPopup(false);
+        await fetchDashboard();
+        toast.success(res.data.message || "Transaction added");
       }
 
       // Reset all states
@@ -1621,7 +1604,7 @@ export default function Dashboard() {
 
             <div className="modal-actions">
               <button
-                className="btn btn-danger"
+                className="btn btn-success"
                 onClick={() => {
                   renameDashboard(renamePopup._id, newName);
                   setRenamePopup(null);
@@ -1655,7 +1638,7 @@ export default function Dashboard() {
             />
 
             <div className="modal-actions">
-              <button className="btn btn-danger" onClick={addDashboard}>Save</button>
+              <button className="btn btn-primaryy" onClick={addDashboard}>Save</button>
               <button className="btn btn-secondary" 
               onClick={() => {
                 setDashboardName("");   // ✅ RESET
@@ -2259,6 +2242,10 @@ export default function Dashboard() {
                     transactions={transactions}
                     dashboardId={activeDashboard}
                     dashboards={dashboards}
+                    onDashboardSwitch={(newDash) => {
+                      setActiveDashboard(newDash);   // 🔥 ADD THIS
+                      refreshDashboard();
+                    }}
                     onClose={() => {
                       setShowEdit(false);
                       setPaymentModeVersion(v => v + 1);
@@ -2850,11 +2837,52 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+      {showSwitchConfirm && (
+        <div className="modal-backdrop">
+          <div className="modal-box danger">
+            <h4>Switch Dashboard?</h4>
+            <p>
+              You changed the selected account.  
+              Do you want to switch to that dashboard?
+            </p>
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={async () => {
+                  setShowSwitchConfirm(false);
+                  setShowPopup(false);   // 🔥 close after decision
+                  await fetchDashboard();
+                   toast.success("Transaction added successfully");
+                }}
+              >
+                No
+              </button>
+              <button
+                className="btn btn-success"
+                onClick={() => {
+                  setActiveDashboard(pendingDashboard);
+                  localStorage.setItem("activeDashboardId", pendingDashboard);
+
+                  setShowSwitchConfirm(false);
+                  setShowPopup(false);   // 🔥 close after decision
+                   toast.success("Transaction added successfully");
+                }}
+
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+    
   );
 }
 
 
+ 
 // ================= REUSABLE SUMMARY CARD =================.....................................................
 function SummaryCard({ title, value, color, percentage }) {
   const icons = {
