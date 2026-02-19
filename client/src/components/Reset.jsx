@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axios";
@@ -12,7 +13,8 @@ function Reset() {
   const email = searchParams.get("email");
   const [errors, setErrors] = useState({});
 
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
@@ -65,32 +67,57 @@ function Reset() {
           </div> 
         <h3>Reset Password</h3>
        {errors.password && ( <p className="error-text">{errors.password}</p> )}
-        <input
-          type="password"
-          className={`form-input mb-3 ${ errors.password ? "input-error" : ""}`}
-          placeholder="Enter New Password"
-          value={password}
-          onChange={(e) =>{ 
-            setPassword(e.target.value);
-            setErrors({ ...errors, password: "" });
-          }}
-          
-        />
+       
+         <div className="password-wrapper">
+          <input
+            type={showPassword ? "text" : "password"}
+            className={`form-input mb-3 ${
+              errors.password ? "input-error" : ""
+            }`}
+            placeholder="Enter New Password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setErrors({ ...errors, password: "" });
+            }}
+          />
+
+          <span
+            className="eye-icon"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEye /> : <FaEyeSlash />}
+          </span>
+        </div>
+
 
         {errors.confirmPassword && (<p className="error-text">{errors.confirmPassword}</p>)}
-        <input
-          type="password"
-          className={`form-input mb-3 ${ errors.confirmPassword ? "input-error" : ""}`}
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) =>{ 
-            setConfirmPassword(e.target.value);
-            setErrors({ ...errors, confirmPassword: "" });
+     
+        <div className="password-wrapper">
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            className={`form-input ${
+              errors.confirmPassword ? "input-error" : ""
+            }`}
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              setErrors({ ...errors, confirmPassword: "" });
+            }}
+          />
 
-          }}
-          
-        />
-        <button className="btn btn-primary mb-3" type="submit">Reset Password</button>
+          <span
+            className="eye-icon"
+            onClick={() =>
+              setShowConfirmPassword(!showConfirmPassword)
+            }
+          >
+            {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
+          </span>
+        </div>
+
+        <button className="btn btn-primary mt-3" type="submit">Reset Password</button>
       </form>
     </div>
   );

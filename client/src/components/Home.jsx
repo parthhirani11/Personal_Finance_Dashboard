@@ -125,6 +125,7 @@ export default function Dashboard() {
   const [originalDashboard, setOriginalDashboard] = useState(null);
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [pendingDashboard, setPendingDashboard] = useState(null);
+  
 
 
 
@@ -2601,6 +2602,7 @@ export default function Dashboard() {
                           {/* SETTINGS ICON */}
                           <button
                             className="settings-btn"
+                            type="button"
                             tabIndex={-1}
                             // title="Edit Categories"
                            onClick={() => {
@@ -2635,18 +2637,37 @@ export default function Dashboard() {
                             <h5 className=" mb-3" style={{ color: "#38bdf8" }}>Edit Categories</h5>
 
                             {tempCategories.map((cat, i) => (
-                              <input
-                                key={i}
-                                className="form-control mb-2"
-                                value={cat}
-                                onChange={(e) => {
-                                  const updated = [...tempCategories];
-                                  updated[i] = e.target.value;
-                                  setTempCategories(updated);
-                                }}
-                              />
+                              <div key={i} className="d-flex gap-2 mb-2">
+                                <input
+                                  className="form-control"
+                                  value={cat}
+                                  onChange={(e) => {
+                                    const updated = [...tempCategories];
+                                    updated[i] = e.target.value;
+                                    setTempCategories(updated);
+                                  }}
+                                />
+
+                                <button
+                                  type="button"
+                                  className="close-btn"
+                                  onClick={() => {
+                                    const updated = tempCategories.filter((_, index) => index !== i);
+                                    setTempCategories(updated);
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </div>
                             ))}
 
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm mt-2"
+                              onClick={() => setTempCategories([...tempCategories, ""])}
+                            >
+                              + Add New Category
+                            </button>
                             <div className="d-flex justify-content-end gap-2 mt-3">
                               <button
                                 className="btn btn-secondary btn-sm"
@@ -2660,10 +2681,16 @@ export default function Dashboard() {
 
                               <button
                                 className="btn btn-success btn-sm"
+                             
                                 onClick={() => {
-                                  updateCategories(tempCategories);
+                                  const cleaned = tempCategories
+                                    .map(c => c.trim())
+                                    .filter(Boolean);
+
+                                  updateCategories(cleaned);
                                   setShowCatPopup(false);
                                 }}
+
                               >
                                 Update
                               </button>
@@ -2750,6 +2777,7 @@ export default function Dashboard() {
                         <button
                           className="settings-btn-tags"
                           tabIndex={-1}
+                          type="button"
                           // title="Edit Tags"
                           onClick={() => {
                             setTempTags([...tags]); // 🔥 MUST
@@ -2782,18 +2810,38 @@ export default function Dashboard() {
                           <h5 className=" mb-3" style={{ color: "#38bdf8" }}>Edit Tags</h5>
 
                           {tempTags.map((tag, i) => (
-                            <input
-                              key={i}
-                              className="form-control mb-2"
-                              value={tag}
-                              onChange={(e) => {
-                                const updated = [...tempTags];
-                                updated[i] = e.target.value;
-                                setTempTags(updated);
-                              }}
-                            />
+                            <div key={i} className="d-flex gap-2 mb-2">
+                              <input
+                                className="form-control"
+                                value={tag}
+                                onChange={(e) => {
+                                  const updated = [...tempTags];
+                                  updated[i] = e.target.value;
+                                  setTempTags(updated);
+                                }}
+                              />
+
+                              <button
+                                type="button"
+                                className="close-btn"
+                                onClick={() => {
+                                  const updated = tempTags.filter((_, index) => index !== i);
+                                  setTempTags(updated);
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+
                           ))}
 
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm mt-2"
+                            onClick={() => setTempTags([...tempTags, ""])}
+                          >
+                            + Add New Tag
+                          </button>
                           <div className="popupp-actions">
                             <button
                               className="btn btn-secondary btn-sm"
@@ -2808,9 +2856,14 @@ export default function Dashboard() {
                             <button
                               className="btn btn-success btn-sm"
                               onClick={() => {
-                                updateTags(tempTags);
+                                const cleaned = tempTags
+                                  .map(t => t.trim())
+                                  .filter(Boolean);
+
+                                updateTags(cleaned);
                                 setShowTagPopup(false);
                               }}
+
                             >
                               Update
                             </button>
@@ -2842,8 +2895,14 @@ export default function Dashboard() {
           <div className="modal-box danger">
             <h4>Switch Dashboard?</h4>
             <p>
-              You changed the selected account.  
-              Do you want to switch to that dashboard?
+              You selected {" "}  
+              <strong>
+                {capitalizeFirst(
+                  dashboards.find(d => d._id === pendingDashboard)?.name || ""
+                )}
+              </strong>Account.
+              <br />
+              Do you want to switch to that Account?
             </p>
             <div className="modal-actions">
               <button

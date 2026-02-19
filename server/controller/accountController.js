@@ -208,12 +208,34 @@ export const getUserCategories = async (req, res) => {
   }
 };
 
+// export const updateUserCategories = async (req, res) => {
+//   try {
+//     const { categories } = req.body;
+
+//     await User.findByIdAndUpdate(req.session.user.id, {
+//       categories: categories.map(c => c.trim()),
+//     });
+
+//     res.json({ success: true });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
 export const updateUserCategories = async (req, res) => {
   try {
     const { categories } = req.body;
 
+    const cleaned = [
+      ...new Set(
+        categories
+          .map(c => c.trim().toLowerCase())
+          .filter(Boolean)
+      )
+    ];
+
     await User.findByIdAndUpdate(req.session.user.id, {
-      categories: categories.map(c => c.trim()),
+      categories: cleaned,
     });
 
     res.json({ success: true });
@@ -221,6 +243,7 @@ export const updateUserCategories = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 export const getUserTags = async (req, res) => {
@@ -232,12 +255,34 @@ export const getUserTags = async (req, res) => {
   }
 };
 
+// export const updateUserTags = async (req, res) => {
+//   try {
+//     const { tags } = req.body;
+
+//     await User.findByIdAndUpdate(req.session.user.id, {
+//       tags: tags.map(t => t.trim()),
+//     });
+
+//     res.json({ success: true });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
 export const updateUserTags = async (req, res) => {
   try {
     const { tags } = req.body;
 
+    const cleaned = [
+      ...new Set(
+        tags
+          .map(t => t.trim().toLowerCase())
+          .filter(Boolean)
+      )
+    ];
+
     await User.findByIdAndUpdate(req.session.user.id, {
-      tags: tags.map(t => t.trim()),
+      tags: cleaned,
     });
 
     res.json({ success: true });
@@ -245,6 +290,7 @@ export const updateUserTags = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 // SUGGESTION PAYMENT MODE DATA

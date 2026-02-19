@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import { ToastContainer, toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 
 function Register() {
@@ -11,7 +12,7 @@ function Register() {
     email: "",
     password: ""
   });
-
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,12 +36,7 @@ function Register() {
       setLoading(false);
     }
   };
-  // seve new user data 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   register();
-  // };
-
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -106,16 +102,26 @@ function Register() {
 
 
        {errors.password && <p className="error-text">{errors.password}</p>}
-        <input
-          type="password"
-          className={`form-input mb-3 ${errors.password ? "input-error" : ""}`}
-          placeholder="Password"
-          value={form.password}
-          onChange={e => {
-            setForm({ ...form, password: e.target.value });
-            setErrors({ ...errors, password: "" });
-          }}
-        />
+       
+          <div className="password-wrapper mb-3">
+          <input
+            type={showPassword ? "text" : "password"}
+            className={`form-input ${errors.password ? "input-error" : ""}`}
+            placeholder="Password"
+            value={form.password}
+            onChange={e => {
+              setForm({ ...form, password: e.target.value });
+              setErrors({ ...errors, password: "" });
+            }}
+          />
+
+          <span
+            className="eye-icon"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEye /> : <FaEyeSlash />}
+          </span>
+        </div>
 
 
         <button
