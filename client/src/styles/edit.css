@@ -166,7 +166,7 @@
   position: absolute;
   top: 4px;
   left: 4px;
-  width: calc(50% - 8px);
+  width: calc(51% - 8px);
   height: calc(100% - 8px);
   border-radius: 12px;
   transition: 0.35s ease;
@@ -182,7 +182,7 @@
 /* EXPENSE */
 .edit-slider-bg.expense {
   background: linear-gradient(135deg, #dc3545, #f05858);
-  transform: translateX(100%);
+  transform: translateX(98%);
 }
 
 /* ........................................................................... */
@@ -302,4 +302,46 @@ body.popup-open {
 .tag-input-wrapper {
   position: relative;
 }
+
+.add-mode-btn-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 39px;                 /* ✅ FIX HEIGHT */
+  gap: 8px;
+
+  padding: 0 14px;              /* ✅ REMOVE 0px TOP/BOTTOM */
+
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #ffffff;
+
+  border-radius: 10px;
+  border: none;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;               /* ✅ TEXT ALIGN FIX */
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+
+  white-space: nowrap;          /* ✅ PREVENT WRAP */
+}
+.add-mode-btn-edit .add-icon {
+  width: 20px;
+  height: 20px;                 /* ✅ MATCH HEIGHT */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
 

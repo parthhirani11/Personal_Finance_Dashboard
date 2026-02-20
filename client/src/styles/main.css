@@ -710,6 +710,7 @@ body {
   border-radius: 12px;
   padding: 6px;
   margin-bottom: 30px;
+ 
 }
 
 .tab-btn {
@@ -721,6 +722,7 @@ body {
   color: #8197b7;
   z-index: 2;
   cursor: pointer;
+ 
 }
 
 .tab-btn.active {
@@ -2151,7 +2153,7 @@ p a:hover {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: calc(50% - 8px);
+  width: calc(51% - 8px);
   height: calc(100% - 8px);
   border-radius: 12px;
   transition: 0.35s ease;
@@ -2167,7 +2169,7 @@ p a:hover {
 /* EXPENSE */
 .slider-bg.expense {
   background: linear-gradient(135deg, #dc3545, #f05858);
-  transform: translateX(100%);
+  transform: translateX(98%);
 }
 
 .category-suggestions {
@@ -2566,7 +2568,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
   justify-content: center;
 
-  height: 38px;                 /* ✅ FIX HEIGHT */
+  height: 41px;                 /* ✅ FIX HEIGHT */
   gap: 8px;
 
   padding: 0 14px;              /* ✅ REMOVE 0px TOP/BOTTOM */

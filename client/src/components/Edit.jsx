@@ -671,7 +671,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 )}
                 <button
                   type="button"
-                  className="add-mode-btn d-flex align-items-center gap-1"
+                  className="add-mode-btn-edit d-flex align-items-center gap-1"
                   tabIndex={-1}
                   onClick={() => setShowModal(true)}
                 >
