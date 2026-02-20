@@ -2677,7 +2677,9 @@ export default function Dashboard() {
                                 className="btn btn-primary btn-sm"
                                 onClick={() => setTempCategories([...tempCategories, ""])}
                               >
-                                + Add Category
+                                {/* + Add Category */}
+                                <span className="add-icon">+</span>
+                                <span className="add-text">Add Category</span>
                               </button>
 
                               <div className="footer-actions">
@@ -2861,7 +2863,9 @@ export default function Dashboard() {
                               className="btn btn-primary btn-sm"
                               onClick={() => setTempTags([...tempTags, ""])}
                             >
-                              + Add Tag
+                              {/* + Add Tag */}
+                              <span className="add-icon">+</span>
+                              <span className="add-text">Add Tag</span>
                             </button>
 
                             <div className="footer-actions">

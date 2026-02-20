@@ -1328,7 +1328,7 @@
 
   /* ===== PAYMENT MODE ===== */
   .edit-payment-mode {
-    gap: 6px;
+    gap: 4px;
   }
 
   .edit-radio-item {
@@ -1435,20 +1435,60 @@
     font-size: 14px;
   }
 
+ @media (max-width: 576px) {
+
   .popupp-footer {
-    padding: 10px;
-    flex-direction: column;
-    gap: 8px;
+    padding: 8px 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  .popupp-footer .btn {
-    font-size: 13px;
-    padding: 6px 10px;
+  /* 🔹 Add Category button */
+  .popupp-footer > .btn {
+    font-size: 12px;
+    padding: 4px 8px;
+    height: 30px;
+  }
+
+  /* 🔹 Cancel & Update buttons */
+  .footer-actions .btn {
+    font-size: 12px;
+    padding: 4px 8px;
+    height: 30px;
+    min-width: 65px;
   }
 
   .footer-actions {
-    width: 100%;
-    justify-content: space-between;
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+}
+
+}
+
+@media (max-width: 576px) {
+
+  /* Text hide */
+  .add-text {
+    display: none;
+  }
+
+  /* Button compact */
+  .add-btn {
+    width: 36px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add-icon {
+    font-size: 18px;
+    line-height: 1;
   }
 
 }
