@@ -3011,14 +3011,15 @@ const hasAnimated = useRef(false);
             duration={!hasAnimated.current ? getDuration(value) : 0}
             separator=","
             formattingFn={(n) =>
-              n.toLocaleString("en-IN", { minimumFractionDigits: 2 })
+              n.toLocaleString("en-IN", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+              })
             }
             onEnd={() => {
-              hasAnimated.current = true;   // after first animation stop future animations
+              hasAnimated.current = true;  
             }}
           />
-
-
           </h3>
 
           <span className="summary-sub">

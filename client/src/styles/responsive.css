@@ -393,6 +393,33 @@
   }
 }
 
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .summary-card {
+    padding: 18px 20px;
+    border-radius: 16px;
+  }
+
+  .summary-title {
+    font-size: 0.9rem;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;   /* desktop karta nani */
+    
+  }
+
+  .summary-sub {
+    font-size: 0.75rem;
+  }
+
+  .summary-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+}
+
 @media (max-width: 480px) {
   .summary-value {
     font-size: 1.3rem;

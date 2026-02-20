@@ -1572,146 +1572,6 @@ p a:hover {
 }
 
 
-
-/* edit page payment redip circle btn css......... */
-.payment-mode-group {
-  display: flex;
-  gap: 20px;
-}
-
-.radio-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-/* hide default radio */
-.radio-item input {
-  display: none;
-}
-
-/* outer circle */
-.custom-radio {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #0d6efd;
-  border-radius: 50%;
-  position: relative;
-}
-
-/* inner dot when selected */
-.radio-item input:checked + .custom-radio::after {
-  content: "";
-  width: 10px;
-  height: 10px;
-  background: #0d6efd;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/* export css  */
-
-/* ===== EXPORT + FILTER CONTAINER ===== */
-/* .export-filter-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 20px;
-} */
-
-/* .transaction-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-} */
-
-/* Export row */
-/* .export-filter-container {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-} */
-/* =====................ SELECT BOX Popup Form ................===== */
-
-
-/* .form-selectet {
-  border-radius: 12px;
-  border: 1px solid #64748b;
-  background: #0f172a;
-  color: #f1f5f9;
-  font-weight: 500;
-  padding: 10px 14px;
-  transition: all 0.3s ease;
-}
-
-.form-selectet:focus {
-  outline: none;
-  border-color: #38bdf8;
-  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
-} */
-
-/* ......add filter btn....... */
-/* .plus-btnnnx {
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-  border: none;
-  border-radius: 12px;
-  color: #0f172a;
-  font-weight: 600;
-  padding: 10px 8px;
-  cursor: pointer;
-  align-items: center !important;    
-  justify-content: center !important; 
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
-.plus-btnnnx:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.4);
-} */
-
-/* ================= MOBILE ================= */
-/* @media (max-width: 768px) {
-
-  .transaction-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .export-filter-container {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-  }
-
-  .export-filter-container select {
-    flex: 1;
-    width: auto !important;
-  }
-
-  .export-filter-container button {
-    flex: 0 0 auto;
-  } */
-
-  /* Hide Export text */
-  /* .export-text {
-    display: none;
-  }
-
-  h2 {
-    font-size: 18px;
-  }
-} */
-/* ============================= */
-/* ===== TRANSACTION HEADER ==== */
-/* ============================= */
-
 .transaction-header {
   display: flex;
   justify-content: space-between;
@@ -2199,8 +2059,22 @@ p a:hover {
 }
 
 /* hide default radio */
-.radio-item input {
+/* .radio-item input {
   display: none;
+} */
+
+/* hide default radio BUT keep accessible */
+.radio-item input {
+  position: absolute;
+  opacity: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.radio-item input:focus + .custom-radio {
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.5);
 }
 
 /* custom circle */
