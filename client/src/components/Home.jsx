@@ -1593,8 +1593,8 @@ export default function Dashboard() {
 
       {renamePopup && (
         <div className="modal-backdrop">
-          <div className="modal-box">
-            <h4>Rename Acconut </h4>
+          <div className="popupp-box">
+            <h4 style={{color:"#d9d8e2"}}>Rename Acconut </h4>
 
             <input
               type="text"
@@ -1628,8 +1628,8 @@ export default function Dashboard() {
 
       {showAdd && (
         <div className="modal-backdrop">
-          <div className="modal-box">
-            <h4>Add Acconut</h4>
+          <div className="popupp-box ">
+            <h4 style={{color:"#d9d8e2"}}>Add Acconut</h4>
 
             <input
               className="form-inputt mb-3"
@@ -2550,8 +2550,13 @@ export default function Dashboard() {
                           value={categoryInput}
                           autoComplete="off"
                           placeholder="Type Category "
-                          onFocus={() => {
-                            setShowSuggestions(true);
+                          // onFocus={() => {
+                          //   setShowSuggestions(true);
+                          //   setFilteredCategories(allCategoryOptions);
+                          // }}
+
+                          onMouseDown={() => {
+                            setShowSuggestions(prev => !prev);   // 🔥 toggle
                             setFilteredCategories(allCategoryOptions);
                           }}
 
@@ -2740,8 +2745,12 @@ export default function Dashboard() {
                         value={tagInput}
                         autoComplete="off"
                         placeholder="Type Tag"
-                        onFocus={() => {
-                          setShowTagSuggestions(true);
+                        // onFocus={() => {
+                        //   setShowTagSuggestions(true);
+                        //   setFilteredTags(allTagOptions);
+                        // }}
+                        onMouseDown={() => {
+                          setShowTagSuggestions(prev => !prev);
                           setFilteredTags(allTagOptions);
                         }}
                         onChange={(e) => handleTagChange(e.target.value)}

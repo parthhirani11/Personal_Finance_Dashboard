@@ -694,7 +694,32 @@
 /* =====================================
    MOBILE RESPONSIVE – EDIT / EXPORT
 ===================================== */
+@media (max-width: 576px) {
 
+  .tag-modal {
+    width: 90%;          /* screen pr fit thay */
+    max-width: 260px;    /* box nani size */
+    padding: 14px;       /* padding ochi */
+    border-radius: 6px;
+  }
+
+  .tag-modal h3,
+  .tag-modal h4 {
+    font-size: 16px;     /* heading nani */
+  }
+
+  .tag-modal p,
+  .tag-modal label,
+  .tag-modal input,
+  .tag-modal button {
+    font-size: 13px;     /* text nani */
+  }
+
+  .tag-modal button {
+    padding: 6px 10px;   /* button size nani */
+  }
+
+}
 
 @media (max-width: 768px) {
 
