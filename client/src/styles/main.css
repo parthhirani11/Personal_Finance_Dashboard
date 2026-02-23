@@ -2392,7 +2392,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: #4f9cff;
   font-size: 13px;
   cursor: pointer;
-  margin-left: 6px;
+  margin-left: 2px;
   padding: 0;
 }
 
