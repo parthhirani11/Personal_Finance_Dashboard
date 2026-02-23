@@ -3064,7 +3064,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 6px;
   border: 2px solid #64748b;
   border-radius: 12px;
-  padding: 6px 10px;
+  padding: 6px;
   min-height: 47px;
   background: #0f172a;
 }
@@ -3091,6 +3091,30 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+
+  .chip-wrapper {
+    padding: 5px 6px;       /* thodu moto */
+    min-height: 10px;         /* mobile mate comfortable touch size */
+    border-radius: 14px;
+    gap: 8px;
+   
+  }
+
+  .chip-wrapper input {
+    min-width: 80px;          /* 120px mobile ma vadhu hoy */
+    font-size: 12px;
+  }
+
+  .chip {
+    padding: 4px 7px;        /* chip thodi moti */
+    font-size: 9px;
+  }
+
+  .chip span {
+    margin-left: 8px;
+  }
+}
 
 
 /* setting tags and category popup box */
