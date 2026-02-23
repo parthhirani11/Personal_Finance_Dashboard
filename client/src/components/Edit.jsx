@@ -709,11 +709,15 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                     value={categoryInput}
                     autoComplete="off"
                     placeholder="Type category & press Enter"
-                    onFocus={() => {
-                      setShowSuggestions(true);
-                      // setFilteredCategories(transactionCategories);
-                      setFilteredCategories(allCategoryOptions);
+                    // onFocus={() => {
+                    //   setShowSuggestions(true);
+                    //   // setFilteredCategories(transactionCategories);
+                    //   setFilteredCategories(allCategoryOptions);
 
+                    // }}
+                    onClick={() => {
+                      setShowSuggestions(prev => !prev);   // 🔥 toggle
+                      setFilteredCategories(allCategoryOptions);
                     }}
                     onChange={(e) => handleCategoryChange(e.target.value)}
                     onKeyDown={handleCategoryKeyDown}
@@ -795,11 +799,15 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                     placeholder="Type & press Enter"
                     onChange={e => handleTagChange(e.target.value)}
                     onKeyDown={handleTagKeyDown}
-                    onFocus={() => {
-                      setShowTagSuggestions(true);
-                      // setFilteredTags(transactionTags);
-                      setFilteredTags(allTagOptions);
+                    // onFocus={() => {
+                    //   setShowTagSuggestions(true);
+                    //   // setFilteredTags(transactionTags);
+                    //   setFilteredTags(allTagOptions);
 
+                    // }}
+                    onClick={() => {
+                      setShowTagSuggestions(prev => !prev);   // 🔥 toggle
+                      setFilteredTags(allTagOptions);
                     }}
                     // onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
                     onBlur={() => {
