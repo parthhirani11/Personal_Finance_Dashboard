@@ -63,6 +63,7 @@ export const addTransaction = async (req, res) => {
       type,
       amount,
       person,
+      relatedDetails,
       description,
       tags,
       paymentMode,
@@ -106,6 +107,7 @@ export const addTransaction = async (req, res) => {
       type,
       amount: Number(amount),
       person,
+      relatedDetails: relatedDetails || "",
       description,
       tags: parsedTags,
       paymentMode,
@@ -136,6 +138,7 @@ export const updateTransaction = async (req, res) => {
       amount,
       person,
       paymentMode,
+      relatedDetails,
       description,
       tags,
       dashboardId,
@@ -146,6 +149,7 @@ export const updateTransaction = async (req, res) => {
       amount,
       person,
       paymentMode,
+      relatedDetails: relatedDetails || "",
       description: description || "",  
       tags: tags
         ? (Array.isArray(tags)

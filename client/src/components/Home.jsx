@@ -42,6 +42,10 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
   
+  const textRefs = useRef({});
+  const [expandedId, setExpandedId] = useState(null);
+  const [isClamped, setIsClamped] = useState({});
+  
   const [activeTab, setActiveTab] = useState("transactions");
   const [transactions, setTransactions] = useState([]);
   const [exportType, setExportType] = useState("");
@@ -57,6 +61,7 @@ export default function Dashboard() {
     note: "",
     date: "",
     tags: [],
+    relatedDetails: "",
   });
   // const [filters, setFilters] = useState([{ id: Date.now(), type: "all", value: "", start: "", end: "" }]);
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
@@ -742,6 +747,21 @@ export default function Dashboard() {
       .join(" ");
   };
 
+  /* ================= CHECK DESCRIPTION OVERFLOW ================= */
+useEffect(() => {
+  const newClampedState = {};
+
+  Object.keys(textRefs.current).forEach(id => {
+    const el = textRefs.current[id];
+    if (el) {
+      newClampedState[id] =
+        el.scrollHeight > el.clientHeight;
+    }
+  });
+
+  setIsClamped(newClampedState);
+
+}, [filteredData, expandedId]);
   
   /* ================= ADD TRANSACTION ================= */
   const addTransaction = async (e) => {
@@ -760,6 +780,7 @@ export default function Dashboard() {
     formData.append("paymentMode", selectedMode);
     formData.append("tags", selectedTags.join(","));
     formData.append("description", selectedCategories.join(", "));
+    formData.append("relatedDetails", form.relatedDetails);
 
     if (file) {
       formData.append("attachment", file);
@@ -803,6 +824,7 @@ export default function Dashboard() {
         note: "",
         date: "",
         tags: [],
+        relatedDetails: "", 
       });
       setAmount("");
       setSelectedTags([]);
@@ -2157,6 +2179,46 @@ export default function Dashboard() {
                         <span className="value wrap">{item.tags?.map(tag => capitalizeFirst(tag)).join(", ") || "-"}</span>
                       </div>
 
+                      {/* {item.relatedDetails && (
+                        <div className="rows full">
+                          <span className="label">Details: </span>
+                          <span className="value description">
+                            {item.relatedDetails}
+                          </span>
+                        </div>
+                      )} */}
+                      {item.relatedDetails && (
+                        <div className="rows full">
+                          <span className="label">Details: </span>
+
+                          <div className="details-wrapper">
+                          <span
+                            className={`value details-text ${
+                              expandedId === item._id ? "expanded" : ""
+                            }`}
+                            ref={(el) => {
+                              if (el) textRefs.current[item._id] = el;
+                            }}
+                          >
+                            {item.relatedDetails}
+                          </span>
+
+                          {(isClamped[item._id] || expandedId === item._id) && (
+                            <button
+                              className="view-more-btn"
+                              onClick={() =>
+                                setExpandedId(
+                                  expandedId === item._id ? null : item._id
+                                )
+                              }
+                            >
+                              {expandedId === item._id ? "Show Less" : "View More"}
+                            </button>
+                          )}
+                          </div>
+                        </div>
+                      )}
+
                       {item.attachment && item.attachment !== "No File" && (
                         <div className="rows full">
                           <span className="label">Attachment :</span>
@@ -2384,9 +2446,9 @@ export default function Dashboard() {
                     {/* <label>Account Holder Name</label> */}
                     <label>
                       {form.type === "income" ? "Receiver Name" : "Payer Name"} 
-                      <span className="text-danger"> *</span>
+                      {/* <span className="text-danger"> *</span> */}
                     </label>
-                    <input className="form-control"
+                    <input className="form-control mt-2"
                       type="text"
                       name="person"
                       autoComplete="off"
@@ -2910,7 +2972,19 @@ export default function Dashboard() {
 
                   </div>   
                 </div>
-                
+                {/* RECORD DETAILS TEXTAREA */}
+                <div className="mb-2">
+                  <label>Record Details</label>
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="Enter additional details..."
+                    value={form.relatedDetails}
+                    onChange={(e) =>
+                      setForm({ ...form, relatedDetails: e.target.value })
+                    }
+                  ></textarea>
+                </div>
                 <label>Attachment</label>
                 <div className="mb-1 file-wrapper">
                   <input type="file" className="form-control file-input" onChange={(e) => setFile(e.target.files[0])} />
@@ -2937,7 +3011,7 @@ export default function Dashboard() {
                 {capitalizeFirst(
                   dashboards.find(d => d._id === pendingDashboard)?.name || ""
                 )}
-              </strong>Account.
+              </strong> Account.
               <br />
               Do you want to switch to that Account?
             </p>

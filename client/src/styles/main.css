@@ -2364,6 +2364,37 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   transform: scale(0.96);
 }
 
+/* .....................recode details.......................... */
+.details-wrapper {
+  display: inline-flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.details-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.details-text.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.view-more-btn {
+  background: none;
+  border: none;
+  color: #4f9cff;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 6px;
+  padding: 0;
+}
 
 /*  categoury*/
 .no-category-msg {

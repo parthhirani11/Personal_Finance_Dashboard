@@ -20,8 +20,9 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     amount: "",
     person: "",
     paymentMode: "cash",
-     category: "",
+    category: "",
     tags: "",
+    relatedDetails: "",
 
   });
 
@@ -107,6 +108,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         person: r.person || "",
         paymentMode: r.paymentMode?.toLowerCase() || "cash",
         type: r.type,
+         relatedDetails: r.relatedDetails || "",
         
       });
       const initialDash = r.dashboardIds?.[0] || dashboardId;
@@ -222,6 +224,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     // arrays
     data.append("description", selectedCategories.join(", "));
     selectedTags.forEach(t => data.append("tags[]", t));
+    data.append("relatedDetails", form.relatedDetails);
 
     // attachment
     if (attachment) {
@@ -543,11 +546,11 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 {/* <label >Account Holder Name</label> */}
                 <label>
                   {form.type === "income" ? "Receiver Name" : "Payer Name"} 
-                  <span className="text-danger">*</span>
+                  {/* <span className="text-danger">*</span> */}
                 </label>
                 
                 <input
-                  className="form-control"
+                  className="form-control mt-2"
                   value={capitalizeFirst(form.person)}
                   onChange={e =>
                     setForm(p => ({
@@ -868,6 +871,23 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 )}
               </div>
             </div>
+            
+            {/* RECORD DETAILS */}
+            <div className="mb-3">
+              <label className="form-label">Record Details</label>
+              <textarea
+                className="form-control"
+                rows="3"
+                placeholder="Enter additional details..."
+                value={form.relatedDetails}
+                onChange={(e) =>
+                  setForm(prev => ({
+                    ...prev,
+                    relatedDetails: e.target.value
+                  }))
+                }
+              ></textarea>
+            </div>
 
             {/* ATTACHMENT */}
             <div className="mb-3">
@@ -902,9 +922,19 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         <div className="modal-backdrop">
           <div className="modal-box danger">
             <h4>Switch Dashboard?</h4>
-            <p>
+            {/* <p>
               You changed the selected account.
               Do you want to switch to that dashboard?
+            </p> */}
+            <p>
+              You selected {" "}  
+              <strong>
+                {capitalizeFirst(
+                  dashboards.find(d => d._id === pendingDashboard)?.name || ""
+                )}
+              </strong> Account.
+              <br />
+              Do you want to switch to that Account?
             </p>
 
             <div className="modal-actions">
