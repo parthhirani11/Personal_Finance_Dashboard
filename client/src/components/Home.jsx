@@ -748,20 +748,39 @@ export default function Dashboard() {
   };
 
   /* ================= CHECK DESCRIPTION OVERFLOW ================= */
+// useEffect(() => {
+//   const newClampedState = {};
+
+//   Object.keys(textRefs.current).forEach(id => {
+//     const el = textRefs.current[id];
+//     if (el) {
+//       newClampedState[id] =
+//         el.scrollHeight > el.clientHeight;
+//     }
+//   });
+
+//   setIsClamped(newClampedState);
+
+// }, [filteredData, expandedId]);
 useEffect(() => {
   const newClampedState = {};
 
-  Object.keys(textRefs.current).forEach(id => {
-    const el = textRefs.current[id];
-    if (el) {
-      newClampedState[id] =
-        el.scrollHeight > el.clientHeight;
-    }
+  requestAnimationFrame(() => {
+    Object.keys(textRefs.current).forEach((id) => {
+      const el = textRefs.current[id];
+
+      if (el) {
+        const isOverflowing =
+          el.scrollHeight - el.offsetHeight > 1;  // 🔥 tolerance fix
+
+        newClampedState[id] = isOverflowing;
+      }
+    });
+
+    setIsClamped(newClampedState);
   });
 
-  setIsClamped(newClampedState);
-
-}, [filteredData, expandedId]);
+}, [filteredData]);
   
   /* ================= ADD TRANSACTION ================= */
   const addTransaction = async (e) => {
@@ -2187,9 +2206,9 @@ useEffect(() => {
                           </span>
                         </div>
                       )} */}
-                      {item.relatedDetails && (
+                      {/* {item.relatedDetails && (
                         <div className="rows full">
-                          <span className="label">Details: </span>
+                          <span className="label" style={{marginTop:4 }}>Details: </span>
 
                           <div className="details-wrapper">
                           <span
@@ -2215,6 +2234,41 @@ useEffect(() => {
                               {expandedId === item._id ? "Show Less" : "View More"}
                             </button>
                           )}
+                          </div>
+                        </div>
+                      )} */}
+                      {item.relatedDetails && (
+                        <div className="rows full">
+                          <span className="label">
+                            Details:
+                          </span>
+
+                          <div className="details-wrapper">
+
+                            <span
+                              className={`value details-text ${
+                                expandedId === item._id ? "expanded" : ""
+                              }`}
+                              ref={(el) => {
+                                if (el) textRefs.current[item._id] = el;
+                              }}
+                            >
+                              {item.relatedDetails}
+                            </span>
+
+                            {(isClamped[item._id] || expandedId === item._id) && (
+                              <button
+                                className="view-more-btn"
+                                onClick={() =>
+                                  setExpandedId(
+                                    expandedId === item._id ? null : item._id
+                                  )
+                                }
+                              >
+                                {expandedId === item._id ? "Show Less" : "View More"}
+                              </button>
+                            )}
+
                           </div>
                         </div>
                       )}
