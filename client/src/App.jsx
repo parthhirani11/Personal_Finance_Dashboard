@@ -7,11 +7,9 @@ import Register from "./components/Register";
 import About from "./components/about";
 import Home from "./components/Home";
 import Contact from "./components/Contact";
-// import Layout from "./layouts/Layout";
 import Header from "./components/Header";
 import Forgot from "./components/Forgot";
 import Reset from "./components/Reset";
-// import Edit from "./components/Edit";
 import Footer from "./components/Footer";
 import "./styles/main.css";
 import "./styles/responsive.css"
@@ -51,7 +49,7 @@ function App() {
     <Router>
       <ScrollToTop />
       <Header user={user} setUser={setUser}/>
-      {/* {user && <Header user={user} setUser={setUser} />} */}
+      
         
       <Routes>
         
@@ -77,7 +75,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<Navigate to="/login" />} />
-        {/* <Route path="/edit/:id" element={<Edit />} /> */}
+       
        
       </Routes>
       <Footer />

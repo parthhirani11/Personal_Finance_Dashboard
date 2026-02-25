@@ -115,9 +115,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       setSelectedDashboard(initialDash);
       setOriginalDashboard(initialDash);  // ✅ correct
 
-      // setSelectedDashboard(r.dashboardIds?.[0] || dashboardId);
-      // setOriginalDashboard(dashId);
-
       setSelectedMode(mode);
       setSelectedCategories(
         r.description
@@ -245,8 +242,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       onClose();
     }
 
-      // toast.success("Transaction updated");
-      // onClose();
     } catch (err) {
       console.error("Update error:", err);
       toast.error("Update failed");
@@ -477,7 +472,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 className="dashboard-select"
                 onClick={() => setShowDropdown(prev => !prev)}
               >
-                {/* {dashboards.find(d => d._id === selectedDashboard)?.name || "Select Dashboard"} */}
+                
                 {selectedDashboard
                   ? capitalizeFirst(
                       dashboards.find(d => d._id === selectedDashboard)?.name || ""
@@ -543,10 +538,10 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
               </div>
 
               <div>
-                {/* <label >Account Holder Name</label> */}
+                
                 <label>
                   {form.type === "income" ? "Receiver Name" : "Payer Name"} 
-                  {/* <span className="text-danger">*</span> */}
+                 
                 </label>
                 
                 <input
@@ -712,19 +707,13 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                     value={categoryInput}
                     autoComplete="off"
                     placeholder="Type category & press Enter"
-                    // onFocus={() => {
-                    //   setShowSuggestions(true);
-                    //   // setFilteredCategories(transactionCategories);
-                    //   setFilteredCategories(allCategoryOptions);
-
-                    // }}
                     onClick={() => {
                       setShowSuggestions(prev => !prev);   // 🔥 toggle
                       setFilteredCategories(allCategoryOptions);
                     }}
                     onChange={(e) => handleCategoryChange(e.target.value)}
                     onKeyDown={handleCategoryKeyDown}
-                    // onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                   
                     onBlur={() => {
                       setTimeout(() => {
                         if (categoryInput.trim()) {
@@ -746,7 +735,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                             key={i}
                             type="button"
                             tabIndex={-1}
-                            // className="list-group-item list-group-item-action"
+                           
                             className={`list-group-item list-group-item-action ${
                               i === focusedCategoryIndex ? "active" : ""
                             }`}
@@ -802,17 +791,12 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                     placeholder="Type & press Enter"
                     onChange={e => handleTagChange(e.target.value)}
                     onKeyDown={handleTagKeyDown}
-                    // onFocus={() => {
-                    //   setShowTagSuggestions(true);
-                    //   // setFilteredTags(transactionTags);
-                    //   setFilteredTags(allTagOptions);
-
-                    // }}
+                   
                     onClick={() => {
                       setShowTagSuggestions(prev => !prev);   // 🔥 toggle
                       setFilteredTags(allTagOptions);
                     }}
-                    // onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+                    
                     onBlur={() => {
                       setTimeout(() => {
                         if (tagInput.trim()) {
@@ -834,7 +818,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                             key={i}
                             tabIndex={-1}
                             type="button"
-                            // className="list-group-item list-group-item-action"
+                           
                             className={`list-group-item list-group-item-action ${
                               i === focusedTagIndex ? "active" : ""
                             }`}
@@ -922,10 +906,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         <div className="modal-backdrop">
           <div className="modal-box danger">
             <h4>Switch Dashboard?</h4>
-            {/* <p>
-              You changed the selected account.
-              Do you want to switch to that dashboard?
-            </p> */}
             <p>
               You selected {" "}  
               <strong>

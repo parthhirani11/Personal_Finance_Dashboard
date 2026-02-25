@@ -130,9 +130,6 @@ export default function Dashboard() {
   const [originalDashboard, setOriginalDashboard] = useState(null);
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [pendingDashboard, setPendingDashboard] = useState(null);
-  
-
-
 
   // 🔥 SINGLE selected dashboard for transaction
   const [selectedDashboard, setSelectedDashboard] = useState(null);
@@ -2015,12 +2012,19 @@ export default function Dashboard() {
                         ref={el => inputRefs.current[index] = el}
                         placeholder="Search..."
                         value={f.value || ""}
+                    
                         onClick={() => {
-                          setActiveFilterIndex(index);
-                          setFocusedSuggestionIndex(-1);
+                          if (activeFilterIndex === index) {
+                            // already open → close
+                            setActiveFilterIndex(null);
+                          } else {
+                            // open new
+                            setActiveFilterIndex(index);
+                            setFocusedSuggestionIndex(-1);
 
-                          const data = getFilteredDataExcept(index);
-                          setActiveSuggestions(getSuggestions(f.type, data));
+                            const data = getFilteredDataExcept(index);
+                            setActiveSuggestions(getSuggestions(f.type, data));
+                          }
                         }}
 
                         onChange={(e) => handleSuggestionInputChange(e, f, index)}
@@ -2133,9 +2137,7 @@ export default function Dashboard() {
           {filteredData.length > 0 ? (
             
             <div className="transaction-wrapper mt-3">
-               {/* <h6 className="transaction-title"> Transactions list... </h6> */}
-
-
+            
               {/* TRANSACTIONS */}
               {filteredData.map(item => (
                 <div key={item._id} className="transaction-card">
@@ -2168,7 +2170,7 @@ export default function Dashboard() {
                       </div>
 
                       <div className="rows">
-                        {/* <span className="label">Recipient: </span> */}
+                       
                         <span className="label">
                           {item.type === "income" ? "Receiver: " : "Payer: "}
                         </span>
@@ -2417,7 +2419,7 @@ export default function Dashboard() {
               
                 <div className="row mb-2">
                   <div className="col-md-6 mt-2">
-                    {/* <div className="d-flex align-items-center gap-2 mb-2"> */}
+                    
                       <label>Amount <span className="text-danger">*</span></label>
                         <input
                           type="number"
@@ -2445,10 +2447,10 @@ export default function Dashboard() {
                       {/* </div> */}
                   </div>
                   <div className="col-md-6 mt-2">
-                    {/* <label>Account Holder Name</label> */}
+                    
                     <label>
                       {form.type === "income" ? "Receiver Name" : "Payer Name"} 
-                      {/* <span className="text-danger"> *</span> */}
+                     
                     </label>
                     <input className="form-control mt-2"
                       type="text"
@@ -2588,9 +2590,9 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* <div className="d-flex align-items-center gap-2 mb-2"> */}
+                
                 <div className="row mb-2">
-                  {/* add category and suggestion list  */}
+                  
                   <div className="col-md-6 mt-2">
                     <div className="mb-2 position-relative">
                       <label className="form-label">Category</label>
@@ -2614,11 +2616,7 @@ export default function Dashboard() {
                           value={categoryInput}
                           autoComplete="off"
                           placeholder="Type Category "
-                          // onFocus={() => {
-                          //   setShowSuggestions(true);
-                          //   setFilteredCategories(allCategoryOptions);
-                          // }}
-
+                         
                           onMouseDown={() => {
                             setShowSuggestions(prev => !prev);   // 🔥 toggle
                             setFilteredCategories(allCategoryOptions);
@@ -2626,7 +2624,7 @@ export default function Dashboard() {
 
                           onChange={(e) => handleCategoryChange(e.target.value)}
                           onKeyDown={handleCateKeyDown}
-                          // onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                         
                           onBlur={() => {
                             setTimeout(() => {
                               if (categoryInput.trim()) {
@@ -2648,7 +2646,7 @@ export default function Dashboard() {
                                 key={i}
                                 type="button"
                                 tabIndex={-1}
-                                // className="list-group-item list-group-item-action"
+                                
                                  className={`list-group-item list-group-item-action ${
                                     i === focusedCategoryIndex ? "active" : ""
                                   }`}
@@ -2673,7 +2671,7 @@ export default function Dashboard() {
                             className="settings-btn"
                             type="button"
                             tabIndex={-1}
-                            // title="Edit Categories"
+                           
                            onClick={() => {
                             setTempCategories([...categories]); // 🔥 MUST
                             setShowCatPopup(true);
@@ -2809,10 +2807,7 @@ export default function Dashboard() {
                         value={tagInput}
                         autoComplete="off"
                         placeholder="Type Tag"
-                        // onFocus={() => {
-                        //   setShowTagSuggestions(true);
-                        //   setFilteredTags(allTagOptions);
-                        // }}
+              
                         onMouseDown={() => {
                           setShowTagSuggestions(prev => !prev);
                           setFilteredTags(allTagOptions);
@@ -2840,7 +2835,7 @@ export default function Dashboard() {
                                 key={i}
                                 tabIndex={-1}
                                 type="button"
-                                // className="list-group-item list-group-item-action"
+                               
                                 className={`list-group-item list-group-item-action ${
                                   i === focusedTagIndex ? "active" : ""
                                 }`}
@@ -2866,7 +2861,7 @@ export default function Dashboard() {
                           className="settings-btn-tags"
                           tabIndex={-1}
                           type="button"
-                          // title="Edit Tags"
+                          
                           onClick={() => {
                             setTempTags([...tags]); // 🔥 MUST
                             setShowTagPopup(true);
