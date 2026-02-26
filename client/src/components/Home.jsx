@@ -22,7 +22,7 @@ import {
   FiChevronDown, 
   FiSettings } from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -40,7 +40,7 @@ import { useCategoryTag } from "../context/CategoryTagContext";
 /* ================= DASHBOARD ================= */
 export default function Dashboard() {
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   
   const textRefs = useRef({});
   const [expandedId, setExpandedId] = useState(null);
@@ -63,12 +63,10 @@ export default function Dashboard() {
     tags: [],
     relatedDetails: "",
   });
-  // const [filters, setFilters] = useState([{ id: Date.now(), type: "all", value: "", start: "", end: "" }]);
+  
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
   const suggestionWrapperRef = useRef(null);
-
   const inputRefs = useRef({});
-
   const [filters, setFilters] = useState([
     { id: Date.now(), type: "all", value: "", values: [], start: "", end: "" }
   ]);
@@ -119,7 +117,7 @@ export default function Dashboard() {
     bank: { bg: "#3b82f633", text: "#3b82f6" },      // blue
     upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
   };
-  const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
+  // const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
 
   // popup change dashboard
 
@@ -1142,8 +1140,6 @@ export default function Dashboard() {
     return unique;
   }, [transactionCategories, categories, allCategories]);
 
-
-
   const transactionTags = useMemo(() => {
     return [
       ...new Set(
@@ -1199,8 +1195,6 @@ export default function Dashboard() {
     setFilteredTags(filtered);
   };
 
-
-
   const [focusedCategoryIndex, setFocusedCategoryIndex] = useState(-1);
   const [focusedTagIndex, setFocusedTagIndex] = useState(-1);
 
@@ -1238,8 +1232,6 @@ export default function Dashboard() {
       }
     }
   };
-
-
 
   // categories filter and add ..........
   useEffect(() => {
@@ -1310,7 +1302,6 @@ export default function Dashboard() {
     setFilteredTags([]);
     setShowTagSuggestions(false);
   };
-
 
   const fetchTags = async () => {
     try {
@@ -2444,13 +2435,12 @@ export default function Dashboard() {
                             {errors.amount}
                           </div>
                         )}
-                      {/* </div> */}
+                      
                   </div>
                   <div className="col-md-6 mt-2">
                     
                     <label>
-                      {form.type === "income" ? "Receiver Name" : "Payer Name"} 
-                     
+                      {form.type === "income" ? "Receiver Name" : "Payer Name"}                     
                     </label>
                     <input className="form-control mt-2"
                       type="text"
@@ -3118,3 +3108,4 @@ const hasAnimated = useRef(false);
     </div>
   );
 }
+
