@@ -9,6 +9,7 @@ import { getDashboard, addTransaction, updateTransaction, getSingleRecord,
   updateUserTags, 
   getPaymentModeStats,
   deleteTransaction,
+  getSettlementHistory,
   // getTransactionSuggestions,
 } from "../controller/accountController.js";
 
@@ -26,6 +27,7 @@ router.post("/tags", requireAuth, updateUserTags);
 
 
 router.get("/payment-modes/:dashboardId",requireAuth, getPaymentModeStats);
+router.get("/history", requireAuth, getSettlementHistory);
 
 router.get("/:id", requireAuth , getSingleRecord);
 router.put("/edit/:id", requireAuth , upload.single("attachment"), updateTransaction);

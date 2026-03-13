@@ -1,5 +1,6 @@
 import Dashboard from "../models/Dashboard.js";
 import Account from "../models/Account.js";
+import mongoose from "mongoose";
 
 // create Dashboard
 export const createDashboard = async (req, res) => {
@@ -72,7 +73,11 @@ export const deleteDashboard = async (req, res) => {
     }
 
     // delete transactions
-    await Account.deleteMany({ dashboardIds: id, userId });
+    // await Account.deleteMany({ dashboardIds: id, userId });
+    await Account.deleteMany({
+      dashboardIds: new mongoose.Types.ObjectId(id),
+      userId: new mongoose.Types.ObjectId(userId)
+    });
 
 
     // delete dashboard
@@ -84,6 +89,38 @@ export const deleteDashboard = async (req, res) => {
   }
 };
 
+// get dashboards of OTHER USER (for settlement)
+export const getDashboardsByUserId = async (req, res) => {
+  try {
 
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "UserId required"
+      });
+    }
+
+    const dashboards = await Dashboard.find({ userId })
+      .select("_id name")
+      .sort({ createdAt: 1 });
+
+    res.json({
+      success: true,
+      dashboards
+    });
+
+  } catch (err) {
+
+    console.error("getDashboardsByUserId error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+
+  }
+};
 
 

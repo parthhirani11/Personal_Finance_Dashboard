@@ -62,6 +62,10 @@ router.post("/signup", async (req, res) => {
   if (!name || !email || !password)
     return res.status(400).json({ msg: "All fields required" });
 
+   const idExists = await User.findOne({ name });
+    if (idExists)
+      return res.status(400).json({ msg: "User ID already taken" });
+
   const exists = await User.findOne({ email });
   if (exists)
     return res.status(400).json({ msg: "User already exists" });
@@ -207,4 +211,17 @@ router.post("/reset", async (req, res) => {
 
   res.json({ message: "Password reset successful" });
 });
+
+router.get("/search", async(req,res)=>{
+
+ const {email} = req.query;
+
+ const user =
+  await User.findOne({email})
+  .select("_id name email");
+
+ res.json(user);
+
+});
+
 export default router;
