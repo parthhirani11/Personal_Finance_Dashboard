@@ -37,6 +37,8 @@ function Login({ setUser }) {
     try {
       const res = await api.post("/auth/login", { email, password },{ withCredentials: true });
       setUser(res.data.user);
+      localStorage.setItem("userId", res.data.user.id);
+
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.msg || "Login failed");

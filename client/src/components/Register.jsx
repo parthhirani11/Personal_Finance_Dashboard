@@ -41,9 +41,15 @@ function Register() {
     e.preventDefault();
 
     let newErrors = {};
+    
+    const userIdRegex = /^[A-Za-z0-9_@]+$/;
 
     if (!form.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = "User ID required";
+    }
+    else if (!userIdRegex.test(form.name)) {
+      newErrors.name =
+      "Only letters, numbers, _ and @ allowed";
     }
 
     if (!form.email.trim()) {
@@ -79,7 +85,7 @@ function Register() {
         <input
           type="text"
           className={`form-input mb-3${errors.name ? "input-error" : ""}`}
-          placeholder="Name"
+          placeholder="User ID"
           value={form.name}
           onChange={e => {
             setForm({ ...form, name: e.target.value });

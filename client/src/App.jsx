@@ -11,6 +11,7 @@ import Header from "./components/Header";
 import Forgot from "./components/Forgot";
 import Reset from "./components/Reset";
 import Footer from "./components/Footer";
+import Notifications from "./components/Notifications";
 import "./styles/main.css";
 import "./styles/responsive.css"
 import ScrollToTop from "./components/ScrollToTop";
@@ -75,6 +76,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="/notifications" element={<Notifications />} />
        
        
       </Routes>

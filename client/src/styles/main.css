@@ -832,6 +832,15 @@ body {
   background: rgba(249,115,22,0.15);
   color: #f97316;
 }
+.type-badge.to-receive {
+  background: rgba(203, 249, 22, 0.15);
+  color: #facc15;
+}
+
+.type-badge.to-pay {
+  background: rgba(249, 22, 22, 0.15);
+  color: #fa1515;
+}
 
 /* AMOUNT */
 .amount {
@@ -845,6 +854,82 @@ body {
 
 .amount.expense {
   color: #f97316;
+}
+.amount.receive-amount {
+  color: #facc15;
+  
+}
+.amount.pay-amount {
+  color: #fa1515;
+  
+}
+
+
+.pending-badge{
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* COMMON BADGE STYLE */
+
+.completed-badge{
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  margin-top: 6px;
+}
+
+/* RECEIVE (Green) */ 
+.receive-text{ 
+  color: #facc15; 
+  margin-bottom: 10px;
+  margin-top: 10px;
+  /* background: rgba(203, 249, 22, 0.15); */ 
+  /* padding: 4px 8px; border-radius: 6px; */
+ } 
+  
+  /* PAY (Red) */ 
+  .pay-text{ 
+    color: #ef4444; 
+    margin-bottom: 10px;
+    margin-top: 10px;
+    /* background: rgba(239,68,68,0.1); */ 
+    /* padding: 4px 8px; border-radius: 6px;  */
+  }
+/* SETTLEMENT RECEIVED (GREEN) */
+
+.completed-badge.receive{
+  color: #22c55e;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  /* background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.35); */
+}
+
+/* SETTLEMENT PAID (RED) */
+
+.completed-badge.paid{
+  color: #ef4444;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  /* background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.35); */
+}
+
+/* ORIGINAL TRANSACTION SETTLED (YELLOW/NEUTRAL) */
+
+.completed-badge.neutral{
+  color: #facc15;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  /* background: rgba(250,204,21,0.15);
+  border: 1px solid rgba(250,204,21,0.35); */
 }
 
 /* ===== DETAILS ===== */
@@ -900,6 +985,19 @@ body {
 
 .delete-btn:hover {
   background: rgba(239,68,68,0.3);
+}
+
+.settle-btn {
+  background: rgba(68, 239, 74, 0.15);
+  color: #63ef44;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.settle-btn:hover {
+  background: rgba(111, 239, 68, 0.3);
 }
 
 .confirm-modal-backdrop {
@@ -2397,7 +2495,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: #4f9cff;
   font-size: 13px;
   cursor: pointer;
-  margin-left: 4px;
+  /* margin-left: 4px; */
   padding: 0;
 }
 
@@ -2634,8 +2732,89 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 10px;
   margin-top: 12px;
 }
+.settlement-box{
+  background:#0f172a;
+  border:1px solid #64748b;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+}
+.settlement-box input{
+  width:100%;
+  background:#020617;
+  border:1px solid #64748b;
+  color:#e2e8f0;
+  border-radius:8px;
+  padding:6px 10px;
+}
 
+.settlement-box input:focus{
+  border-color:#4f9cff;
+  box-shadow:none;
+}
 
+.settlement-box .row{
+  align-items:end;
+}
+
+.settlement-toggle{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:10px 0 12px 0;
+}
+
+.settlement-toggle input{
+  width:16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.settlement-label{
+  font-size:14px;
+  color:#cbd5f5;
+  cursor:pointer;
+}
+.user-search-row{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+}
+
+.user-input{
+  flex:1;
+}
+
+.user-input input{
+  width:100%;
+}
+
+.find-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 45px;                 /* ✅ FIX HEIGHT */
+  gap: 8px;
+   
+  padding: 0 14px;              /* ✅ REMOVE 0px TOP/BOTTOM */
+
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #ffffff;
+
+  border-radius: 10px;
+  border: none;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;               /* ✅ TEXT ALIGN FIX */
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+
+  white-space: nowrap;          /* ✅ PREVENT WRAP */
+}
 
 
 /* ===== ADD PAYMENT MODE BUTTON ===== */
@@ -3225,3 +3404,144 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 8px;
 }
 
+.notification-btn{
+  position: relative;
+  background: #1e293b;
+  border: none;
+  color: white;
+  font-size: 22px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.notification-btn:hover{
+  background:#334155;
+}
+
+.notification-badge{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:#ef4444;
+  color:white;
+  font-size:12px;
+  padding:2px 6px;
+  border-radius:50%;
+  font-weight:bold;
+}
+
+
+/* PAGE */
+
+.notification-page{
+  padding:30px;
+  max-width:800px;
+  margin:auto;
+}
+
+/* TITLE */
+
+.notification-title{
+  font-size:26px;
+  margin-bottom:25px;
+  color:#e2e8f0;
+}
+
+/* NO DATA */
+
+.no-notification{
+  color:#94a3b8;
+  text-align:center;
+  margin-top:40px;
+}
+
+/* LIST */
+
+.notification-list{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+/* CARD */
+
+.notification-card{
+  background:#0f172a;
+  border:1px solid #1e293b;
+  border-radius:10px;
+  padding:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  transition:0.25s;
+}
+
+/* HOVER */
+
+.notification-card:hover{
+  border-color:#3b82f6;
+  transform:translateY(-2px);
+}
+
+/* UNREAD */
+
+.notification-card.unread{
+  border-left:4px solid #3b82f6;
+  background:#020617;
+}
+
+/* TEXT */
+
+.notification-content h4{
+  margin:0;
+  font-size:16px;
+  color:#f1f5f9;
+}
+
+.notification-content p{
+  margin:6px 0;
+  color:#cbd5f5;
+}
+
+.notification-content small{
+  color:#64748b;
+}
+
+/* BUTTON */
+
+.mark-read-btn{
+  background:#2563eb;
+  border:none;
+  padding:8px 14px;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:13px;
+}
+
+.mark-read-btn:hover{
+  background:#1d4ed8;
+}
+
+.notification-header{
+ display:flex;
+ align-items:center;
+ gap:15px;
+ margin-bottom:20px;
+}
+
+.back-btn{
+ background:#1e293b;
+ color:#fff;
+ border:none;
+ padding:6px 12px;
+ border-radius:6px;
+ cursor:pointer;
+ font-size:14px;
+}
+
+.back-btn:hover{
+ background:#334155;
+}
