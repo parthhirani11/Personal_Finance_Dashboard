@@ -1,8 +1,5 @@
 import User from "../models/User.js";
 
-/**
- * GET /api/users/by-email?email=test@gmail.com
- */
 export const getUserByUserId = async (req, res) => {
   try {
 

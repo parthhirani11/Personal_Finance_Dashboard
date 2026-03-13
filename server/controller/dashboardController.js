@@ -73,12 +73,11 @@ export const deleteDashboard = async (req, res) => {
     }
 
     // delete transactions
-    // await Account.deleteMany({ dashboardIds: id, userId });
+    
     await Account.deleteMany({
       dashboardIds: new mongoose.Types.ObjectId(id),
       userId: new mongoose.Types.ObjectId(userId)
     });
-
 
     // delete dashboard
     await Dashboard.findOneAndDelete({ _id: id, userId });

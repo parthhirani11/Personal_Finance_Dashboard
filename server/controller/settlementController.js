@@ -47,76 +47,72 @@ export const paySettlement = async (req, res) => {
     await settlement.save();
 
     // update account records
-//     await Account.updateMany(
-//   { settlementId, paymentMode: { $ne: "settlement" } },
-//   { settlementStatus: "settled" }
-// );
-await Account.updateMany(
-  { settlementId, paymentMode: { $ne: "settlement" } },
-  { 
-    settlementStatus: "settled",
-    paymentMode: "settlement"
-  }
-);
+
+    await Account.updateMany(
+      { settlementId, paymentMode: { $ne: "settlement" } },
+      { 
+        settlementStatus: "settled",
+        paymentMode: "settlement"
+      }
+    );
 
     const originalTxn = await Account.findOne({
-  settlementId: settlementId,
-  paymentMode: { $ne: "settlement" }
-});
+      settlementId: settlementId,
+      paymentMode: { $ne: "settlement" }
+    });
 
-const payerId = settlement.fromUserId;
-const receiverId = settlement.toUserId;
-   // SettlementController.js
+    const payerId = settlement.fromUserId;
+    const receiverId = settlement.toUserId;
 
-// payer record
-await Account.create({
-  userId: payerId,
-  dashboardIds: [settlement.fromDashboardId],
+    // payer record
+    await Account.create({
+      userId: payerId,
+      dashboardIds: [settlement.fromDashboardId],
 
-  type: "expense",
-  amount: settlement.amount,
-  paymentMode: "settlement",
+      type: "expense",
+      amount: settlement.amount,
+      paymentMode: "settlement",
 
-  settlementId: settlement._id,
-  settlementRole: "payable",
-  settlementStatus: "settled",
+      settlementId: settlement._id,
+      settlementRole: "payable",
+      settlementStatus: "settled",
 
-  person: receiverId,
+      person: receiverId,
 
-  description: originalTxn?.description || "",
-  tags: originalTxn?.tags || [],
-  category: originalTxn?.category || "",
-  attachment: originalTxn?.attachment || "",
-  originalName: originalTxn?.originalName || "",   // ⭐ ADD THIS
-  date: new Date(),
-  createdBy: currentUserId
-});
-
-
-await Account.create({
-  userId: receiverId,
-  dashboardIds: [settlement.toDashboardId],
-
-  type: "income",
-  amount: settlement.amount,
-  paymentMode: "settlement",
-
-  settlementId: settlement._id,
-  settlementRole: "receivable",
-  settlementStatus: "settled",
-
-  person: payerId,
-
-  description: originalTxn?.description || "",
-  tags: originalTxn?.tags || [],
-  category: originalTxn?.category || "",
-  attachment: originalTxn?.attachment || "",
-  originalName: originalTxn?.originalName || "",   // ⭐ ADD THIS
+      description: originalTxn?.description || "",
+      tags: originalTxn?.tags || [],
+      category: originalTxn?.category || "",
+      attachment: originalTxn?.attachment || "",
+      originalName: originalTxn?.originalName || "",   // ⭐ ADD THIS
+      date: new Date(),
+      createdBy: currentUserId
+    });
 
 
-  date: new Date(),
-  createdBy: currentUserId
-});
+    await Account.create({
+      userId: receiverId,
+      dashboardIds: [settlement.toDashboardId],
+
+      type: "income",
+      amount: settlement.amount,
+      paymentMode: "settlement",
+
+      settlementId: settlement._id,
+      settlementRole: "receivable",
+      settlementStatus: "settled",
+
+      person: payerId,
+
+      description: originalTxn?.description || "",
+      tags: originalTxn?.tags || [],
+      category: originalTxn?.category || "",
+      attachment: originalTxn?.attachment || "",
+      originalName: originalTxn?.originalName || "",   // ⭐ ADD THIS
+
+
+      date: new Date(),
+      createdBy: currentUserId
+    });
     // notifications
     await Notification.create({
       userId: settlement.fromUserId,
@@ -142,17 +138,16 @@ await Account.create({
 
 export const getPendingSettlements = async (req,res)=>{
 
-  // const userId = req.session.user.id;
   const userId = new mongoose.Types.ObjectId(req.session.user.id);
   const data = await Settlement.find({
-  status:"pending",
-  $or:[
-    {fromUserId:userId},
-    {toUserId:userId}
-  ]
-})
-.populate("fromUserId","name email")
-.populate("toUserId","name email");
+    status:"pending",
+    $or:[
+      {fromUserId:userId},
+      {toUserId:userId}
+    ]
+  })
+  .populate("fromUserId","name email")
+  .populate("toUserId","name email");
 
   res.json(data);
 

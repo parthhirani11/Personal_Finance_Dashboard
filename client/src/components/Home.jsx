@@ -8,35 +8,11 @@ import { toast, ToastContainer } from "react-toastify";
 import { socket } from "../socket";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../api/axios";
-import { 
-  FiPieChart, 
-  FiBarChart2, 
-  FiTrendingUp, 
-  FiCreditCard, 
-  FiFilter,
-  FiDownload,
-  FiEdit2, 
-  FiSave,
-  FiPlusCircle,
-  FiPlus, 
-  FiTrash2 ,
-  FiEdit, 
-  FiChevronDown, 
-  FiSettings } from "react-icons/fi";
+import { FiPieChart, FiBarChart2, FiTrendingUp, FiCreditCard, FiFilter, FiDownload, FiEdit2, FiSave, FiPlusCircle, FiPlus,  FiTrash2 ,
+   FiEdit, FiChevronDown, FiSettings 
+} from "react-icons/fi";
 import { FaRupeeSign, FaBell  } from "react-icons/fa";
-// import { useNavigate } from "react-router-dom";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart, Pie, Cell,
-  LineChart, Line,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line,} from "recharts";
 import { useCategoryTag } from "../context/CategoryTagContext";
 
 /* ================= DASHBOARD ================= */
@@ -83,8 +59,8 @@ export default function Dashboard() {
     show: false,
     id: null
   });
-  // categoury
 
+  // categoury
   const { categories, tags, updateCategories, updateTags} = useCategoryTag();
   const [showCatPopup, setShowCatPopup] = useState(false);
   const [tempCategories, setTempCategories] = useState([...categories]);
@@ -94,6 +70,7 @@ export default function Dashboard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
+  // Tags
   const [showTagPopup, setShowTagPopup] = useState(false);
   const [tempTags, setTempTags] = useState([...tags]);
   const [tagInput, setTagInput] = useState("");
@@ -101,7 +78,6 @@ export default function Dashboard() {
   const [allTags, setAllTags] = useState([]);
   const [filteredTags, setFilteredTags] = useState([]); 
   const [selectedTags, setSelectedTags] = useState([]);
-
   const tagRef = useRef(null);
 
   // POPUP SHOW
@@ -111,7 +87,6 @@ export default function Dashboard() {
   // payment mode 
   const [paymentModes, setPaymentModes] = useState([]);
   const [selectedMode, setSelectedMode] = useState("");
-  
   const [customMode, setCustomMode] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [paymentModeVersion, setPaymentModeVersion] = useState(0);
@@ -122,46 +97,38 @@ export default function Dashboard() {
     bank: { bg: "#3b82f633", text: "#3b82f6" },      // blue
     upi: { bg: "#22c55e33", text: "#6ee7b7" },       // green
   };
-  // const [paymentColors, setPaymentColors] = useState(PAYMENT_COLORS);
   // settlement enable
-const [settlementEnabled, setSettlementEnabled] = useState(false);
+  const [settlementEnabled, setSettlementEnabled] = useState(false);
+  // other user ID input
+  const [otherUserId, setOtherUserId] = useState("");
+  // other user data
+  const [otherUser, setOtherUser] = useState(null);
+  // other user dashboards
+  const [otherUserDashboards, setOtherUserDashboards] = useState([]);
+  // selected dashboard
+  const [selectedOtherDashboard, setSelectedOtherDashboard] = useState("");
 
-// other user ID input
-const [otherUserId, setOtherUserId] = useState("");
+  // settlement type
+  const [settlementType, setSettlementType] = useState("payable");
+  const handleSettlementToggle = (checked) => {
 
-// other user data
-const [otherUser, setOtherUser] = useState(null);
+    setSettlementEnabled(checked);
 
-// other user dashboards
-const [otherUserDashboards, setOtherUserDashboards] = useState([]);
+    if (checked) {
+      setSettlementType("payable");
 
-// selected dashboard
-const [selectedOtherDashboard, setSelectedOtherDashboard] = useState("");
+      // reset normal type
+      setForm(prev => ({
+        ...prev,
+        type: "income"
+      }));
+    }
 
+  };
 
-// settlement type
-const [settlementType, setSettlementType] = useState("payable");
-const handleSettlementToggle = (checked) => {
-
-  setSettlementEnabled(checked);
-
-  if (checked) {
-    setSettlementType("payable");
-
-    // reset normal type
-    setForm(prev => ({
-      ...prev,
-      type: "income"
-    }));
-  }
-
-};
-// const [settlementType, setSettlementType] = useState("payable"); // give or take
-
-// notifications
-const [notifications, setNotifications] = useState([]);
-const unreadCount = notifications.filter(n => !n.isRead).length;
-
+  // notifications
+  const [notifications, setNotifications] = useState([]);
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   // popup change dashboard
 
@@ -195,7 +162,6 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
   const [showConfirm, setShowConfirm] = useState(false);
   const [renamePopup, setRenamePopup] = useState(null);
   const [newName, setNewName] = useState("");
-
 
   // ...........................................................................................
 
@@ -235,7 +201,6 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
       setOriginalDashboard(activeDashboard);   // 🔥 store original
     }
   }, [showPopup, activeDashboard]);
-
 
  //  .............................................................................
 
@@ -343,104 +308,100 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
       );
     }
 
-  if (e.key === "Enter") {
-    e.preventDefault();
-
-    // 🔥 1. Arrow selection active
-    if (
-      focusedSuggestionIndex >= 0 &&
-      activeSuggestions[focusedSuggestionIndex]
-    ) {
-      addChip(index, activeSuggestions[focusedSuggestionIndex]);
-      setActiveSuggestions([]);
-      setFocusedSuggestionIndex(-1);
-      return;
-    }
-
-    const typedValue = f.value.trim().toLowerCase();
-    if (!typedValue) return;
-
-    const data = getFilteredDataExcept(index);
-    const allSuggestions = getSuggestions(f.type, data);
-
-    // 🔥 2. Exact match
-    const exactMatch = allSuggestions.find(
-      s => s.toLowerCase() === typedValue
-    );
-
-    if (exactMatch) {
-      addChip(index, exactMatch);
-      setActiveSuggestions([]);
-      return;
-    }
-
-    // 🔥 3. Partial match (THIS FIXES YOUR ISSUE)
-    const partialMatch = allSuggestions.find(
-      s => s.toLowerCase().startsWith(typedValue)
-    );
-
-    if (partialMatch) {
-      addChip(index, partialMatch);
-      setActiveSuggestions([]);
-      return;
-    }
-
-    // 🔥 4. Otherwise add typed value
-    addChip(index, typedValue);
-    setActiveSuggestions([]);
-  }
-
-  if (e.key === "Tab") {
-
-    // 🔥 Only intercept if suggestion box is open
-    if (activeSuggestions.length > 0) {
+    if (e.key === "Enter") {
       e.preventDefault();
 
+      // 🔥 1. Arrow selection active
       if (
         focusedSuggestionIndex >= 0 &&
         activeSuggestions[focusedSuggestionIndex]
       ) {
         addChip(index, activeSuggestions[focusedSuggestionIndex]);
-      } else {
-        const typedValue = f.value.trim().toLowerCase();
-        if (!typedValue) return;
-
-        const data = getFilteredDataExcept(index);
-        const allSuggestions = getSuggestions(f.type, data);
-
-        const match = allSuggestions.find(s =>
-          s.toLowerCase().startsWith(typedValue)
-        );
-
-        if (match) {
-          addChip(index, match);
-        } else {
-          addChip(index, typedValue);
-        }
+        setActiveSuggestions([]);
+        setFocusedSuggestionIndex(-1);
+        return;
       }
 
-      setActiveSuggestions([]);
-      setFocusedSuggestionIndex(-1);
+      const typedValue = f.value.trim().toLowerCase();
+      if (!typedValue) return;
 
-      // 🔥 Important: manually move focus to next element
-      setTimeout(() => {
-        e.target.blur();
-      }, 0);
+      const data = getFilteredDataExcept(index);
+      const allSuggestions = getSuggestions(f.type, data);
+
+      // 🔥 2. Exact match
+      const exactMatch = allSuggestions.find(
+        s => s.toLowerCase() === typedValue
+      );
+
+      if (exactMatch) {
+        addChip(index, exactMatch);
+        setActiveSuggestions([]);
+        return;
+      }
+
+      // 🔥 3. Partial match (THIS FIXES YOUR ISSUE)
+      const partialMatch = allSuggestions.find(
+        s => s.toLowerCase().startsWith(typedValue)
+      );
+
+      if (partialMatch) {
+        addChip(index, partialMatch);
+        setActiveSuggestions([]);
+        return;
+      }
+
+      // 🔥 4. Otherwise add typed value
+      addChip(index, typedValue);
+      setActiveSuggestions([]);
     }
 
-    // 🔥 If no suggestion open → let Tab behave normally
-  }
+    if (e.key === "Tab") {
 
+      // 🔥 Only intercept if suggestion box is open
+      if (activeSuggestions.length > 0) {
+        e.preventDefault();
+
+        if (
+          focusedSuggestionIndex >= 0 &&
+          activeSuggestions[focusedSuggestionIndex]
+        ) {
+          addChip(index, activeSuggestions[focusedSuggestionIndex]);
+        } else {
+          const typedValue = f.value.trim().toLowerCase();
+          if (!typedValue) return;
+
+          const data = getFilteredDataExcept(index);
+          const allSuggestions = getSuggestions(f.type, data);
+
+          const match = allSuggestions.find(s =>
+            s.toLowerCase().startsWith(typedValue)
+          );
+
+          if (match) {
+            addChip(index, match);
+          } else {
+            addChip(index, typedValue);
+          }
+        }
+
+        setActiveSuggestions([]);
+        setFocusedSuggestionIndex(-1);
+
+        // 🔥 Important: manually move focus to next element
+        setTimeout(() => {
+          e.target.blur();
+        }, 0);
+      }
+
+    }
 
     if (e.key === "Escape") {
       setActiveSuggestions([]);
     }
   };
 
-
   const addChip = (index, value) => {
   
-
     setFilters(prev => {
       const updated = [...prev];
 
@@ -621,6 +582,7 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
 
     return data;
   };
+
   // ............................................................
   const getUniqueCaseInsensitive = (arr) => {
     const map = new Map();
@@ -688,6 +650,7 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
     
     return [];
   };
+
   // SUGGESTION INPUT 
   const handleSuggestionInputChange = (e, f, index) => {
     updateFilter(f.id, "value", e.target.value);
@@ -777,26 +740,18 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
       });
   }, [activeDashboard]);
 
-  // const capitalizeFirst = (text = "") => {
-  //   return text
-  //     .split(" ")
-  //     .map(word =>
-  //       word.charAt(0).toUpperCase() + word.slice(1)
-  //     )
-  //     .join(" ");
-  // };
-
+  // capitalizeFirst
   const capitalizeFirst = (text) => {
 
-  if (!text || typeof text !== "string") return "";
+    if (!text || typeof text !== "string") return "";
 
-  return text
-    .split(" ")
-    .map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    )
-    .join(" ");
-};
+    return text
+      .split(" ")
+      .map(word =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+      )
+      .join(" ");
+  };
 
   /* ================= CHECK DESCRIPTION OVERFLOW ================= */
 
@@ -828,60 +783,61 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
       toast.error("Please select a dashboard");
       return;
     }
+
     const formData = new FormData();
+
     formData.append("dashboardIds", selectedDashboard);
     formData.append("type", form.type);
     if (!amount || Number(amount) <= 0) {
-  setErrors({ amount: "Please enter amount" });
-  return;
-}
+      setErrors({ amount: "Please enter amount" });
+      return;
+    }
     formData.append("amount", amount);
     formData.append("person", form.person);
     formData.append("date",  form.date|| "");
-    // formData.append("paymentMode", selectedMode);
     formData.append("tags", selectedTags.join(","));
     formData.append("description", selectedCategories.join(", "));
     formData.append("relatedDetails", form.relatedDetails);
     // ✅ settlement fields append
-formData.append("settlementEnabled", settlementEnabled ? "true" : "false");
+    formData.append("settlementEnabled", settlementEnabled ? "true" : "false");
 
-// Settlement enabled
-if (settlementEnabled) {
+    // Settlement enabled
+    if (settlementEnabled) {
 
-  // validations
-  if (!otherUser || !otherUser._id) {
-    toast.error("Select valid user");
-    return;
-  }
+      // validations
+      if (!otherUser || !otherUser._id) {
+        toast.error("Select valid user");
+        return;
+      }
 
-  if (!selectedOtherDashboard) {
-    toast.error("Select other user's dashboard");
-    return;
-  }
+      if (!selectedOtherDashboard) {
+        toast.error("Select other user's dashboard");
+        return;
+      }
 
-  if (!settlementType) {
-    toast.error("Select settlement type");
-    return;
-  }
+      if (!settlementType) {
+        toast.error("Select settlement type");
+        return;
+      }
 
-  // append settlement fields
-  formData.append("settlementType", settlementType);
-  formData.append("otherUserId", otherUser._id);
-  formData.append("otherDashboardId", selectedOtherDashboard);
+      // append settlement fields
+      formData.append("settlementType", settlementType);
+      formData.append("otherUserId", otherUser._id);
+      formData.append("otherDashboardId", selectedOtherDashboard);
 
-} 
-// Settlement disabled
-else {
+    } 
+    // Settlement disabled
+    else {
 
-  formData.append("paymentMode", selectedMode);
+      formData.append("paymentMode", selectedMode);
 
-}
+    }
 
     if (file) {
       formData.append("attachment", file);
     }
 
-     let newErrors = {};
+    let newErrors = {};
 
     if (!amount || Number(amount) <= 0) {
       newErrors.amount = "Please enter amount";
@@ -891,6 +847,7 @@ else {
       setErrors(newErrors);
       return; //  stop submit
     }
+
     try {
       const res = await api.post("/account/add", formData, {
         withCredentials: true,
@@ -921,6 +878,7 @@ else {
         tags: [],
         relatedDetails: "", 
       });
+
       setAmount("");
       setSelectedTags([]);
       setSelectedCategories([]);
@@ -934,15 +892,10 @@ else {
       setErrors({});
 
       setSettlementEnabled(false);
-
       setOtherUserId("");
-
       setOtherUser(null);
-
       setOtherUserDashboards([]);
-
       setSelectedOtherDashboard("");
-
       setSettlementType("receivable");
       
     } catch (err) {
@@ -993,212 +946,196 @@ else {
   };
 
 
-const fetchUserByUserId = async (name) => {
+  const fetchUserByUserId = async (name) => {
 
-  if (!name || !name.trim()) {
-    setOtherUser(null);
-    setOtherUserDashboards([]);
-    return;
-  }
-
-  try {
-
-    const res = await api.get("/users/by-userid", {
-      params: { name: name.trim() }
-    });
-
-    const data = res.data;
-
-    if (data?.success && data?.user) {
-
-      setOtherUser(data.user);
-
-
-      await fetchUserDashboards(data.user._id);
-
-    } else {
-
+    if (!name || !name.trim()) {
       setOtherUser(null);
       setOtherUserDashboards([]);
-
-    }
-
-  } catch (err) {
-
-    if (err.response?.status === 404) {
-
-      toast.error("User not found");
-      setOtherUser(null);
-      setOtherUserDashboards([]);
-
-    } else {
-
-      console.error("fetchUserByUserId error:", err);
-
-    }
-
-  }
-
-};
-
-const fetchUserDashboards = async (userId) => {
-
-  try {
-
-    const res = await api.get(`/dashboard/user/${userId}`);
-
-    const data = res.data;
-
-    if (data.success) {
-
-      setOtherUserDashboards(data.dashboards);
-
-    }
-
-  } catch (err) {
-
-    console.error("fetchUserDashboards error:", err);
-
-  }
-
-};
-
-const fetchNotifications = async () => {
-
-  try {
-
-    const res = await api.get("/notifications");
-
-    if (res.data?.success) {
-      setNotifications(res.data.notifications);
-    } else {
-      setNotifications([]);
-    }
-
-  } catch (err) {
-
-    console.error("fetchNotifications error:", err);
-    setNotifications([]);
-
-  }
-
-};
-useEffect(()=>{
- fetchNotifications();
-},[]);
-
-useEffect(() => {
-
- const userId = localStorage.getItem("userId");
-
- socket.connect();
-socket.on("connect", () => {
-
-  // console.log("Socket connected:", socket.id);
-
-  if(userId){
-    socket.emit("join", userId);
-    // console.log("Joined room:", userId);
-  }
-
-});
-
-socket.on("newNotification",(data)=>{
-
-//  console.log("Notification received:",data);
-
- toast.info(data.message);
-
- fetchNotifications();
-
- playNotificationSound();
-
- showBrowserNotification(data);
-
-});
-socket.on("transactionUpdated",()=>{
-  fetchDashboard();
-});
-
-return ()=>{
-  socket.off("newNotification");
- socket.off("transactionUpdated");
- socket.disconnect();
-};
-
-},[]);
-
-useEffect(()=>{
-
- if("Notification" in window){
-
-   if(Notification.permission === "default"){
-     Notification.requestPermission().then(permission=>{
-       console.log("Notification permission:",permission);
-     });
-   }
-
- }
-
-},[]);
-
-const notificationSound = new Audio("/cheerful-527.ogg?v=1");
-const showBrowserNotification = (data)=>{
-
-//  if(
-//    Notification.permission === "granted" &&
-//    document.visibilityState !== "visible"
-//  )
-
-if(Notification.permission === "granted"){
-
-   new Notification(data.title,{
-     body:data.message,
-     icon:"/logo.png"
-   });
-
- }
-
-};
-
-const playNotificationSound = () => {
-
- notificationSound.currentTime = 0;
-
- notificationSound.play().catch(()=>{});
-
-};
-useEffect(()=>{
-
- document.addEventListener("click",()=>{
-
-   notificationSound.play()
-   .then(()=>{
-     notificationSound.pause();
-     notificationSound.currentTime = 0;
-   })
-   .catch(()=>{});
-
- },{once:true});
-
-},[]);
-
-const completeSettlement = async (settlementId) => {
-  try {
-
-    if (!settlementId) {
-      console.log("No settlement id");
       return;
     }
 
-    await api.post(`/settlement/pay/${settlementId}`);
+    try {
 
-    fetchDashboard();
+      const res = await api.get("/users/by-userid", {
+        params: { name: name.trim() }
+      });
+      const data = res.data;
 
-  } catch (err) {
-    console.error("Settlement error:", err);
+      if (data?.success && data?.user) {
+
+        setOtherUser(data.user);
+        await fetchUserDashboards(data.user._id);
+
+      } else {
+
+        setOtherUser(null);
+        setOtherUserDashboards([]);
+
+      }
+
+    } catch (err) {
+
+      if (err.response?.status === 404) {
+
+        toast.error("User not found");
+        setOtherUser(null);
+        setOtherUserDashboards([]);
+
+      } else {
+
+        console.error("fetchUserByUserId error:", err);
+
+      }
+
+    }
+
+  };
+
+  const fetchUserDashboards = async (userId) => {
+
+    try {
+
+      const res = await api.get(`/dashboard/user/${userId}`);
+      const data = res.data;
+
+      if (data.success) {
+
+        setOtherUserDashboards(data.dashboards);
+
+      }
+
+    } catch (err) {
+
+      console.error("fetchUserDashboards error:", err);
+      
+    }
+
+  };
+
+  const fetchNotifications = async () => {
+
+    try {
+
+      const res = await api.get("/notifications");
+
+      if (res.data?.success) {
+        setNotifications(res.data.notifications);
+      } else {
+        setNotifications([]);
+      }
+
+    } catch (err) {
+
+      console.error("fetchNotifications error:", err);
+      setNotifications([]);
+
+    }
+
+  };
+
+  useEffect(()=>{
+  fetchNotifications();
+  },[]);
+
+  useEffect(() => {
+
+  const userId = localStorage.getItem("userId");
+
+    socket.connect();
+    socket.on("connect", () => {
+
+      if(userId){
+        socket.emit("join", userId);
+      }
+
+    });
+
+    socket.on("newNotification",(data)=>{
+
+      toast.info(data.message);
+      fetchNotifications();
+      playNotificationSound();
+      showBrowserNotification(data);
+
+    });
+    socket.on("transactionUpdated",()=>{
+      fetchDashboard();
+    });
+
+    return ()=>{
+      socket.off("newNotification");
+    socket.off("transactionUpdated");
+    socket.disconnect();
+    };
+
+  },[]);
+
+  useEffect(()=>{
+
+  if("Notification" in window){
+
+    if(Notification.permission === "default"){
+      Notification.requestPermission().then(permission=>{
+        console.log("Notification permission:",permission);
+      });
+    }
+
   }
-};
+
+  },[]);
+
+  const notificationSound = new Audio("/cheerful-527.ogg?v=1");
+  const showBrowserNotification = (data)=>{
+
+  if(Notification.permission === "granted"){
+
+    new Notification(data.title,{
+      body:data.message,
+      icon:"/logo.png"
+    });
+
+  }
+
+  };
+
+  const playNotificationSound = () => {
+
+  notificationSound.currentTime = 0;
+  notificationSound.play().catch(()=>{});
+
+  };
+
+  useEffect(()=>{
+
+  document.addEventListener("click",()=>{
+
+    notificationSound.play()
+    .then(()=>{
+      notificationSound.pause();
+      notificationSound.currentTime = 0;
+    })
+    .catch(()=>{});
+
+  },{once:true});
+
+  },[]);
+
+  const completeSettlement = async (settlementId) => {
+    try {
+
+      if (!settlementId) {
+        console.log("No settlement id");
+        return;
+      }
+
+      await api.post(`/settlement/pay/${settlementId}`);
+
+      fetchDashboard();
+
+    } catch (err) {
+      console.error("Settlement error:", err);
+    }
+  };
 
   //  .............................................................................
 
@@ -1567,7 +1504,7 @@ const completeSettlement = async (settlementId) => {
       c => normalize(c) === normalize(value)
     );
 
-    if (isDuplicate) return; // ❌ already exists
+    if (isDuplicate) return; 
 
     setSelectedCategories(prev => [...prev, value]);
 
@@ -1713,12 +1650,11 @@ const completeSettlement = async (settlementId) => {
       // CASH always default
       const modeSet = new Set(["cash"]);
 
-      // Object.keys(usageMap).forEach(m => modeSet.add(m));
       Object.keys(usageMap).forEach(m => {
-  if (m !== "settlement") {   // ⭐ ADD THIS
-    modeSet.add(m);
-  }
-});
+        if (m !== "settlement") {   // ⭐ ADD THIS
+          modeSet.add(m);
+        }
+      });
 
       const finalModes = Array.from(modeSet).map(name => ({
         name,
@@ -1868,19 +1804,19 @@ const completeSettlement = async (settlementId) => {
   return (
     <div className="container">
       <div className="dashboard-bar">
-<button
-  className="notification-btn"
-  onClick={()=>navigate("/notifications")}
->
-  <FaBell />
+        <button
+          className="notification-btn"
+          onClick={()=>navigate("/notifications")}
+        >
+          <FaBell />
 
-  {unreadCount > 0 && (
-    <span className="notification-badge">
-      {unreadCount}
-    </span>
-  )}
+          {unreadCount > 0 && (
+            <span className="notification-badge">
+              {unreadCount}
+            </span>
+          )}
 
-</button>
+        </button>
         <div className="dashboard-left">
           <select
             className="form-selectt border-2"
@@ -2024,28 +1960,28 @@ const completeSettlement = async (settlementId) => {
         }  percentage={balancePercentage}/>
       </div>
 
-       {/* tab transection list and graph */}
-          <div className="dashboard-tabs">
-            <button
-              className={`tab-btn ${activeTab === "transactions" ? "active" : ""}`}
-              onClick={() => setActiveTab("transactions")}
-            >
-              Transactions list
-            </button>
+      {/* tab transection list and graph */}
+      <div className="dashboard-tabs">
+        <button
+          className={`tab-btn ${activeTab === "transactions" ? "active" : ""}`}
+          onClick={() => setActiveTab("transactions")}
+        >
+          Transactions list
+        </button>
 
-            <button
-              className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
-              onClick={() => setActiveTab("overview")}
-            >
-              Transection Graph Overview
-            </button>
+        <button
+          className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
+          onClick={() => setActiveTab("overview")}
+        >
+          Transection Graph Overview
+        </button>
 
-            <span
-              className={`tab-slider ${
-                activeTab === "transactions" ? "left" : "right"
-              }`}
-            />
-          </div>
+        <span
+          className={`tab-slider ${
+            activeTab === "transactions" ? "left" : "right"
+          }`}
+        />
+      </div>
       {activeTab === "overview" && (
         <>
           {/* .......................................all graph.................................... */}
@@ -2058,74 +1994,74 @@ const completeSettlement = async (settlementId) => {
               </h4>
               <p className="sub-text">Cash vs Bank vs UPI (Income + Expense)</p>
               {Array.isArray(transactions) && (
-              <ResponsiveContainer width="100%" height={isMobile ? 190 : 235}>
-                <PieChart>
-                  <text
-                    x="50%"
-                    y="48%"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className="pie-center-title"
-                  >
-                    Balance
-                  </text>
+                <ResponsiveContainer width="100%" height={isMobile ? 190 : 235}>
+                  <PieChart>
+                    <text
+                      x="50%"
+                      y="48%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="pie-center-title"
+                    >
+                      Balance
+                    </text>
 
-                  <text
-                    x="50%"
-                    y="56%"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className="pie-center-value"
-                  >
-                    ₹{summary.totalIncome - summary.totalExpense}
-                  </text>
+                    <text
+                      x="50%"
+                      y="56%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="pie-center-value"
+                    >
+                      ₹{summary.totalIncome - summary.totalExpense}
+                    </text>
 
-                  <Pie
-                    data={paymentPieData}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={isMobile ? 40 : 55}
-                    outerRadius={isMobile ? 75 : 110}
-                    paddingAngle={3}
-                    cornerRadius={3}
-                  >
-                    {paymentPieData.map((entry) => {
-                      const key = entry.key;
+                    <Pie
+                      data={paymentPieData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={isMobile ? 40 : 55}
+                      outerRadius={isMobile ? 75 : 110}
+                      paddingAngle={3}
+                      cornerRadius={3}
+                    >
+                      {paymentPieData.map((entry) => {
+                        const key = entry.key;
 
-                      if (!colorMap.current[key]) {
-                        colorMap.current[key] =
-                          PAYMENTS_COLORS[key] || getRandomColors();
-                      }
+                        if (!colorMap.current[key]) {
+                          colorMap.current[key] =
+                            PAYMENTS_COLORS[key] || getRandomColors();
+                        }
 
-                      return (
-                        <Cell
-                          key={key}
-                          fill={colorMap.current[key]}
-                        />
-                      );
-                    })}
-                  </Pie>
+                        return (
+                          <Cell
+                            key={key}
+                            fill={colorMap.current[key]}
+                          />
+                        );
+                      })}
+                    </Pie>
 
-                  <Tooltip content={<PaymentTooltip />} />
+                    <Tooltip content={<PaymentTooltip />} />
 
-                  
-                </PieChart>
-              </ResponsiveContainer>
+                    
+                  </PieChart>
+                </ResponsiveContainer>
               )}
 
-                {/* ===== LEGEND BOX ===== */}
-                <div className="pie-legend">
-                  {paymentPieData.map(item => (
-                    <div key={item.key} className="legend-row">
-                      <span
-                        className="legend-dot"
-                        style={{ background: colorMap.current[item.key] }}
-                      />
-                      <span>{item.name}</span>
-                      {/* <strong>₹{item.value.toLocaleString()}</strong> */}
-                    </div>
-                  ))}
-                </div>       
+              {/* ===== LEGEND BOX ===== */}
+              <div className="pie-legend">
+                {paymentPieData.map(item => (
+                  <div key={item.key} className="legend-row">
+                    <span
+                      className="legend-dot"
+                      style={{ background: colorMap.current[item.key] }}
+                    />
+                    <span>{item.name}</span>
+                    {/* <strong>₹{item.value.toLocaleString()}</strong> */}
+                  </div>
+                ))}
+              </div>       
             </div>
 
             {/* Savings Trend Chart*/}
@@ -2169,63 +2105,63 @@ const completeSettlement = async (settlementId) => {
             </h4>
             <p className="sub-text">12-month income vs expenses comparison</p>
             <ResponsiveContainer width="100%" height={isMobile ? 260 : 350}>
-                <BarChart
-                  data={monthWiseChartData}
-                  barCategoryGap={isMobile ? "25%" : "15%"}
-                  margin={{ top: 20, right: 30, left: 0, bottom: 50 }}
-                >
-                  {/* ===== GRADIENTS ===== */}
-                  <defs>
-                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#34d399" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity={0.6} />
-                    </linearGradient>
+              <BarChart
+                data={monthWiseChartData}
+                barCategoryGap={isMobile ? "25%" : "15%"}
+                margin={{ top: 20, right: 30, left: 0, bottom: 50 }}
+              >
+                {/* ===== GRADIENTS ===== */}
+                <defs>
+                  <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#34d399" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.6} />
+                  </linearGradient>
 
-                    <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#f87171" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0.6} />
-                    </linearGradient>
-                  </defs>
+                  <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f87171" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0.6} />
+                  </linearGradient>
+                </defs>
 
-                  <CartesianGrid
-                    vertical={false}
-                    stroke="rgba(255,255,255,0.06)"
-                  />
-                  <XAxis
-                    dataKey="month"
-                    interval={isMobile ? 1 : 0}   // Skip every alternate month on mobile
-                    angle={isMobile ? -35 : 0}
-                    textAnchor={isMobile ? "end" : "middle"}
-                    height={isMobile ? 60 : 40}
-                    tick={{ fill: "#cbd5f5", fontSize: isMobile ? 10 : 12 }}
-                  />
-                  <YAxis tick={{ fill: "#cbd5f5", fontSize: isMobile ? 10 : 12 }} />
+                <CartesianGrid
+                  vertical={false}
+                  stroke="rgba(255,255,255,0.06)"
+                />
+                <XAxis
+                  dataKey="month"
+                  interval={isMobile ? 1 : 0}   // Skip every alternate month on mobile
+                  angle={isMobile ? -35 : 0}
+                  textAnchor={isMobile ? "end" : "middle"}
+                  height={isMobile ? 60 : 40}
+                  tick={{ fill: "#cbd5f5", fontSize: isMobile ? 10 : 12 }}
+                />
+                <YAxis tick={{ fill: "#cbd5f5", fontSize: isMobile ? 10 : 12 }} />
 
-                  <Tooltip cursor={false} content={<CustomTooltip />} />
+                <Tooltip cursor={false} content={<CustomTooltip />} />
 
-                  <Legend
-                    wrapperStyle={{
-                      fontSize: isMobile ? "10px" : "13px",
-                    }}
+                <Legend
+                  wrapperStyle={{
+                    fontSize: isMobile ? "10px" : "13px",
+                  }}
 
-                  />
+                />
 
-                  <Bar
-                    dataKey="income"
-                    name="Income"
-                    fill="url(#incomeGradient)"
-                    radius={[8, 8, 0, 0]}
-                    animationDuration={800}
-                  />
+                <Bar
+                  dataKey="income"
+                  name="Income"
+                  fill="url(#incomeGradient)"
+                  radius={[8, 8, 0, 0]}
+                  animationDuration={800}
+                />
 
-                  <Bar
-                    dataKey="expense"
-                    name="Expense"
-                    fill="url(#expenseGradient)"
-                    radius={[8, 8, 0, 0]}
-                    animationDuration={800}
-                  />
-                </BarChart>
+                <Bar
+                  dataKey="expense"
+                  name="Expense"
+                  fill="url(#expenseGradient)"
+                  radius={[8, 8, 0, 0]}
+                  animationDuration={800}
+                />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </>
@@ -2235,30 +2171,30 @@ const completeSettlement = async (settlementId) => {
       {activeTab === "transactions" && (
         <>
 
-        <div className="export-box mb-3">
-          <div className="export-left">
-            <select
-              className="export-dropdown"
-              value={exportType}
-              onChange={(e) => setExportType(e.target.value)}
-            >
-              <option value="">Export Us..</option>
-              <option value="csv">CSV File</option>
-              <option value="xlsx">Excel File</option>
-              <option value="pdf">PDF File</option>
-            </select>
+          <div className="export-box mb-3">
+            <div className="export-left">
+              <select
+                className="export-dropdown"
+                value={exportType}
+                onChange={(e) => setExportType(e.target.value)}
+              >
+                <option value="">Export Us..</option>
+                <option value="csv">CSV File</option>
+                <option value="xlsx">Excel File</option>
+                <option value="pdf">PDF File</option>
+              </select>
 
-            <button
-              className="export-action-btn"
-              onClick={handleExport}
-            >
-              <FiDownload size={18} />
-              <span className="btn-label">Export</span>
-            </button>
+              <button
+                className="export-action-btn"
+                onClick={handleExport}
+              >
+                <FiDownload size={18} />
+                <span className="btn-label">Export</span>
+              </button>
+            </div>
+            {/* <h5 className="transaction-title"> Transactions list... </h5> */}
+
           </div>
-           {/* <h5 className="transaction-title"> Transactions list... </h5> */}
-
-        </div>
 
           <div className="filters-container">
             {filters.map((f, index) => (
@@ -2499,12 +2435,7 @@ const completeSettlement = async (settlementId) => {
                     </div>
                  
                     <div className="transaction-details fixed">
-                      {/* <div className="rows">
-                        <span className="label">Payment Mode: </span>
-                        <span className="value" >{item.paymentMode.toUpperCase() || "-"}</span>
-                        
-                      </div> */}
-                      {/* Pending settlement */}
+                     
                       {item.settlementStatus === "pending" && (
                         <div className="rows">
                           <span className="label">Payment:</span>
@@ -2512,7 +2443,6 @@ const completeSettlement = async (settlementId) => {
                         </div>
                       )}
 
-                     
                       {item.settlementStatus !== "pending" && (
                         <div className="rows">
                           <span className="label">Payment Mode:</span>
@@ -2523,7 +2453,6 @@ const completeSettlement = async (settlementId) => {
                         
                       )}
              
-
                       <div className="rows">
                        
                         <span className="label">
@@ -2655,46 +2584,46 @@ const completeSettlement = async (settlementId) => {
                           </button>
                         )} 
                         {item.paymentMode !== "settlement" && (
-  <button
-    className="edit-btn"
-    onClick={() => {
-      setEditId(item._id);
-      setShowEdit(true);
-    }}
-  >
-    <FiEdit2 /> Edit
-  </button>
-)}            
+                          <button
+                            className="edit-btn"
+                            onClick={() => {
+                              setEditId(item._id);
+                              setShowEdit(true);
+                            }}
+                          >
+                            <FiEdit2 /> Edit
+                          </button>
+                        )}            
                     
-                      {/* <button
-                        className="edit-btn"
-                        onClick={() => {
-                          setEditId(item._id);
-                          setShowEdit(true);
-                        }}
-                      >
-                        <FiEdit2 /> Edit
-                      </button> */}
-                     
-                      {/* <button
-                        className="delete-btn d-flex align-items-center gap-1"
-                        onClick={() => setConfirmDelete({ show: true, id: item._id })}
-                      >
-                        <FiTrash2 size={14} />
-                        Delete
-                      </button> */}
+                        {/* <button
+                          className="edit-btn"
+                          onClick={() => {
+                            setEditId(item._id);
+                            setShowEdit(true);
+                          }}
+                        >
+                          <FiEdit2 /> Edit
+                        </button> */}
+                      
+                        {/* <button
+                          className="delete-btn d-flex align-items-center gap-1"
+                          onClick={() => setConfirmDelete({ show: true, id: item._id })}
+                        >
+                          <FiTrash2 size={14} />
+                          Delete
+                        </button> */}
                       {(
-  item.settlementStatus !== "pending" ||
-  item.createdBy === currentUserId
-) && (
-  <button
-    className="delete-btn d-flex align-items-center gap-1"
-    onClick={() => setConfirmDelete({ show: true, id: item._id })}
-  >
-    <FiTrash2 size={14} />
-    Delete
-  </button>
-)}
+                        item.settlementStatus !== "pending" ||
+                        item.createdBy === currentUserId
+                      ) && (
+                        <button
+                          className="delete-btn d-flex align-items-center gap-1"
+                          onClick={() => setConfirmDelete({ show: true, id: item._id })}
+                        >
+                          <FiTrash2 size={14} />
+                          Delete
+                        </button>
+                      )}
    
                     </div>
                   </div>
@@ -2829,135 +2758,132 @@ const completeSettlement = async (settlementId) => {
                 
                 {/* settlement checkbox */}
 
-               <div className="settlement-toggle mt-3">
+                <div className="settlement-toggle mt-3">
 
-  <input
-    type="checkbox"
-    checked={settlementEnabled}
-    onChange={(e)=>handleSettlementToggle(e.target.checked)}
-  />
+                  <input
+                    type="checkbox"
+                    checked={settlementEnabled}
+                    onChange={(e)=>handleSettlementToggle(e.target.checked)}
+                  />
 
-  <span className="settlement-label">
-    Enable settlement with another user
-  </span>
+                  <span className="settlement-label">
+                    Enable settlement with another user
+                  </span>
 
-</div>
+                </div>
                 {settlementEnabled && (
 
-<div className="settlement-box">
+                  <div className="settlement-box">
 
-  {/* USER SEARCH */}
-<div className="user-search-row">
+                    {/* USER SEARCH */}
+                    <div className="user-search-row">
 
-  <div className="user-input">
-    <label>
-      Enter User ID <span className="text-danger">*</span>
-    </label>
+                      <div className="user-input">
+                        <label>
+                          Enter User ID <span className="text-danger">*</span>
+                        </label>
 
-    <input
-      type="text"
-      className="form-control"
-      value={otherUserId}
-      onChange={(e)=>setOtherUserId(e.target.value)}
-    />
-  </div>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={otherUserId}
+                          onChange={(e)=>setOtherUserId(e.target.value)}
+                        />
+                      </div>
 
-  <button
-    type="button"
-    className="find-btn"
-    onClick={()=>fetchUserByUserId(otherUserId)}
-  >
-    Search
-  </button>
+                      <button
+                        type="button"
+                        className="find-btn"
+                        onClick={()=>fetchUserByUserId(otherUserId)}
+                      >
+                        Search
+                      </button>
 
-</div>
+                    </div>
 
+                    {/* DASHBOARD SELECT */}
+                    {otherUserDashboards.length > 0 && (
 
-  {/* DASHBOARD SELECT */}
-  {otherUserDashboards.length > 0 && (
+                      <div className="mb-2 mt-2">
 
-  <div className="mb-2 mt-2">
+                        <label>
+                          Select Dashboard <span className="text-danger">*</span>
+                        </label>
 
-    <label>
-      Select Dashboard <span className="text-danger">*</span>
-    </label>
+                        <select
+                          className="form-select"
+                          value={selectedOtherDashboard}
+                          onChange={(e)=>setSelectedOtherDashboard(e.target.value)}
+                        >
+                          <option value="">Select dashboard</option>
 
-    <select
-      className="form-select"
-      value={selectedOtherDashboard}
-      onChange={(e)=>setSelectedOtherDashboard(e.target.value)}
-    >
-      <option value="">Select dashboard</option>
+                          {otherUserDashboards.map(d => (
+                            <option key={d._id} value={d._id}>
+                              {d.name}
+                            </option>
+                          ))}
 
-      {otherUserDashboards.map(d => (
-        <option key={d._id} value={d._id}>
-          {d.name}
-        </option>
-      ))}
+                        </select>
 
-    </select>
+                      </div>
 
-  </div>
+                    )}
 
-  )}
+                  </div>
 
-</div>
-
-)}
+                )}
 
                 <label>Type <span className="text-danger">*</span></label>
                 <div className="type-slider">
 
-                {!settlementEnabled ? (
+                  {!settlementEnabled ? (
+                    <>
+                      <div
+                        className={`slider-option ${form.type === "income" ? "active income" : ""}`}
+                        onClick={() => setForm({ ...form, type: "income" })}
+                      >
+                        Income
+                      </div>
 
-                <>
-                  <div
-                    className={`slider-option ${form.type === "income" ? "active income" : ""}`}
-                    onClick={() => setForm({ ...form, type: "income" })}
-                  >
-                    Income
-                  </div>
+                      <div
+                        className={`slider-option ${form.type === "expense" ? "active expense" : ""}`}
+                        onClick={() => setForm({ ...form, type: "expense" })}
+                      >
+                      Expense
+                      </div>
 
-                  <div
-                    className={`slider-option ${form.type === "expense" ? "active expense" : ""}`}
-                    onClick={() => setForm({ ...form, type: "expense" })}
-                  >
-                  Expense
-                  </div>
+                      <div className={`slider-bg ${form.type}`}></div>
 
-                  <div className={`slider-bg ${form.type}`}></div>
+                      <input type="hidden" name="type" value={form.type} />
 
-                  <input type="hidden" name="type" value={form.type} />
+                    </>
 
-                </>
+                  ) : (
 
-                ) : (
+                    <>
 
-                <>
+                      <div
+                        className={`slider-option ${settlementType === "payable" ? "active expense" : ""}`}
+                        onClick={() => setSettlementType("payable")}
+                      >
+                        I received money
+                      </div>
 
-                  <div
-                    className={`slider-option ${settlementType === "payable" ? "active expense" : ""}`}
-                    onClick={() => setSettlementType("payable")}
-                  >
-                    I received money
-                  </div>
+                      <div
+                        className={`slider-option ${settlementType === "receivable" ? "active income" : ""}`}
+                        onClick={() => setSettlementType("receivable")}
+                      >
+                        I gave money
+                      </div>
 
-                  <div
-                    className={`slider-option ${settlementType === "receivable" ? "active income" : ""}`}
-                    onClick={() => setSettlementType("receivable")}
-                  >
-                    I gave money
-                  </div>
+                      <div className={`slider-bg ${settlementType === "receivable" ? "expense" : "income"}`}></div>
 
-                  <div className={`slider-bg ${settlementType === "receivable" ? "expense" : "income"}`}></div>
+                    </>
 
-                </>
-
-                )}
+                  )}
 
                 </div>
                
-              
                 <div className="row mb-2">
                   <div className={`${settlementEnabled ? "col-md-12" : "col-md-6"} mt-2`}>
                     
@@ -3005,6 +2931,7 @@ const completeSettlement = async (settlementId) => {
                     </div>
                   )}
                 </div>
+
                 {!settlementEnabled && (
                   <div className="mb-2"> 
                     <label>
@@ -3059,84 +2986,82 @@ const completeSettlement = async (settlementId) => {
                       <div className="add-mode-wrapper">
                         
                         {showModal && (
-                            <div className="tag-modal-backdrop">
-                              <div className="tag-modal">
-                                <div className="modal-header mb-2">
-                                  <h5 className="modal-title" style={{color:"#d9d8e2"}}>Add Payment Mode</h5>
+                          <div className="tag-modal-backdrop">
+                            <div className="tag-modal">
+                              <div className="modal-header mb-2">
+                                <h5 className="modal-title" style={{color:"#d9d8e2"}}>Add Payment Mode</h5>
 
-                                  <button
-                                    type="button"
-                                    className="btn-close"
-                                    style={{ filter: "invert(1)" }}
-                                    onClick={() => setShowModal(false)}
-                                  />
-                                </div>
-
-                                <input
-                                  type="text"
-                                  className="form-control mb-3"
-                                  // placeholder="Enter new tag"
-                                  value={customMode}
-                                    onChange={e => setCustomMode(e.target.value)}
+                                <button
+                                  type="button"
+                                  className="btn-close"
+                                  style={{ filter: "invert(1)" }}
+                                  onClick={() => setShowModal(false)}
                                 />
+                              </div>
 
-                                <div className="d-flex justify-content-end gap-2">
-                                  <button
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowModal(false)}
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    className="btn btn-primary"
-                                    onClick={() => {
-                                    
-                                    const newMode = normalize(customMode);
+                              <input
+                                type="text"
+                                className="form-control mb-3"
+                                // placeholder="Enter new tag"
+                                value={customMode}
+                                  onChange={e => setCustomMode(e.target.value)}
+                              />
 
-                                    if (!newMode) return;
+                              <div className="d-flex justify-content-end gap-2">
+                                <button
+                                  className="btn btn-secondary"
+                                  onClick={() => setShowModal(false)}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => {
+                                  
+                                  const newMode = normalize(customMode);
 
-                                    const exists = paymentModes.some(
-                                      m => normalize(m.name) === newMode
-                                    );
+                                  if (!newMode) return;
 
-                                    if (exists) {
-                                      toast.error("Payment mode already exists");
-                                      return;
-                                    }
+                                  const exists = paymentModes.some(
+                                    m => normalize(m.name) === newMode
+                                  );
 
-                                    setPaymentModes(prev => [...prev, { name: newMode, count: 0 }]);
-                                    setSelectedMode(newMode);
-                                    setForm(prev => ({ ...prev, paymentMode: newMode }));
+                                  if (exists) {
+                                    toast.error("Payment mode already exists");
+                                    return;
+                                  }
 
-                                    setCustomMode("");
-                                    setShowModal(false);
+                                  setPaymentModes(prev => [...prev, { name: newMode, count: 0 }]);
+                                  setSelectedMode(newMode);
+                                  setForm(prev => ({ ...prev, paymentMode: newMode }));
 
-                                    }}
-                                  >
-                                    Add
-                                  </button>
-                                </div>
+                                  setCustomMode("");
+                                  setShowModal(false);
+
+                                  }}
+                                >
+                                  Add
+                                </button>
                               </div>
                             </div>
-                          )}
+                          </div>
+                        )}
                       </div>
                       {/* add more payment mode */}
                       <button
-                          type="button"
-                          className="add-mode-btn "
-                          tabIndex={-1}
-                          onClick={() => setShowModal(true)}
-                        >
-                          <FiPlusCircle className="add-icon" />
-                          Add
-                        </button>
+                        type="button"
+                        className="add-mode-btn "
+                        tabIndex={-1}
+                        onClick={() => setShowModal(true)}
+                      >
+                        <FiPlusCircle className="add-icon" />
+                        Add
+                      </button>
                     </div>
                   </div>
                 )}
-
                 
                 <div className="row mb-2">
-                  
                   <div className="col-md-6 mt-2">
                     <div className="mb-2 position-relative">
                       <label className="form-label">Category</label>
@@ -3531,8 +3456,7 @@ const completeSettlement = async (settlementId) => {
                   <input type="file" className="form-control file-input" onChange={(e) => setFile(e.target.files[0])} />
                 </div>
                 <div id="tagHolder" className="mt-3"></div>
-
-                
+ 
               </form>
             </div>
             <div className="popup-footer">

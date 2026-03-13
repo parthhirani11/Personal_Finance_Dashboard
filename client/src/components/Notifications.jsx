@@ -32,28 +32,21 @@ export default function Notifications(){
   );
 
 };
-//  const markRead = async(id)=>{
-
-//    await api.post(`/notifications/read/${id}`);
-
-//    fetchNotifications();
-
-//  };
 
 return (
 
 
 <div className="notification-page">
-    <div className="notification-header">
+  <div className="notification-header">
 
-<button 
- className="back-btn"
- onClick={()=>navigate("/home")}
->
-← Back
-</button>
+    <button 
+      className="back-btn"
+      onClick={()=>navigate("/home")}
+    >
+      ← Back
+    </button>
 
-</div>
+  </div>
 
   <h2 className="notification-title">🔔 Notifications</h2>
 
@@ -63,39 +56,39 @@ return (
 
   <div className="notification-list">
 
-  {notifications.map(n => (
+    {notifications.map(n => (
 
-    <div 
-      key={n._id} 
-      className={`notification-card ${!n.isRead ? "unread" : ""}`}
-    >
+      <div 
+        key={n._id} 
+        className={`notification-card ${!n.isRead ? "unread" : ""}`}
+      >
 
-      <div className="notification-content">
+        <div className="notification-content">
 
-        <h4>{n.title}</h4>
+          <h4>{n.title}</h4>
 
-        <p>{n.message}</p>
+          <p>{n.message}</p>
 
-        <small>
-          {new Date(n.createdAt).toLocaleString()}
-        </small>
+          <small>
+            {new Date(n.createdAt).toLocaleString()}
+          </small>
+
+        </div>
+
+        {!n.isRead && (
+
+          <button
+            className="mark-read-btn"
+            onClick={()=>markRead(n._id)}
+          >
+            Mark Read
+          </button>
+
+        )}
 
       </div>
 
-      {!n.isRead && (
-
-        <button
-          className="mark-read-btn"
-          onClick={()=>markRead(n._id)}
-        >
-          Mark Read
-        </button>
-
-      )}
-
-    </div>
-
-  ))}
+    ))}
 
   </div>
 

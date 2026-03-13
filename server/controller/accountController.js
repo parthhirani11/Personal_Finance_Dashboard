@@ -87,10 +87,6 @@ export const addTransaction = async (req, res) => {
       return res.status(400).json({ msg: "Dashboard required" });
     }
 
-    // if (!amount || !paymentMode || !type) {
-    //   return res.status(400).json({ msg: "Missing required fields" });
-    // }
-
     const dashboards = Array.isArray(dashboardIds)
       ? dashboardIds
       : [dashboardIds];
@@ -102,13 +98,13 @@ export const addTransaction = async (req, res) => {
     // NORMAL TRANSACTION
     const isSettlement = settlementEnabled === "true";
 
-if (!amount || !type) {
-  return res.status(400).json({ msg: "Missing required fields" });
-}
+    if (!amount || !type) {
+      return res.status(400).json({ msg: "Missing required fields" });
+    }
 
-if (!isSettlement && !paymentMode) {
-  return res.status(400).json({ msg: "Payment mode required" });
-}
+    if (!isSettlement && !paymentMode) {
+      return res.status(400).json({ msg: "Payment mode required" });
+    }
 
     if (!isSettlement) {
 
@@ -155,9 +151,6 @@ if (!isSettlement && !paymentMode) {
       return res.status(404).json({ msg: "Other user not found" });
     }
 
-    // const otherUserId = otherUser._id;
-
-
     // ✅ validate current user's dashboards FIRST
     const validDashboards = await Dashboard.find({
       _id: { $in: dashboards },
@@ -171,14 +164,14 @@ if (!isSettlement && !paymentMode) {
     }
 
     if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
-  return res.status(400).json({ msg: "Invalid user id" });
-}
+      return res.status(400).json({ msg: "Invalid user id" });
+    }
 
     // ✅ validate other user's dashboard FIRST
     const otherDashboard = await Dashboard.findOne({
-  _id: otherDashboardId,
-  userId: otherUser._id
-});
+      _id: otherDashboardId,
+      userId: otherUser._id
+    });
 
     if (!otherDashboard) {
       return res.status(404).json({
@@ -187,46 +180,46 @@ if (!isSettlement && !paymentMode) {
     }
 
     if (otherUser._id.toString() === userId.toString()) {
-  return res.status(400).json({
-    msg: "You cannot create settlement with yourself"
-  });
-}
- const payerUserId =
-  settlementType === "receivable"
-    ? otherUser._id
-    : userId;
+      return res.status(400).json({
+        msg: "You cannot create settlement with yourself"
+      });
+    }
+    const payerUserId =
+      settlementType === "receivable"
+        ? otherUser._id
+        : userId;
 
-const receiverUserId =
-  settlementType === "receivable"
-    ? userId
-    : otherUser._id;
+    const receiverUserId =
+      settlementType === "receivable"
+        ? userId
+        : otherUser._id;
 
-const payerDashboardId =
-  settlementType === "receivable"
-    ? otherDashboardId
-    : dashboards[0];
+    const payerDashboardId =
+      settlementType === "receivable"
+        ? otherDashboardId
+        : dashboards[0];
 
-const receiverDashboardId =
-  settlementType === "receivable"
-    ? dashboards[0]
-    : otherDashboardId;
+    const receiverDashboardId =
+      settlementType === "receivable"
+        ? dashboards[0]
+        : otherDashboardId;
 
-const settlement = await Settlement.create({
+    const settlement = await Settlement.create({
 
-  fromUserId: payerUserId,
-  toUserId: receiverUserId,
+      fromUserId: payerUserId,
+      toUserId: receiverUserId,
 
-  fromDashboardId: payerDashboardId,
-  toDashboardId: receiverDashboardId,
+      fromDashboardId: payerDashboardId,
+      toDashboardId: receiverDashboardId,
 
-  amount: Number(amount),
+      amount: Number(amount),
 
-  status: "pending"
-});
+      status: "pending"
+    });
 
     if (req.body.paymentMode === "settlement") {
-   return res.status(400).json({ message: "Use settlement API for settlements" });
-}
+      return res.status(400).json({ message: "Use settlement API for settlements" });
+    }
 
     // ✅ current user record
     await Account.create({
@@ -248,34 +241,31 @@ const settlement = await Settlement.create({
       date: date ? new Date(date) : new Date(),
 
       settlementId: settlement._id,
-     
-    settlementRole:
-  payerUserId.toString() === userId.toString()
-    ? "payable"
-    : "receivable",
-      settlementStatus: "pending",
+      settlementRole:
+        payerUserId.toString() === userId.toString()
+          ? "payable"
+          : "receivable",
+            settlementStatus: "pending",
 
-      otherUserId,
-      otherDashboardId,
+            otherUserId,
+            otherDashboardId,
 
-      createdBy: userId
+            createdBy: userId
     });
 
 
     // ✅ other user record
     await Account.create({
 
-    userId: new mongoose.Types.ObjectId(otherUser._id),
-    
-    dashboardIds: [new mongoose.Types.ObjectId(otherDashboardId)],
-    type:
-  settlementType === "receivable"
-    ? "income"
-    : "expense",
+      userId: new mongoose.Types.ObjectId(otherUser._id),
+      
+      dashboardIds: [new mongoose.Types.ObjectId(otherDashboardId)],
+      type:
+        settlementType === "receivable"
+          ? "income"
+          : "expense",
 
       amount: Number(amount),
-
-     
       person: new mongoose.Types.ObjectId(userId),
       relatedDetails,
       description,
@@ -286,70 +276,57 @@ const settlement = await Settlement.create({
       date: date ? new Date(date) : new Date(),
 
       settlementId: settlement._id,
+      settlementRole:
+        payerUserId.toString() === otherUser._id.toString()
+          ? "payable"
+          : "receivable",
+            settlementStatus: "pending",
 
+            otherUserId: userId,
+            otherDashboardId: dashboards[0],
 
-  settlementRole:
-  payerUserId.toString() === otherUser._id.toString()
-    ? "payable"
-    : "receivable",
-      settlementStatus: "pending",
-
-      otherUserId: userId,
-      otherDashboardId: dashboards[0],
-
-      createdBy: userId
+            createdBy: userId
     });
 
-await sendEmail(
-  otherUser.email,
-  req.session.user.name,
-  amount,
-  validDashboards[0].name
-);
-   
+    await sendEmail(
+      otherUser.email,
+      req.session.user.name,
+      amount,
+      validDashboards[0].name
+    );
 
-//     await Notification.create({
-//   userId: otherUser._id,
-//   title: "New settlement",
-//   message: `You have pending settlement ₹${amount}`,
-//   type: "settlement"
-// });
+    const isReceiver = settlementType === "receivable";
 
-const isReceiver = settlementType === "receivable";
+    const notificationMessage = isReceiver
+      ? `You need to pay ₹${amount} to ${req.session.user.name}`
+      : `${req.session.user.name} will pay you ₹${amount}`;
 
-const notificationMessage = isReceiver
-  ? `You need to pay ₹${amount} to ${req.session.user.name}`
-  : `${req.session.user.name} will pay you ₹${amount}`;
-
-await Notification.create({
-  userId: otherUser._id,
-  title: `Settlement with ${req.session.user.name}`,
-  message: notificationMessage,
-  type: "settlement"
-});
-// console.log("Emitting notification to:", otherUser._id.toString());
-// io.to(otherUser._id.toString()).emit("newNotification",{
-//   title:"Settlement Pending",
-//   message:`${req.session.user.name} added settlement ₹${amount}`
-// });
-io.to(otherUser._id.toString()).emit("newNotification",{
-  title:`Settlement with ${req.session.user.name}`,
-  message: notificationMessage
-});
-io.to(otherUser._id.toString()).emit("transactionUpdated");
-    res.json({
-      message: "Settlement transaction added"
+    await Notification.create({
+      userId: otherUser._id,
+      title: `Settlement with ${req.session.user.name}`,
+      message: notificationMessage,
+      type: "settlement"
     });
+
+    io.to(otherUser._id.toString()).emit("newNotification",{
+      title:`Settlement with ${req.session.user.name}`,
+      message: notificationMessage
+    });
+
+    io.to(otherUser._id.toString()).emit("transactionUpdated");
+      res.json({
+        message: "Settlement transaction added"
+      });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
+      console.error(err);
+      res.status(500).json({ message: err.message });
   }
 };
 
 
 // EDIT PAGE 
 export const getEditTransaction = async (req, res) => {
-  // const record = await Account.findById(req.params.id);
+  
   const record = await Account.findOne({
     _id: req.params.id,
     userId: req.session.user.id
@@ -397,7 +374,7 @@ export const updateTransaction = async (req, res) => {
       updateData.originalName = req.file.originalname;
     }
 
-    // await Account.findByIdAndUpdate(req.params.id, updateData);
+    
     await Account.findOneAndUpdate(
       {
         _id: req.params.id,
@@ -414,14 +391,7 @@ export const updateTransaction = async (req, res) => {
 };
 
 // DELETE
-// export const deleteTransaction = async (req, res) => {
-//   // await Account.findByIdAndDelete(req.params.id);
-//   await Account.findOneAndDelete({
-//     _id: req.params.id,
-//     userId: req.session.user.id
-//   });
-//   res.json({ success: true });
-// };
+
 export const deleteTransaction = async (req, res) => {
   try {
 
@@ -461,9 +431,9 @@ export const deleteTransaction = async (req, res) => {
       else {
 
         await Account.deleteMany({
-    settlementId: txn.settlementId,
-    userId: req.session.user.id
-  });
+          settlementId: txn.settlementId,
+          userId: req.session.user.id
+        });
 
       }
 
@@ -635,77 +605,3 @@ const data = await Settlement.find({
 
 };
 
-// export const addTransaction = async (req, res) => {
-//   try {
-//     if (!req.session || !req.session.user || !req.session.user.id) {
-//       return res.status(401).json({ msg: "Session expired" });
-//     }
-
-//     const userId = req.session.user.id;
-
-//     const {
-//       dashboardIds,
-//       type,
-//       amount,
-//       person,
-//       relatedDetails,
-//       description,
-//       tags,
-//       paymentMode,
-//       date,
-      
-//     } = req.body;
-
-//        if (!dashboardIds || dashboardIds.length === 0) {
-//       return res.status(400).json({
-//         msg: "At least one dashboard is required"
-//       });
-//     }
-
-//     if (!amount || !paymentMode || !type) {
-//       return res.status(400).json({ msg: "Missing required fields" });
-//     }
-
-//     const parsedTags = tags
-//     ? [...new Set(
-//         tags.split(",").map(t => t.trim()).filter(Boolean)
-//       )]
-//     : [];
-
-//        const dashboards = Array.isArray(dashboardIds)
-//       ? dashboardIds
-//       : [dashboardIds];
-
-//         const validDashboards = await Dashboard.find({
-//       _id: { $in: dashboards },
-//       userId
-//     });
-
-//       if (validDashboards.length !== dashboards.length) {
-//       return res.status(403).json({
-//         msg: "Invalid dashboard access"
-//       });
-//     }
-
-//      const records = dashboards.map(did => ({
-//       userId,
-//       dashboardIds: [did],
-//       type,
-//       amount: Number(amount),
-//       person,
-//       relatedDetails: relatedDetails || "",
-//       description,
-//       tags: parsedTags,
-//       paymentMode,
-//       date: date ? new Date(date) : new Date(),
-//       attachment: req.file ? req.file.filename : null,
-//       originalName: req.file ? req.file.originalname : null,
-//      }));
-//       await Account.insertMany(records);
-//     res.json({ message: "Transaction added successfully" });
-
-//   } catch (err) {
-//     console.error("ADD TRANSACTION ERROR 👉", err);
-//     res.status(500).json({ message: err.message });
-//   }
-// };
