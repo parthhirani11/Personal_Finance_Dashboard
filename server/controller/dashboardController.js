@@ -50,7 +50,6 @@ export const renameDashboard = async (req, res) => {
     { _id: req.params.id, userId: req.session.user.id },
     {
       name: req.body.name,
-      isDefault: false   // 🔥 important
     }
   );
 
@@ -63,30 +62,56 @@ export const deleteDashboard = async (req, res) => {
     const userId = req.session.user.id;
     const { id } = req.params;
 
-    // 🔒 Count dashboards
-    const count = await Dashboard.countDocuments({ userId });
+    const dashboards = await Dashboard.find({ userId }).sort({ createdAt: 1 });
 
-    if (count <= 1) {
+    if (dashboards.length <= 1) {
       return res.status(400).json({
         msg: "At least one dashboard is required"
       });
     }
 
-    // delete transactions
-    
+    const dashboardToDelete = dashboards.find(d => d._id.toString() === id);
+
+    if (!dashboardToDelete) {
+      return res.status(404).json({ msg: "Dashboard not found" });
+    }
+
+    // ✅ If deleting default → assign new default
+    if (dashboardToDelete.isDefault) {
+
+      const newDefault = dashboards.find(d => d._id.toString() !== id);
+
+      if (newDefault) {
+
+        // ✅ only update other dashboards
+        await Dashboard.updateMany(
+          { userId, _id: { $ne: id } },
+          { isDefault: false }
+        );
+
+        await Dashboard.findByIdAndUpdate(newDefault._id, {
+          isDefault: true
+        });
+
+      }
+    }
+
+    // ✅ delete transactions of that dashboard (only that user)
     await Account.deleteMany({
       dashboardIds: new mongoose.Types.ObjectId(id),
       userId: new mongoose.Types.ObjectId(userId)
     });
 
-    // delete dashboard
+    // ✅ delete dashboard
     await Dashboard.findOneAndDelete({ _id: id, userId });
 
     res.json({ success: true });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // get dashboards of OTHER USER (for settlement)
 export const getDashboardsByUserId = async (req, res) => {
@@ -121,5 +146,3 @@ export const getDashboardsByUserId = async (req, res) => {
 
   }
 };
-
-

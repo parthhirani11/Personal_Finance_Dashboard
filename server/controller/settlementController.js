@@ -10,8 +10,8 @@ export const paySettlement = async (req, res) => {
       return res.status(401).json({ msg: "Unauthorized" });
     }
 
-    const currentUserId = req.session.user.id;
     const settlementId = req.params.id;
+    const currentUserId = req.session.user.id;
 
     const settlement = await Settlement.findById(settlementId);
 
@@ -27,15 +27,15 @@ export const paySettlement = async (req, res) => {
         msg: "You cannot settle this transaction"
       });
     }
+
+  
     const exists = await Account.findOne({
       settlementId,
-      userId: currentUserId,
-      settlementStatus:"settled",
-      paymentMode:"settlement"
+      paymentMode: "settlement"
     });
 
-        if(exists){
-        return res.json({message:"Already recorded"});
+    if (exists) {
+      return res.json({ message: "Already recorded" });
     }
 
     if (settlement.status === "settled")
@@ -50,10 +50,7 @@ export const paySettlement = async (req, res) => {
 
     await Account.updateMany(
       { settlementId, paymentMode: { $ne: "settlement" } },
-      { 
-        settlementStatus: "settled",
-        paymentMode: "settlement"
-      }
+      { settlementStatus: "settled" }
     );
 
     const originalTxn = await Account.findOne({
@@ -113,19 +110,22 @@ export const paySettlement = async (req, res) => {
       date: new Date(),
       createdBy: currentUserId
     });
+
     // notifications
     await Notification.create({
       userId: settlement.fromUserId,
-      title: "Settlement received",
-      message: `₹${settlement.amount} received`,
-      type: "settlement"
+      title: "Settlement Paid",
+      message: `You paid ₹${settlement.amount}`,
+      type: "settlement",
+      status: "settled"
     });
 
     await Notification.create({
       userId: settlement.toUserId,
-      title: "Settlement paid",
-      message: `₹${settlement.amount} paid`,
-      type: "settlement"
+      title: "Settlement Received",
+      message: `You received ₹${settlement.amount}`,
+      type: "settlement",
+      status: "settled"
     });
 
     res.json({ message: "Settlement completed successfully" });
@@ -153,3 +153,45 @@ export const getPendingSettlements = async (req,res)=>{
 
 };
 
+export const moveDashboard = async (req, res) => {
+  try {
+    const { settlementId, dashboardId } = req.body;
+
+    if (!settlementId || !dashboardId) {
+      return res.status(400).json({ msg: "Missing data" });
+    }
+
+    const currentUserId = req.session.user.id;
+
+    // ✅ find settlement
+    const settlement = await Settlement.findById(settlementId);
+
+    if (!settlement) {
+      return res.status(404).json({ msg: "Settlement not found" });
+    }
+
+    // ✅ check which user is updating
+    if (settlement.toUserId.toString() === currentUserId) {
+      settlement.toDashboardId = dashboardId;
+    } else if (settlement.fromUserId.toString() === currentUserId) {
+      settlement.fromDashboardId = dashboardId;
+    } else {
+      return res.status(403).json({ msg: "Not allowed" });
+    }
+
+    // ✅ save updated settlement
+    await settlement.save();
+
+    // ✅ update ONLY that user's account records
+    await Account.updateMany(
+      { settlementId, userId: currentUserId },
+      { dashboardIds: [dashboardId] }
+    );
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};

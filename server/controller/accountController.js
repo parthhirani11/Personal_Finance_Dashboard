@@ -75,11 +75,9 @@ export const addTransaction = async (req, res) => {
       paymentMode,
       date,
       
-      // NEW FIELDS
       settlementEnabled,
       settlementType,
       otherUserId,
-      otherDashboardId
 
     } = req.body;
 
@@ -96,7 +94,7 @@ export const addTransaction = async (req, res) => {
       : [];
 
     // NORMAL TRANSACTION
-    const isSettlement = settlementEnabled === "true";
+    const isSettlement = settlementEnabled === "true" || settlementEnabled === true;
 
     if (!amount || !type) {
       return res.status(400).json({ msg: "Missing required fields" });
@@ -123,20 +121,20 @@ export const addTransaction = async (req, res) => {
         description,
         tags: parsedTags,
         paymentMode,
-
         date: date ? new Date(date) : new Date(),
         attachment: req.file ? req.file.filename : null,
         originalName: req.file ? req.file.originalname : null,
 
         settlementRole: "none",
         settlementStatus: "none",
-
         createdBy: userId
 
       }));
 
       await Account.insertMany(records);
-
+      io.to(userId.toString()).emit("transactionUpdated", {
+        dashboardId: dashboards[0]
+      });
       return res.json({ message: "Transaction added" });
     }
 
@@ -145,6 +143,16 @@ export const addTransaction = async (req, res) => {
     // ===============================
 
     // find other user
+    if (!otherUserId) {
+      return res.status(400).json({
+        msg: "Other user required for settlement"
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
+      return res.status(400).json({ msg: "Invalid user id" });
+    }
+
     const otherUser = await User.findById(otherUserId);
 
     if (!otherUser) {
@@ -163,19 +171,15 @@ export const addTransaction = async (req, res) => {
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
-      return res.status(400).json({ msg: "Invalid user id" });
-    }
-
-    // ✅ validate other user's dashboard FIRST
+    // find other user's DEFAULT dashboard
     const otherDashboard = await Dashboard.findOne({
-      _id: otherDashboardId,
-      userId: otherUser._id
+      userId: otherUser._id,
+      isDefault: true
     });
 
     if (!otherDashboard) {
       return res.status(404).json({
-        msg: "Other user's dashboard not found"
+        msg: "Other user's default dashboard not found"
       });
     }
 
@@ -194,15 +198,15 @@ export const addTransaction = async (req, res) => {
         ? userId
         : otherUser._id;
 
-    const payerDashboardId =
+   const payerDashboardId =
       settlementType === "receivable"
-        ? otherDashboardId
+        ? otherDashboard._id
         : dashboards[0];
 
     const receiverDashboardId =
       settlementType === "receivable"
         ? dashboards[0]
-        : otherDashboardId;
+        : otherDashboard._id;
 
     const settlement = await Settlement.create({
 
@@ -245,12 +249,10 @@ export const addTransaction = async (req, res) => {
         payerUserId.toString() === userId.toString()
           ? "payable"
           : "receivable",
-            settlementStatus: "pending",
-
-            otherUserId,
-            otherDashboardId,
-
-            createdBy: userId
+      settlementStatus: "pending",
+      otherUserId,
+      otherDashboardId: otherDashboard._id,
+      createdBy: userId
     });
 
 
@@ -259,12 +261,11 @@ export const addTransaction = async (req, res) => {
 
       userId: new mongoose.Types.ObjectId(otherUser._id),
       
-      dashboardIds: [new mongoose.Types.ObjectId(otherDashboardId)],
+      dashboardIds: [new mongoose.Types.ObjectId(otherDashboard._id)],
       type:
         settlementType === "receivable"
           ? "income"
           : "expense",
-
       amount: Number(amount),
       person: new mongoose.Types.ObjectId(userId),
       relatedDetails,
@@ -280,12 +281,10 @@ export const addTransaction = async (req, res) => {
         payerUserId.toString() === otherUser._id.toString()
           ? "payable"
           : "receivable",
-            settlementStatus: "pending",
-
-            otherUserId: userId,
-            otherDashboardId: dashboards[0],
-
-            createdBy: userId
+      settlementStatus: "pending",
+      otherUserId: userId,
+      otherDashboardId: otherDashboard._id,
+      createdBy: userId
     });
 
     await sendEmail(
@@ -305,18 +304,27 @@ export const addTransaction = async (req, res) => {
       userId: otherUser._id,
       title: `Settlement with ${req.session.user.name}`,
       message: notificationMessage,
-      type: "settlement"
+      type: "settlement",
+      settlementId: settlement._id,
+      status: "pending" 
     });
 
     io.to(otherUser._id.toString()).emit("newNotification",{
       title:`Settlement with ${req.session.user.name}`,
       message: notificationMessage
     });
+    // 🔥 sender (current user)
+    io.to(userId.toString()).emit("transactionUpdated", {
+      dashboardId: dashboards[0]
+    });
 
-    io.to(otherUser._id.toString()).emit("transactionUpdated");
+    io.to(otherUser._id.toString()).emit("transactionUpdated", {
+      dashboardId: otherDashboard._id
+    });
       res.json({
         message: "Settlement transaction added"
       });
+   
   } catch (err) {
       console.error(err);
       res.status(500).json({ message: err.message });

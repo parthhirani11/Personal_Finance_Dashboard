@@ -1,0 +1,27 @@
+{
+  "name": "personal_finance_dashboard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "client": "npm run dev --prefix client",
+    "server": "nodemon server/server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/parthhirani11/Personal_Finance_Dashboard.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/parthhirani11/Personal_Finance_Dashboard/issues"
+  },
+  "homepage": "https://github.com/parthhirani11/Personal_Finance_Dashboard#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14"
+  }
+}

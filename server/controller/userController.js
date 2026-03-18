@@ -12,7 +12,9 @@ export const getUserByUserId = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ name }).select("_id userId email");
+    const user = await User.findOne({
+      name: { $regex: name.trim(), $options: "i" }
+    }).select("_id name email");
 
     if (!user) {
       return res.status(404).json({

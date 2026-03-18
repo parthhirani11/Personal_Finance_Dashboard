@@ -7,13 +7,19 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
-    match: /^[A-Za-z0-9_@]+$/
+    match: /^[A-Za-z0-9_@ ]+$/
   },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
 
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true 
+  },
+  password: { 
+    type: String, 
+    required: true 
+  },
 
-   
   categories: {
     type: [String],
     default: ["goods", "salary", "rent", "food"],

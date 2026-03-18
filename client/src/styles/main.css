@@ -3472,9 +3472,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   border:1px solid #1e293b;
   border-radius:10px;
   padding:18px;
+
   display:flex;
-  justify-content:space-between;
-  align-items:center;
+  flex-direction:column;   /* 🔥 ADD THIS */
+  gap:12px;   
+
   transition:0.25s;
 }
 
@@ -3524,6 +3526,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .mark-read-btn:hover{
   background:#1d4ed8;
 }
+.notification-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
 .notification-header{
  display:flex;
@@ -3544,4 +3551,93 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .back-btn:hover{
  background:#334155;
+}
+
+.notification-actions{
+ display:flex;
+ gap:8px;
+ justify-content:flex-end;  
+}
+
+.yes-btn{
+ background:#22c55e;
+ border:none;
+ padding:8px 14px;
+ color:white;
+ border-radius:6px;
+ cursor:pointer;
+ font-size:13px;
+}
+
+.yes-btn:hover{
+ background:#16a34a;
+}
+
+/* compact change box */
+.dashboard-change-box{
+ margin-top:8px;
+ padding:10px;
+ border-radius:8px;
+ background:#020617;
+ border:1px solid #1e293b;
+ width:100%;
+}
+
+/* header */
+.change-header p{
+ font-size:13px;
+ color:#94a3b8;
+ margin-bottom:6px;
+}
+
+/* body layout */
+.change-body{
+ display:flex;
+ align-items:center;
+ gap:10px;
+}
+
+/* select small */
+.change-body select{
+ flex:1;
+ padding:6px 10px;
+ border-radius:6px;
+ border:1px solid #334155;
+ background:#0f172a;
+ color:white;
+ font-size:13px;
+}
+
+/* actions */
+.change-actions{
+ display:flex;
+ gap:6px;
+}
+
+/* confirm small button */
+.confirm-btn{
+ background:#22c55e;
+ border:none;
+ padding:6px 10px;
+ border-radius:6px;
+ cursor:pointer;
+ font-size:14px;
+}
+
+.confirm-btn:hover{
+ background:#16a34a;
+}
+
+/* cancel */
+.cancel-btn{
+ background:#ef4444;
+ border:none;
+ padding:6px 10px;
+ border-radius:6px;
+ cursor:pointer;
+ font-size:14px;
+}
+
+.cancel-btn:hover{
+ background:#dc2626;
 }

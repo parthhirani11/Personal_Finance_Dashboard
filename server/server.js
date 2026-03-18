@@ -15,7 +15,7 @@ import userRoutes from "./routes/userRoutes.js";
 
 // import connectDB from "./config/db.js";
 
-dotenv.config();
+dotenv.config({ path: "./server/.env" });
 
 const app = express();
 const server = http.createServer(app);
@@ -43,8 +43,10 @@ app.use(
 );
 
 // connectDB();
+
 mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("MongoDB Connected"));
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log("MongoDB Error:", err));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);
@@ -70,12 +72,9 @@ io.on("connection",(socket)=>{
   });
 
 });
+
 // server connection
 const PORT = process.env.PORT || 6000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
-
 server.listen(PORT,()=>{
  console.log(`Server running on port ${PORT}`);
 });

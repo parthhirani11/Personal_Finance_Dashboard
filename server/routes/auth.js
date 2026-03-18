@@ -4,11 +4,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
 import Msg from "../models/Msg.js";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-import { transporter } from "../utils/sendEmail.js";
+import { transporter } from "../utils/email.js";
 import client from "../utils/twilio.js";
 
 const router = express.Router();
@@ -139,9 +135,10 @@ router.post("/forgot/send-otp", async (req, res) => {
 
   try {
     const { email } = req.body;
-   
-    if (!email) {
-      return res.status(400).json({ msg: "Email required" });
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -214,13 +211,13 @@ router.post("/reset", async (req, res) => {
 
 router.get("/search", async(req,res)=>{
 
- const {email} = req.query;
+  const {email} = req.query;
+  if(!email){
+    return res.status(400).json({msg:"Email required"})
+  }
+  const user = await User.findOne({email}).select("_id name email");
 
- const user =
-  await User.findOne({email})
-  .select("_id name email");
-
- res.json(user);
+  res.json(user);
 
 });
 

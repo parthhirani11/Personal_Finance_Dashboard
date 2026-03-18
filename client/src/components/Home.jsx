@@ -810,11 +810,6 @@ export default function Dashboard() {
         return;
       }
 
-      if (!selectedOtherDashboard) {
-        toast.error("Select other user's dashboard");
-        return;
-      }
-
       if (!settlementType) {
         toast.error("Select settlement type");
         return;
@@ -823,7 +818,6 @@ export default function Dashboard() {
       // append settlement fields
       formData.append("settlementType", settlementType);
       formData.append("otherUserId", otherUser._id);
-      formData.append("otherDashboardId", selectedOtherDashboard);
 
     } 
     // Settlement disabled
@@ -894,8 +888,6 @@ export default function Dashboard() {
       setSettlementEnabled(false);
       setOtherUserId("");
       setOtherUser(null);
-      setOtherUserDashboards([]);
-      setSelectedOtherDashboard("");
       setSettlementType("receivable");
       
     } catch (err) {
@@ -946,71 +938,20 @@ export default function Dashboard() {
   };
 
 
-  const fetchUserByUserId = async (name) => {
-
-    if (!name || !name.trim()) {
-      setOtherUser(null);
-      setOtherUserDashboards([]);
-      return;
-    }
+  const fetchUserByUserId = async (userId) => {
+    if (!userId || !userId.trim()) return setOtherUser(null);
 
     try {
-
       const res = await api.get("/users/by-userid", {
-        params: { name: name.trim() }
+        params: { name: userId.trim() }  // must match DB
       });
-      const data = res.data;
-
-      if (data?.success && data?.user) {
-
-        setOtherUser(data.user);
-        await fetchUserDashboards(data.user._id);
-
-      } else {
-
-        setOtherUser(null);
-        setOtherUserDashboards([]);
-
-      }
-
+      if (res.data?.success && res.data?.user) setOtherUser(res.data.user);
+      else setOtherUser(null);
     } catch (err) {
-
-      if (err.response?.status === 404) {
-
-        toast.error("User not found");
-        setOtherUser(null);
-        setOtherUserDashboards([]);
-
-      } else {
-
-        console.error("fetchUserByUserId error:", err);
-
-      }
-
+      setOtherUser(null);
     }
-
   };
-
-  const fetchUserDashboards = async (userId) => {
-
-    try {
-
-      const res = await api.get(`/dashboard/user/${userId}`);
-      const data = res.data;
-
-      if (data.success) {
-
-        setOtherUserDashboards(data.dashboards);
-
-      }
-
-    } catch (err) {
-
-      console.error("fetchUserDashboards error:", err);
-      
-    }
-
-  };
+ 
 
   const fetchNotifications = async () => {
 
@@ -1034,7 +975,7 @@ export default function Dashboard() {
   };
 
   useEffect(()=>{
-  fetchNotifications();
+    fetchNotifications();
   },[]);
 
   useEffect(() => {
@@ -1058,43 +999,68 @@ export default function Dashboard() {
       showBrowserNotification(data);
 
     });
-    socket.on("transactionUpdated",()=>{
-      fetchDashboard();
+    
+    socket.on("transactionUpdated",(data)=>{
+
+      if(data?.dashboardId === activeDashboard){
+        fetchDashboard();
+      } 
     });
 
     return ()=>{
       socket.off("newNotification");
-    socket.off("transactionUpdated");
-    socket.disconnect();
+      socket.off("transactionUpdated");
+      socket.disconnect();
     };
 
   },[]);
 
   useEffect(()=>{
 
-  if("Notification" in window){
+    if("Notification" in window){
 
-    if(Notification.permission === "default"){
-      Notification.requestPermission().then(permission=>{
-        console.log("Notification permission:",permission);
-      });
+      if(Notification.permission === "default"){
+        Notification.requestPermission().then(permission=>{
+          console.log("Notification permission:",permission);
+        });
+      }
+
     }
-
-  }
 
   },[]);
 
   const notificationSound = new Audio("/cheerful-527.ogg?v=1");
+ 
+  const requestNotificationPermission = async () => {
+
+    if (!("Notification" in window)) {
+      console.log("Browser does not support notifications");
+      return;
+    }
+
+    if (Notification.permission !== "granted") {
+      const permission = await Notification.requestPermission();
+      console.log("Permission:", permission);
+    }
+
+  };
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
   const showBrowserNotification = (data)=>{
 
-  if(Notification.permission === "granted"){
+    if(Notification.permission === "granted"){
 
-    new Notification(data.title,{
-      body:data.message,
-      icon:"/logo.png"
-    });
+      new Notification(data.title,{
+        body:data.message,
+        icon:"/logo.png"
+      });
+    
 
-  }
+    } else {
+      console.log("Notification blocked");
+    }
 
   };
 
@@ -1129,8 +1095,10 @@ export default function Dashboard() {
       }
 
       await api.post(`/settlement/pay/${settlementId}`);
-
-      fetchDashboard();
+     
+      // fetchDashboard();
+      await fetchDashboard();   // ✅ correct
+      await fetchNotifications();
 
     } catch (err) {
       console.error("Settlement error:", err);
@@ -1751,38 +1719,42 @@ export default function Dashboard() {
     );
   };
 
-
   const confirmDeletee = async () => {
     try {
       await api.delete(`/dashboard/${activeDashboard}`);
-       localStorage.removeItem("activeDashboardId");
 
-      const updated = dashboards.filter(d => d._id !== activeDashboard);
-      setDashboards(updated);
+      localStorage.removeItem("activeDashboardId");
 
-      if (updated.length > 0) {
-        const nextId = updated[0]._id;
-        setActiveDashboard(nextId);
+      // ✅ STEP 1: Fetch fresh dashboards from backend
+      const resDash = await api.get("/dashboard");
+      const newDashboards = resDash.data;
 
-        // 🔥 fetch new dashboard data
-        const res = await api.get(`/account/home/${nextId}`);
+      setDashboards(newDashboards);
+
+      // ✅ STEP 2: find default dashboard
+      const defaultDash = newDashboards.find(d => d.isDefault);
+
+      if (defaultDash) {
+        setActiveDashboard(defaultDash._id);
+
+        const res = await api.get(`/account/home/${defaultDash._id}`);
         setTransactions(
           Array.isArray(res.data.transactions)
             ? res.data.transactions
             : []
         );
       } else {
-        // 🔥 NO DASHBOARD CASE
         setActiveDashboard(null);
-        setTransactions([]);   // ⛔ old data remove
+        setTransactions([]);
       }
 
       setShowConfirm(false);
+
     } catch (err) {
       console.error(err);
     }
   };
-
+  
   const dropdownRef = useRef(null);
  
   useEffect(() => {
@@ -2787,47 +2759,14 @@ export default function Dashboard() {
                           type="text"
                           className="form-control"
                           value={otherUserId}
-                          onChange={(e)=>setOtherUserId(e.target.value)}
+                          onChange={(e)=>{
+                            setOtherUserId(e.target.value);
+                            fetchUserByUserId(e.target.value);
+                          }}
                         />
                       </div>
 
-                      <button
-                        type="button"
-                        className="find-btn"
-                        onClick={()=>fetchUserByUserId(otherUserId)}
-                      >
-                        Search
-                      </button>
-
                     </div>
-
-                    {/* DASHBOARD SELECT */}
-                    {otherUserDashboards.length > 0 && (
-
-                      <div className="mb-2 mt-2">
-
-                        <label>
-                          Select Dashboard <span className="text-danger">*</span>
-                        </label>
-
-                        <select
-                          className="form-select"
-                          value={selectedOtherDashboard}
-                          onChange={(e)=>setSelectedOtherDashboard(e.target.value)}
-                        >
-                          <option value="">Select dashboard</option>
-
-                          {otherUserDashboards.map(d => (
-                            <option key={d._id} value={d._id}>
-                              {d.name}
-                            </option>
-                          ))}
-
-                        </select>
-
-                      </div>
-
-                    )}
 
                   </div>
 

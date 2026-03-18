@@ -16,7 +16,15 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     enum: ["settlement", "transaction"]
   },
-
+  settlementId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Settlement"
+  },
+  status: {
+    type: String,
+    enum: ["pending", "settled"],
+    default: "pending"
+  },
   isRead: {
     type: Boolean,
     default: false
