@@ -28,8 +28,8 @@ client/build
 ############################
 # Backend
 ############################
-server/uploads/*
-!server/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
 
 ############################
 # Editor & OS files
