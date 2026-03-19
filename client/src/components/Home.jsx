@@ -103,10 +103,6 @@ export default function Dashboard() {
   const [otherUserId, setOtherUserId] = useState("");
   // other user data
   const [otherUser, setOtherUser] = useState(null);
-  // other user dashboards
-  const [otherUserDashboards, setOtherUserDashboards] = useState([]);
-  // selected dashboard
-  const [selectedOtherDashboard, setSelectedOtherDashboard] = useState("");
 
   // settlement type
   const [settlementType, setSettlementType] = useState("payable");
@@ -162,6 +158,8 @@ export default function Dashboard() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [renamePopup, setRenamePopup] = useState(null);
   const [newName, setNewName] = useState("");
+
+  // user ID popupSuggestions
 
   // ...........................................................................................
 
@@ -241,7 +239,7 @@ export default function Dashboard() {
 
     let url = "";
     if (exportType === "csv") url = "/account/export/csv";
-    if (exportType === "xlsx") url = "account/export/xlsx";
+    if (exportType === "xlsx") url = "/account/export/xlsx";
     if (exportType === "pdf") url = "/account/export/pdf";
 
     try {
@@ -445,13 +443,20 @@ export default function Dashboard() {
           const values = f.value.split(",").map(v => v.trim().toLowerCase());
 
           data = data.filter(item =>
-            values.some(v =>
-              item.person?.toLowerCase().includes(v) ||
-              item.description?.toLowerCase().includes(v) ||
-              item.tags?.join(",").toLowerCase().includes(v) ||
-              item.paymentMode?.toLowerCase().includes(v) ||
-              item.type?.toLowerCase().includes(v)
-            )
+            values.some(v => {
+              const name =
+                item.person ||
+                item.manualPersonName ||
+                "";
+
+              return (
+                name.toLowerCase().includes(v) ||
+                item.description?.toLowerCase().includes(v) ||
+                item.tags?.join(",").toLowerCase().includes(v) ||
+                item.paymentMode?.toLowerCase().includes(v) ||
+                item.type?.toLowerCase().includes(v)
+              );
+            })
           );
           return;
       }
@@ -511,8 +516,27 @@ export default function Dashboard() {
         });
         return;
       }
+
       if (f.type === "type" && f.value) {
-        data = data.filter(item => item.type === f.value);
+        data = data.filter(item => {
+
+          // ✅ income / expense (ONLY settled)
+          if (f.value === "income" || f.value === "expense") {
+            return item.type === f.value && item.settlementStatus !== "pending";
+          }
+
+          // ✅ TO GIVE
+          if (f.value === "payable") {
+            return item.settlementStatus === "pending" && item.settlementRole === "payable";
+          }
+
+          // ✅ TO TAKE
+          if (f.value === "receivable") {
+            return item.settlementStatus === "pending" && item.settlementRole === "receivable";
+          }
+
+          return true;
+        });
         return;
       }
 
@@ -523,8 +547,17 @@ export default function Dashboard() {
 
 
       data = data.filter(item => {
-        if (f.type === "recipient")
-          return values.some(v => item.person?.toLowerCase().includes(v));
+        
+        if (f.type === "recipient") {
+          const name =
+            item.person ||
+            item.manualPersonName ||
+            "";
+
+          return values.some(v =>
+            name.toLowerCase().includes(v)
+          );
+        }
 
         if (f.type === "category")
           return values.some(v => item.description?.toLowerCase().includes(v));
@@ -538,9 +571,15 @@ export default function Dashboard() {
           return values.includes(item.type);
 
         if (f.type === "paymentMode") {
-          return values.some(v =>
-            item.paymentMode?.toLowerCase().includes(v)
-          );
+          return values.some(v => {
+
+            // ✅ pending support
+            if (v === "pending") {
+              return item.settlementStatus === "pending";
+            }
+
+            return item.paymentMode?.toLowerCase().includes(v);
+          });
         }
 
         
@@ -561,8 +600,17 @@ export default function Dashboard() {
       const values = f.value.split(",").map(v => v.trim().toLowerCase());
 
       data = data.filter(item => {
-        if (f.type === "recipient")
-          return values.some(v => item.person?.toLowerCase().includes(v));
+       
+        if (f.type === "recipient") {
+          const name =
+            item.person ||
+            item.manualPersonName ||
+            "";
+
+          return values.some(v =>
+            name.toLowerCase().includes(v)
+          );
+        }
 
         if (f.type === "category")
           return values.some(v => item.description?.toLowerCase().includes(v));
@@ -571,9 +619,14 @@ export default function Dashboard() {
           return values.some(v => item.tags?.join(",").toLowerCase().includes(v));
 
         if (f.type === "paymentMode")
-          return values.some(v =>
-          item.paymentMode?.toLowerCase().includes(v)
-        );
+          return values.some(v => {
+
+            if (v === "pending") {
+              return item.settlementStatus === "pending";
+            }
+
+            return item.paymentMode?.toLowerCase().includes(v);
+          });
 
 
         return true;
@@ -584,16 +637,27 @@ export default function Dashboard() {
   };
 
   // ............................................................
+
   const getUniqueCaseInsensitive = (arr) => {
     const map = new Map();
 
     arr.forEach(item => {
-      if (!item) return;
-      const lower = item.toLowerCase();
-      if (!map.has(lower)) {
-        map.set(lower, item);
-      }
-    });
+        if (!item) return;
+
+        // 🔥 FIX: convert object → string
+        const value =
+          typeof item === "string"
+            ? item
+            : item?.name || "";
+
+        if (!value) return;
+
+        const lower = value.toLowerCase();
+
+        if (!map.has(lower)) {
+          map.set(lower, value);
+        }
+      });
 
     return Array.from(map.values());
   };
@@ -624,10 +688,16 @@ export default function Dashboard() {
     if (type === "year") {
       return [ ...new Set(data.map(i => new Date(i.date).getFullYear()))].map(String);
     }
-    if (type === "recipient")
+    if (type === "recipient") {
       return getUniqueCaseInsensitive(
-        data.map(i => i.person).filter(Boolean)
+        data.flatMap(i => [
+          typeof i.person === "string"
+            ? i.person
+            : i.person?.name,
+          i.manualPersonName
+        ])
       );
+    }
 
     if (type === "category")
       return getUniqueCaseInsensitive(
@@ -639,10 +709,21 @@ export default function Dashboard() {
         data.flatMap(i => i.tags || [])
       );
 
-
     if (type === "paymentMode") {
       return getUniqueCaseInsensitive(
-        data.map(i => i.paymentMode).filter(Boolean)
+        data.flatMap(i => {
+          const arr = [];
+
+          if (i.settlementStatus === "pending") {
+            arr.push("pending"); // 🔥 add pending
+          }
+
+          if (i.paymentMode) {
+            arr.push(i.paymentMode);
+          }
+
+          return arr;
+        })
       );
     }
 
@@ -675,7 +756,7 @@ export default function Dashboard() {
     }
 
     const suggestions = allSuggestions.filter(s =>
-      s.toLowerCase().includes(current)
+      String(s).toLowerCase().includes(current)
     );
 
     setActiveSuggestions(suggestions);
@@ -2202,7 +2283,8 @@ export default function Dashboard() {
                     <input
                       className="form-control border-2"
                       placeholder="Search..."
-                      value={capitalizeFirst(f.value) || ""}
+                      // value={capitalizeFirst(f.value) || ""}
+                      value={f.value || ""}
                       onChange={(e) => handleSuggestionInputChange(e, f, index)}
                     />
                   )}
@@ -2217,6 +2299,8 @@ export default function Dashboard() {
                       <option value="">Select</option>
                       <option value="income">Income</option>
                       <option value="expense">Expense</option>
+                      <option value="payable">To Give (Pending)</option>
+                      <option value="receivable">To Take (Pending)</option>
                     </select>
                   )}
 
@@ -2234,7 +2318,8 @@ export default function Dashboard() {
                       <input
                         className="tag-input"
                         ref={el => inputRefs.current[index] = el}
-                        placeholder="Search..."
+                      
+                        placeholder={`Search ${f.type}...`}
                         value={f.value || ""}
                     
                         onClick={() => {
@@ -2245,8 +2330,7 @@ export default function Dashboard() {
                             // open new
                             setActiveFilterIndex(index);
                             setFocusedSuggestionIndex(-1);
-
-                            const data = getFilteredDataExcept(index);
+                            const data = getFilteredDataExcept(index) || [];
                             setActiveSuggestions(getSuggestions(f.type, data));
                           }
                         }}
@@ -2431,12 +2515,14 @@ export default function Dashboard() {
                           {item.type === "income" ? "Receiver: " : "Payer: "}
                         </span>
                         <span className="value" >
-                          {/* {capitalizeFirst(item.person) || "-"} */}
                           {capitalizeFirst(
-                              item.person?.name || item.manualPersonName
+                              typeof item.person === "string"
+                                ? item.person
+                                : item.person?.name || item.manualPersonName
                             ) || "-"
                           }
                         </span>
+                        
                       </div>
 
                       <div className="rows">

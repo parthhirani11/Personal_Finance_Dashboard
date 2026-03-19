@@ -235,7 +235,7 @@ export const addTransaction = async (req, res) => {
           ? "expense"
           : "income",
       amount: Number(amount),
-      person: new mongoose.Types.ObjectId(otherUser._id),
+      person: new mongoose.Types.ObjectId(otherUser._id),  
       relatedDetails,
       description,
       tags: parsedTags,

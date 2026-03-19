@@ -7,10 +7,28 @@ import dayjs from "dayjs";
 const router = express.Router();
 
 function normalize(t) {
+
+    // FIX TYPE
+    let typeLabel = t.type;
+
+    if (t.settlementStatus === "pending") {
+        if (t.settlementRole === "payable") typeLabel = "To Give";
+        else if (t.settlementRole === "receivable") typeLabel = "To Take";
+    } else {
+        if (t.type === "income") typeLabel = "Income";
+        if (t.type === "expense") typeLabel = "Expense";
+    }
+
+    // FIX RECIPIENT
+    let name = "-";
+    if (typeof t.person === "string") name = t.person;
+    else if (t.person?.name) name = t.person.name;
+    else if (t.manualPersonName) name = t.manualPersonName;
+
     return {
-        type: t.type,
+        type: typeLabel,
         amount: t.amount,
-        recipient: t.person || '-',
+        recipient: name,
         category: t.description || '-',
         tags: Array.isArray(t.tags) ? t.tags.join(', ') : '-',
         date: dayjs(t.date).format('YYYY-MM-DD')
