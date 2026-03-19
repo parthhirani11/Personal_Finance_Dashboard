@@ -2235,6 +2235,15 @@ p a:hover {
   overflow: hidden;
   cursor: pointer;
 }
+.type-slider:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
+}
+.type-slider.active {
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
+}
 
 .slider-option {
   flex: 1;
@@ -2557,8 +2566,18 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: #0f172a;
   border-radius: 12px;
   color: #f1f5f9;
-  padding: 10px;
+  /* padding: 10px; */
+     
+    font-weight: 500;
+    padding: 10px 14px;
+    transition: all 0.3s ease;
   
+}
+
+.tag-input-wrapper:focus-within {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.4);
 }
 
 .tag-chip {
@@ -3112,12 +3131,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   justify-content: space-between; /* 👈 icon full right */
 }
 
-.dashboard-select:focus {
+/* .dashboard-select:focus-within {
   outline: none;
   border-color: #38bdf8;
   box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
-}
+} */
 
+.dashboard-select.active {
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
+}
 .dropdown-icon {
   font-size: 18px;
   color: #555;
@@ -3639,5 +3662,75 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .cancel-btn:hover{
- background:#dc2626;
+ background: #dc2626;
+}
+
+/* Suggestion Box */
+.suggestions-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+
+  /* background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px; */
+
+  max-height: 180px;
+  overflow-y: auto;
+
+  /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); */
+
+  z-index: 9999;
+  margin-top: 6px;
+
+  animation: fadeIn 0.2s ease-in-out;
+
+
+  background: #1e293b;
+  border-radius: 10px;
+  border: 1px solid #38bdf8;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+/* Scrollbar */
+.suggestions-box::-webkit-scrollbar {
+  width: 6px;
+}
+.suggestions-box::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* Item */
+.suggestion-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #f1f5f9;
+
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.suggestion-item:hover {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Parent (IMPORTANT) */
+.user-input {
+  position: relative;
 }

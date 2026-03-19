@@ -160,7 +160,9 @@ export default function Dashboard() {
   const [newName, setNewName] = useState("");
 
   // user ID popupSuggestions
-
+  const [userSuggestions, setUserSuggestions] = useState([]);
+  const [showUserSuggestions, setShowUserSuggestions] = useState(false);
+  const wrapperRef = useRef(null);
   // ...........................................................................................
 
   // add new dashboard
@@ -886,7 +888,23 @@ export default function Dashboard() {
     if (settlementEnabled) {
 
       // validations
-      if (!otherUser || !otherUser._id) {
+      // if (!otherUser || !otherUser._id) {
+      //   toast.error("Select valid user");
+      //   return;
+      // }
+      // agar suggestion select thayo hoy
+      let selectedOtherUserId = otherUser?._id;
+
+      // agar manually type karyo hoy to find user by name
+      if (!selectedOtherUserId && otherUserId.trim()) {
+        // backend call to get user by exact name
+        const res = await api.get("/users/by-userid", { params: { name: otherUserId.trim() } });
+        if (res.data?.success && res.data?.users?.length > 0) {
+          selectedOtherUserId = res.data.users[0]._id; // first matched user
+        }
+      }
+
+      if (!selectedOtherUserId) {
         toast.error("Select valid user");
         return;
       }
@@ -897,8 +915,9 @@ export default function Dashboard() {
       }
 
       // append settlement fields
+      formData.append("otherUserId", selectedOtherUserId);
       formData.append("settlementType", settlementType);
-      formData.append("otherUserId", otherUser._id);
+      // formData.append("otherUserId", otherUser._id);
 
     } 
     // Settlement disabled
@@ -1018,21 +1037,55 @@ export default function Dashboard() {
     }
   };
 
+  const fetchUserByUserId = async (value) => {
+   
+    if (!value?.trim()) {
+      // show all transaction users
+      const uniqueUsersMap = new Map();
 
-  const fetchUserByUserId = async (userId) => {
-    if (!userId || !userId.trim()) return setOtherUser(null);
+      transactions.forEach(t => {
+        if (t.person && t.person._id !== currentUserId) {
+          uniqueUsersMap.set(t.person._id, t.person);
+        }
+      });
+
+      const transactionUsers = Array.from(uniqueUsersMap.values());
+
+      setUserSuggestions(transactionUsers);
+      setShowUserSuggestions(true);
+      return;
+    }
 
     try {
-      const res = await api.get("/users/by-userid", {
-        params: { name: userId.trim() }  // must match DB
-      });
-      if (res.data?.success && res.data?.user) setOtherUser(res.data.user);
-      else setOtherUser(null);
+      const res = await api.get("/users/by-userid", { params: { name: value.trim() } });
+
+      if (res.data?.success && res.data?.users) {
+        // transactions array thi existing user ids
+        const transactionUserIds = transactions.map(t => t.person?._id).filter(Boolean);
+        const filteredUsers = res.data.users.filter(
+          user => transactionUserIds.includes(user._id) && user._id !== currentUserId
+        );
+
+        setUserSuggestions(filteredUsers);
+        setShowUserSuggestions(true);
+      } else {
+        setUserSuggestions([]);
+      }
+
     } catch (err) {
-      setOtherUser(null);
+      setUserSuggestions([]);
     }
   };
- 
+    
+    useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setShowUserSuggestions(false);
+      }
+    };
+    document.addEventListener("pointerdown", handleClickOutside);
+    return () => document.removeEventListener("pointerdown", handleClickOutside);
+  }, []);
 
   const fetchNotifications = async () => {
 
@@ -2514,13 +2567,16 @@ export default function Dashboard() {
                         <span className="label">
                           {item.type === "income" ? "Receiver: " : "Payer: "}
                         </span>
-                        <span className="value" >
+                        {/* <span className="value" >
                           {capitalizeFirst(
                               typeof item.person === "string"
                                 ? item.person
                                 : item.person?.name || item.manualPersonName
                             ) || "-"
                           }
+                        </span> */}
+                        <span className="value">
+                          {capitalizeFirst(item.person?.name || item.manualPersonName) || "-"}
                         </span>
                         
                       </div>
@@ -2777,10 +2833,11 @@ export default function Dashboard() {
 
                 <div className="single-select" ref={dropdownRef}>
                   {/* HEADER */}
+                 
                   <div
-                    className="dashboard-select mb-2"
+                    className={`dashboard-select mb-2 ${showDropdown ? "active" : ""}`}
                     onClick={(e) => {
-                      e.stopPropagation();      // 🔥 important
+                      e.stopPropagation();
                       setShowDropdown(prev => !prev);
                     }}
                   >
@@ -2836,7 +2893,7 @@ export default function Dashboard() {
                     {/* USER SEARCH */}
                     <div className="user-search-row">
 
-                      <div className="user-input">
+                      <div className="user-input" ref={wrapperRef}>
                         <label>
                           Enter User ID <span className="text-danger">*</span>
                         </label>
@@ -2845,11 +2902,50 @@ export default function Dashboard() {
                           type="text"
                           className="form-control"
                           value={otherUserId}
-                          onChange={(e)=>{
-                            setOtherUserId(e.target.value);
-                            fetchUserByUserId(e.target.value);
+                          
+                          onClick={() => {
+                            if (showUserSuggestions) {
+                              // already open → close
+                              setShowUserSuggestions(false);
+                            } else {
+                              // closed → open
+                              fetchUserByUserId(otherUserId); // empty hoy to default users aavse
+                              setShowUserSuggestions(true);
+                            }
+                          }}
+
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setOtherUserId(value);
+                            fetchUserByUserId(value);
+                            setShowUserSuggestions(true);
+                          }}
+
+                          onKeyDown={(e) => {
+                            if (e.key === "Tab") {
+                              setShowUserSuggestions(false);
+                              // default tab → next field ma jase automatically
+                            }
                           }}
                         />
+                        {showUserSuggestions && userSuggestions.length > 0 && (
+                          <div className="suggestions-box">
+                            {userSuggestions.map((user) => (
+                              <div
+                                key={user._id}
+                                className="suggestion-item"
+                                onClick={() => {
+                                  setOtherUser(user);
+                                  setOtherUserId(user.name); // show name in input
+                                  setShowUserSuggestions(false);
+                                }}
+                              >
+                                {user.name} ({user.email})
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
                       </div>
 
                     </div>
@@ -2859,7 +2955,26 @@ export default function Dashboard() {
                 )}
 
                 <label>Type <span className="text-danger">*</span></label>
-                <div className="type-slider">
+                <div
+                  className="type-slider"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+
+                    if (!settlementEnabled) {
+                      if (e.key === "ArrowRight") {
+                        setForm({ ...form, type: "expense" });
+                      } else if (e.key === "ArrowLeft") {
+                        setForm({ ...form, type: "income" });
+                      }
+                    } else {
+                      if (e.key === "ArrowRight") {
+                        setSettlementType("receivable");
+                      } else if (e.key === "ArrowLeft") {
+                        setSettlementType("payable");
+                      }
+                    }
+                  }}
+                >
 
                   {!settlementEnabled ? (
                     <>
@@ -3106,7 +3221,7 @@ export default function Dashboard() {
                         ))}
 
                         <input
-                          className="tag-input"
+                          className="tag-input "
                           value={categoryInput}
                           autoComplete="off"
                           placeholder="Type Category "
