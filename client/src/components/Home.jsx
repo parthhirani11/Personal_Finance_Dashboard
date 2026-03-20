@@ -1255,7 +1255,7 @@ export default function Dashboard() {
       monthMap[m] = { month: m, income: 0, expense: 0 };
     });
 
-    (Array.isArray(transactions) ? transactions : []).forEach(t =>  {
+    (Array.isArray(filteredData) ? filteredData : []).forEach(t =>  {
       if (!t.date) return;
 
       const date = new Date(t.date);
@@ -1272,7 +1272,7 @@ export default function Dashboard() {
     });
 
     return months.map((m) => monthMap[m]);
-  }, [transactions]);
+  }, [filteredData]);
 
   function CustomTooltip({ active, payload, label }) {
     if (!active || !payload || !payload.length) return null;
@@ -1319,14 +1319,27 @@ export default function Dashboard() {
 
   //  .............................................................................
   // Expense and income by Bank , UPI, Cash(Dynamic Pie / Donut)
-  const normalizeMode = (mode) =>
-  mode ? mode.toLowerCase() : "unknown";
+
+  const normalizeMode = (mode, t) => {
+    if (t.settlementStatus === "pending") {
+      return "pending";
+    }
+
+    if (mode) return mode.toLowerCase();
+
+    return null;
+  };
+
+  // ✅ THEN use it
   const paymentBreakdown = useMemo(() => {
     const map = {};
 
-    (Array.isArray(transactions) ? transactions : []).forEach(t => {
-    const amount = Number(t.amount || 0);
-    const mode = normalizeMode(t.paymentMode);
+    (Array.isArray(filteredData) ? filteredData : []).forEach(t => {
+      const amount = Number(t.amount || 0);
+
+      const mode = normalizeMode(t.paymentMode, t); // ✅ now works
+
+      if (!mode) return;
 
       if (!map[mode]) {
         map[mode] = { income: 0, expense: 0 };
@@ -1342,8 +1355,7 @@ export default function Dashboard() {
     });
 
     return map;
-  }, [transactions]);
-
+  }, [filteredData]);
 
  const paymentPieData = useMemo(() => {
   return Object.entries(paymentBreakdown)
@@ -1391,22 +1403,50 @@ export default function Dashboard() {
     );
   }
 
-   
+  // ✅ Fixed colors (priority modes)
   const PAYMENTS_COLORS = {
-    cash: "#f59e0b",
-    bank: "#3b82f6",
-    upi: "#22c55e",
+    cash: "#f59e0b",       
+    bank: "#f63bc1",       
+    upi: "#2228c5",       
+    pending: "#e8dd1c",    
+    settlement: "#5cf661",
   };
 
-  const getRandomColors = () => {
-    const colors = [
-      "#a855f7", "#ec4899", "#14b8a6",
-      "#d24411", "#6366f1", "#84cc16"
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
+  // ✅ Extra colors (fallback)
+  const EXTRA_COLORSS = [
+    "#ec4848",
+    "#14b8a6", 
+    "#d716f9", 
+    "#6366f1", 
+    "#84cc16", 
+    "#06b6d4", 
+  ];
+
+
+  const getColorForKey = (key) => {
+    // ✅ already assigned hoy to same return karo
+    if (colorMap.current[key]) {
+      return colorMap.current[key];
+    }
+
+    // ✅ fixed color hoy to use karo
+    if (PAYMENTS_COLORS[key]) {
+      colorMap.current[key] = PAYMENTS_COLORS[key];
+      return colorMap.current[key];
+    }
+
+    // ✅ nahi hoy to extra colors mathi apo (no repeat)
+    const color =
+      EXTRA_COLORSS[colorIndexRef.current % EXTRA_COLORSS.length];
+
+    colorMap.current[key] = color;
+    colorIndexRef.current++;
+
+    return color;
   };
 
   const colorMap = useRef({});
+  const colorIndexRef = useRef(0);
 
 
   //Savings Trend (Line Chart – 12 Months).......................
@@ -2099,7 +2139,7 @@ export default function Dashboard() {
                   Transactions by Payment
               </h4>
               <p className="sub-text">Cash vs Bank vs UPI (Income + Expense)</p>
-              {Array.isArray(transactions) && (
+              {Array.isArray(filteredData) && filteredData.length > 0 && (
                 <ResponsiveContainer width="100%" height={isMobile ? 190 : 235}>
                   <PieChart>
                     <text
@@ -2134,15 +2174,10 @@ export default function Dashboard() {
                       {paymentPieData.map((entry) => {
                         const key = entry.key;
 
-                        if (!colorMap.current[key]) {
-                          colorMap.current[key] =
-                            PAYMENTS_COLORS[key] || getRandomColors();
-                        }
-
                         return (
                           <Cell
                             key={key}
-                            fill={colorMap.current[key]}
+                            fill={getColorForKey(key)}
                           />
                         );
                       })}
@@ -2161,7 +2196,8 @@ export default function Dashboard() {
                   <div key={item.key} className="legend-row">
                     <span
                       className="legend-dot"
-                      style={{ background: colorMap.current[item.key] }}
+                      style={{ background: getColorForKey(item.key) }}
+                      // style={{ background: colorMap.current[item.key] }}
                     />
                     <span>{item.name}</span>
                     {/* <strong>₹{item.value.toLocaleString()}</strong> */}
@@ -2194,7 +2230,7 @@ export default function Dashboard() {
                       <Line
                         type="monotone"
                         dataKey="savings"
-                        stroke="#22c55e"
+                        stroke= "#22c55e"
                         strokeWidth={isMobile ? 2 : 3}
                         dot={{ r: isMobile ? 3 : 5 }}
                       />
