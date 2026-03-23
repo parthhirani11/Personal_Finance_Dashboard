@@ -887,11 +887,6 @@ export default function Dashboard() {
     // Settlement enabled
     if (settlementEnabled) {
 
-      // validations
-      // if (!otherUser || !otherUser._id) {
-      //   toast.error("Select valid user");
-      //   return;
-      // }
       // agar suggestion select thayo hoy
       let selectedOtherUserId = otherUser?._id;
 
@@ -2732,20 +2727,13 @@ export default function Dashboard() {
                           >
                             Settle
                           </button>
-                        )} 
-                        {item.paymentMode !== "settlement" && (
-                          <button
-                            className="edit-btn"
-                            onClick={() => {
-                              setEditId(item._id);
-                              setShowEdit(true);
-                            }}
-                          >
-                            <FiEdit2 /> Edit
-                          </button>
-                        )}            
-                    
-                        {/* <button
+
+                          
+                      )} 
+                      {(
+                        item.settlementStatus !== "pending" || item.createdBy === currentUserId
+                          ) && item.paymentMode !== "settlement" && item.settlementStatus !== "settled" && (
+                        <button
                           className="edit-btn"
                           onClick={() => {
                             setEditId(item._id);
@@ -2753,15 +2741,8 @@ export default function Dashboard() {
                           }}
                         >
                           <FiEdit2 /> Edit
-                        </button> */}
-                      
-                        {/* <button
-                          className="delete-btn d-flex align-items-center gap-1"
-                          onClick={() => setConfirmDelete({ show: true, id: item._id })}
-                        >
-                          <FiTrash2 size={14} />
-                          Delete
-                        </button> */}
+                        </button>
+                      )}
                       {(
                         item.settlementStatus !== "pending" ||
                         item.createdBy === currentUserId

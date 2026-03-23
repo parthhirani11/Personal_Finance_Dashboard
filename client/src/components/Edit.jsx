@@ -55,6 +55,11 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
   const [modeError, setModeError] = useState("");
   const tagRef = useRef(null);
 
+  const [settlementEnabled, setSettlementEnabled] = useState(false);
+  const [settlementType, setSettlementType] = useState("receivable");
+  const [otherUser, setOtherUser] = useState(null);
+
+
   /* ================= COLORS ================= */
 
   const paymentColors = {
@@ -98,30 +103,56 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       const res = await api.get(`/account/${id}`, {
         withCredentials: true,
       });
-      
+
       const r = res.data;
-       setRecord(r);
+
+      setRecord(r);
+
+      const isSettlementRecord = r.settlementId != null;
+      setSettlementEnabled(isSettlementRecord);
+
+      // settlement type
+      if (r.settlementRole === "receivable") {
+        setSettlementType("receivable");
+      } else if (r.settlementRole === "payable") {
+        setSettlementType("payable");
+      }
+
+      // other user
+      if (isSettlementRecord) {
+        setOtherUser(
+          r.otherUserId?.name ||
+          r.person?.name ||
+          r.manualPersonName ||
+          ""
+        );
+      } else {
+            setOtherUser(null);
+          }
+
       const mode = r.paymentMode?.toLowerCase() || "cash";
 
       setForm({
         amount: r.amount,
-        person: r.person || "",
-        paymentMode: r.paymentMode?.toLowerCase() || "cash",
+        person: r.manualPersonName || "",
+        paymentMode: mode,
         type: r.type,
-         relatedDetails: r.relatedDetails || "",
-        
+        relatedDetails: r.relatedDetails || "",
       });
+
       const initialDash = r.dashboardIds?.[0] || dashboardId;
       setSelectedDashboard(initialDash);
-      setOriginalDashboard(initialDash);  // ✅ correct
+      setOriginalDashboard(initialDash);
 
       setSelectedMode(mode);
+
       setSelectedCategories(
         r.description
           ? r.description.split(",").map(c => c.trim()).filter(Boolean)
           : []
       );
-      setSelectedTags(r.tags || []);  
+
+      setSelectedTags(r.tags || []);
 
       if (r.attachment) {
         setCurrentFile({
@@ -217,6 +248,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     data.append("amount", form.amount);
     data.append("person", form.person);
     data.append("paymentMode", form.paymentMode);
+    data.append("settlementType", settlementType);
 
     // arrays
     data.append("description", selectedCategories.join(", "));
@@ -465,6 +497,19 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         {/* BODY (ONLY THIS SCROLLS) */}
         <div className="edit-popup-body">
           <form onSubmit={handleSubmit}>
+            {settlementEnabled && otherUser && (
+              <div className="mt-2">
+                <label>With User</label>
+                <p className="form-control-plaintext fw-semibold">
+                  {capitalizeFirst(
+                    typeof otherUser === "object"
+                      ? otherUser.name
+                      : otherUser
+                  )}
+                </p>
+              </div>
+            )}
+
             <label>Select Acconut <span className="text-danger">*</span></label>
 
             <div className="single-select mb-2" ref={dropdownRef}>
@@ -504,29 +549,75 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
 
             {/* TYPE */}
-            <label className="edit-label">Type <span className="text-danger">*</span></label>
-            <div className="edit-type-slider">
-              <div
-                className={`edit-slider-option ${form.type === "income" ? "active" : ""}`}
-                onClick={() => setForm(prev => ({ ...prev, type: "income" }))}
-              >
-                Income
-              </div>
+            <label>Type <span className="text-danger">*</span></label>
 
-              <div
-                className={`edit-slider-option ${form.type === "expense" ? "active" : ""}`}
-                onClick={() => setForm(prev => ({ ...prev, type: "expense" }))}
-              >
-                Expense
-              </div>
+            <div
+              className="type-slider"
+              tabIndex={0}
+              onKeyDown={(e) => {
 
-              <div className={`edit-slider-bg ${form.type}`}></div>
+                if (!settlementEnabled) {
+                  if (e.key === "ArrowRight") {
+                    setForm({ ...form, type: "expense" });
+                  } else if (e.key === "ArrowLeft") {
+                    setForm({ ...form, type: "income" });
+                  }
+                } else {
+                  if (e.key === "ArrowRight") {
+                    setSettlementType("receivable");
+                  } else if (e.key === "ArrowLeft") {
+                    setSettlementType("payable");
+                  }
+                }
+              }}
+            >
+
+              {!settlementEnabled ? (
+                <>
+                  <div
+                    className={`slider-option ${form.type === "income" ? "active income" : ""}`}
+                    onClick={() => setForm({ ...form, type: "income" })}
+                  >
+                    Income
+                  </div>
+
+                  <div
+                    className={`slider-option ${form.type === "expense" ? "active expense" : ""}`}
+                    onClick={() => setForm({ ...form, type: "expense" })}
+                  >
+                    Expense
+                  </div>
+
+                  <div className={`slider-bg ${form.type}`}></div>
+
+                </>
+              ) : (
+                <>
+                  <div
+                    className={`slider-option ${settlementType === "payable" ? "active expense" : ""}`}
+                    onClick={() => setSettlementType("payable")}
+                  >
+                    I received money
+                  </div>
+
+                  <div
+                    className={`slider-option ${settlementType === "receivable" ? "active income" : ""}`}
+                    onClick={() => setSettlementType("receivable")}
+                  >
+                    I gave money
+                  </div>
+
+                  <div className={`slider-bg ${settlementType === "receivable" ? "expense" : "income"}`}></div>
+                </>
+              )}
+
             </div>
-
+      
             {/* AMOUNT + PERSON */}
-            <div className="edit-grid-2 mt-2">
-              <div>
-                <label >Amount <span className="text-danger">*</span></label>
+            <div className={`mt-2 ${settlementEnabled ? "" : "edit-grid-2"}`}>
+  
+              <div className={settlementEnabled ? "w-100" : ""}>
+                <label>Amount <span className="text-danger">*</span></label>
                 <input
                   className="form-control"
                   value={form.amount}
@@ -537,148 +628,150 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 />
               </div>
 
-              <div>
-                
-                <label>
-                  {form.type === "income" ? "Receiver Name" : "Payer Name"} 
-                 
-                </label>
-                
-                <input
-                  className="form-control mt-2"
-                  value={capitalizeFirst(form.person)}
-                  onChange={e =>
-                    setForm(p => ({
-                      ...p,
-                      person:e.target.value
-                    }))
-                  }
-                />
-              </div>
+              {!settlementEnabled && (
+                <div>
+                  <label>
+                    {form.type === "income" ? "Receiver Name" : "Payer Name"}
+                  </label>
+                  <input
+                    className="form-control mt-2"
+                    value={capitalizeFirst(form.person)}
+                    onChange={e =>
+                      setForm(p => ({
+                        ...p,
+                        person: e.target.value
+                      }))
+                    }
+                  />
+                </div>
+              )}
+
             </div>
 
             {/* PAYMENT MODE */}
-            <div className="mt-2">
-              <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
+            {!settlementEnabled && (
+              <div className="mt-2">
+                <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
 
-              <div className="edit-payment-mode">
-                
-                {paymentModes.map((mode, i) => {
-                  const color =paymentColors[mode] || getRandomColor();
-                    return (
-                      <label key={i} className="radio-item">
+                <div className="edit-payment-mode">
+                  
+                  {paymentModes.map((mode, i) => {
+                    const color =paymentColors[mode] || getRandomColor();
+                      return (
+                        <label key={i} className="radio-item">
+                          <input
+                            type="radio"                             
+                            name="paymentMode"                             
+                            value={mode}
+                            checked={form.paymentMode === mode}
+                            onChange={() => {
+                              setSelectedMode(mode);
+                              setForm(p => ({ ...p, paymentMode: mode }));
+                            }}
+                          />
+
+                          <span className="custom-radio"></span>
+
+                          <span
+                            className="mode-text pay-badge"
+                            style={{
+                              background: color.bg,
+                              color: color.text,
+                              padding: "0.25rem 0.6rem",
+                              borderRadius: "0.375rem",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {mode.toUpperCase()}
+                          </span>
+                        </label>
+                      );
+                        
+                  })}
+
+                  
+                  {showModal && (
+                    <div className="tag-modal-backdrop">
+                      <div className="tag-modal">
+                        <div className="modal-header mb-2">         
+                          <h5 className="modal-title" style={{color:"#d9d8e2"}}>Add Payment Mode</h5>
+                          <button
+                            type="button"
+                            className="btn-close"
+                            style={{ filter: "invert(1)" }}
+                            onClick={() => setShowModal(false)}
+                            />
+                        </div>
+
                         <input
-                          type="radio"                             
-                          name="paymentMode"                             
-                          value={mode}
-                          checked={form.paymentMode === mode}
-                          onChange={() => {
-                            setSelectedMode(mode);
-                            setForm(p => ({ ...p, paymentMode: mode }));
+                          type="text"
+                          className={`form-control mb-2 ${modeError ? "is-invalid" : ""}`}
+                          placeholder="Enter payment mode"
+                          value={customMode}
+                          onChange={(e) => {
+                            setCustomMode(e.target.value);
+                            setModeError("");
                           }}
                         />
+                        {modeError && (
+                          <div className="text-danger small">{modeError}</div>
+                        )}
+                        <div className="d-flex justify-content-end gap-2">
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => setShowModal(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"   // 🔥 MOST IMPORTANT
+                            className="btn btn-primary"
+                            onClick={() => {
+                              const newMode = customMode.trim().toLowerCase();
 
-                        <span className="custom-radio"></span>
+                              if (!newMode) {
+                                setModeError("Payment mode required");
+                                return;
+                              }
 
-                        <span
-                          className="mode-text pay-badge"
-                          style={{
-                            background: color.bg,
-                            color: color.text,
-                            padding: "0.25rem 0.6rem",
-                            borderRadius: "0.375rem",
-                            fontWeight: "600",
-                          }}
-                        >
-                          {mode.toUpperCase()}
-                        </span>
-                      </label>
-                    );
-                       
-                })}
+                              const exists = paymentModes.some(
+                                m => m.toLowerCase() === newMode
+                              );
 
-                
-                {showModal && (
-                  <div className="tag-modal-backdrop">
-                    <div className="tag-modal">
-                      <div className="modal-header mb-2">         
-                        <h5 className="modal-title" style={{color:"#d9d8e2"}}>Add Payment Mode</h5>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          style={{ filter: "invert(1)" }}
-                          onClick={() => setShowModal(false)}
-                          />
+                              if (exists) {
+                                setModeError("Payment mode already exists");
+                                return; // popup open rehse
+                              }
+
+                              setPaymentModes(prev => [...prev, newMode]);
+                              setForm(p => ({ ...p, paymentMode: newMode }));
+                              setSelectedMode(newMode);
+
+                              setCustomMode("");
+                              setModeError("");
+                              setShowModal(false);
+                            }}
+                          >
+                            Add
+                          </button>
+                        </div>
+                          
                       </div>
-
-                      <input
-                        type="text"
-                        className={`form-control mb-2 ${modeError ? "is-invalid" : ""}`}
-                        placeholder="Enter payment mode"
-                        value={customMode}
-                        onChange={(e) => {
-                          setCustomMode(e.target.value);
-                          setModeError("");
-                        }}
-                      />
-                      {modeError && (
-                        <div className="text-danger small">{modeError}</div>
-                      )}
-                      <div className="d-flex justify-content-end gap-2">
-                        <button
-                          className="btn btn-secondary"
-                          onClick={() => setShowModal(false)}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"   // 🔥 MOST IMPORTANT
-                          className="btn btn-primary"
-                          onClick={() => {
-                            const newMode = customMode.trim().toLowerCase();
-
-                            if (!newMode) {
-                              setModeError("Payment mode required");
-                              return;
-                            }
-
-                            const exists = paymentModes.some(
-                              m => m.toLowerCase() === newMode
-                            );
-
-                            if (exists) {
-                              setModeError("Payment mode already exists");
-                              return; // popup open rehse
-                            }
-
-                            setPaymentModes(prev => [...prev, newMode]);
-                            setForm(p => ({ ...p, paymentMode: newMode }));
-                            setSelectedMode(newMode);
-
-                            setCustomMode("");
-                            setModeError("");
-                            setShowModal(false);
-                          }}
-                        >
-                          Add
-                        </button>
-                      </div>
-                      
                     </div>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="add-mode-btn-edit d-flex align-items-center gap-1"
-                  tabIndex={-1}
-                  onClick={() => setShowModal(true)}
-                >
-                  <FiPlusCircle size={16} />
-                  Add
-                </button>
-              </div>
+                  )}
+                  <button
+                    type="button"
+                    className="add-mode-btn-edit d-flex align-items-center gap-1"
+                    tabIndex={-1}
+                    onClick={() => setShowModal(true)}
+                  >
+                    <FiPlusCircle size={16} />
+                    Add
+                  </button>
+                </div>
               
-            </div> 
+              </div> 
+            )}
 
             {/* CATEGORY + TAGS */}
             <div className="row mb-2">

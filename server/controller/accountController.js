@@ -338,11 +338,13 @@ export const getEditTransaction = async (req, res) => {
   const record = await Account.findOne({
     _id: req.params.id,
     userId: req.session.user.id
-  });
+  }).populate("person", "name email")
+  .populate("otherUserId", "name email");
+
   res.json(record); 
 };
 
-// UPDATE
+// update
 export const updateTransaction = async (req, res) => {
   try {
     const {
@@ -354,49 +356,214 @@ export const updateTransaction = async (req, res) => {
       description,
       tags,
       dashboardId,
+      settlementType
     } = req.body;
+
+    const userId = req.session.user.id;
 
     const updateData = {
       type,
-      amount,
-      person,
+      amount: Number(amount),
       paymentMode,
       relatedDetails: relatedDetails || "",
-      description: description || "",  
+      description: description || "",
       tags: tags
         ? (Array.isArray(tags)
             ? tags.map(t => t.trim())
             : [tags.trim()])
         : [],
     };
-     // 🔥 DASHBOARD MOVE LOGIC
-   
+
+    // 🔥 IMPORTANT — person update logic
+    if (person) {
+      updateData.manualPersonName = person;
+      updateData.person = null;
+    }
+
+    // dashboard update
     if (dashboardId) {
       updateData.dashboardIds = [
         new mongoose.Types.ObjectId(dashboardId)
       ];
     }
 
+    // attachment
     if (req.file) {
       updateData.attachment = req.file.filename;
       updateData.originalName = req.file.originalname;
     }
 
-    
+    const txn = await Account.findById(req.params.id);
+
+    if (!txn) {
+      return res.status(404).json({ msg: "Transaction not found" });
+    }
+
+    // ====================================================
+    // 🔥 SETTLEMENT TRANSACTION
+    // ====================================================
+    if (txn.settlementId) {
+
+      const settlement = await Settlement.findById(txn.settlementId);
+
+      if (!settlement) {
+        return res.status(404).json({ msg: "Settlement not found" });
+      }
+
+      // 🔥 UPDATE settlement role based on new type
+      if (settlementType) {
+        const isReceivable = settlementType === "receivable";
+
+        settlement.fromUserId = isReceivable
+          ? txn.otherUserId
+          : txn.userId;
+
+        settlement.toUserId = isReceivable
+          ? txn.userId
+          : txn.otherUserId;
+
+        // swap dashboards
+        if (isReceivable) {
+          settlement.fromDashboardId = txn.otherDashboardId;
+          settlement.toDashboardId = dashboardId || txn.dashboardIds[0];
+        } else {
+          settlement.fromDashboardId = dashboardId || txn.dashboardIds[0];
+          settlement.toDashboardId = txn.otherDashboardId;
+        }
+      }
+
+      // ====================================================
+      // ❌ IF SETTLED → ONLY SELF UPDATE
+      // ====================================================
+      if (txn.settlementStatus === "settled") {
+
+        await Account.findOneAndUpdate(
+          { _id: req.params.id, userId },
+          updateData
+        );
+
+        return res.json({ success: true });
+      }
+
+      // ====================================================
+      // ✅ PENDING → UPDATE BOTH USERS
+      // ====================================================
+
+      // 🔥 update settlement amount
+      settlement.amount = Number(amount);
+
+      // 🔥 dashboard change handling
+      if (dashboardId) {
+        if (txn.userId.toString() === settlement.fromUserId.toString()) {
+          settlement.fromDashboardId = dashboardId;
+        } else {
+          settlement.toDashboardId = dashboardId;
+        }
+      }
+
+      await settlement.save();
+
+      // 🔥 update BOTH account records properly
+      const accounts = await Account.find({ settlementId: txn.settlementId });
+
+      for (let acc of accounts) {
+        const isCurrentUser = acc.userId.toString() === userId;
+
+        let updatedType = acc.type;
+        let updatedRole = acc.settlementRole;
+
+        if (settlementType) {
+          if (settlementType === "receivable") {
+            updatedType = isCurrentUser ? "expense" : "income";
+            updatedRole = isCurrentUser ? "receivable" : "payable";
+          } else {
+            updatedType = isCurrentUser ? "income" : "expense";
+            updatedRole = isCurrentUser ? "payable" : "receivable";
+          }
+        }
+
+        await Account.findByIdAndUpdate(acc._id, {
+          amount: Number(amount),
+          type: updatedType,                 // ✅ always defined
+          settlementRole: updatedRole,       // ✅ fixed
+          relatedDetails: relatedDetails || "",
+          description: description || "",
+          tags: updateData.tags,
+          paymentMode: paymentMode || acc.paymentMode,
+          person: acc.person,
+          manualPersonName: person || acc.manualPersonName
+        });
+      }
+
+
+      // ====================================================
+      // 🔔 NOTIFICATION
+      // ====================================================
+
+      const otherUserId =
+        txn.userId.toString() === settlement.fromUserId.toString()
+          ? settlement.toUserId
+          : settlement.fromUserId;
+
+      // const isReceiver = txn.settlementRole === "receivable";
+      const isReceiver = settlementType === "receivable";
+
+      const message = isReceiver
+        ? `You will receive ₹${amount} (updated)`
+        : `You need to pay ₹${amount} (updated)`;
+
+      await Notification.create({
+        userId: otherUserId,
+        title: "Settlement Updated",
+        message,
+        type: "settlement",
+        settlementId: settlement._id,
+        status: "pending"
+      });
+
+      // ====================================================
+      // 🔥 SOCKET EMIT (FIXED)
+      // ====================================================
+
+      io.to(settlement.fromUserId.toString()).emit("transactionUpdated", {
+        dashboardId: settlement.fromDashboardId
+      });
+
+      io.to(settlement.toUserId.toString()).emit("transactionUpdated", {
+        dashboardId: settlement.toDashboardId
+      });
+
+      io.to(otherUserId.toString()).emit("newNotification", {
+        title: "Settlement Updated",
+        message
+      });
+
+      return res.json({ success: true });
+    }
+
+    // ====================================================
+    // ✅ NORMAL TRANSACTION
+    // ====================================================
+
     await Account.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        userId: req.session.user.id
-      },
+      { _id: req.params.id, userId },
       updateData
     );
 
-    res.json({ success: true });
+    // 🔥 socket update current user
+    io.to(userId.toString()).emit("transactionUpdated", {
+      dashboardId: dashboardId || txn.dashboardIds[0]
+    });
+
+    return res.json({ success: true });
+
   } catch (err) {
     console.error("Update error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
+
 
 // DELETE
 
