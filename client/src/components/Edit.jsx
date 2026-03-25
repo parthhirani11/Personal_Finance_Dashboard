@@ -103,7 +103,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       const res = await api.get(`/account/${id}`, {
         withCredentials: true,
       });
-
       const r = res.data;
 
       setRecord(r);
@@ -120,21 +119,16 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
       // other user
       if (isSettlementRecord) {
-        setOtherUser(
-          r.otherUserId?.name ||
-          r.person?.name ||
-          r.manualPersonName ||
-          ""
-        );
+        setOtherUser(r.otherUserId || null);
       } else {
-            setOtherUser(null);
-          }
+        setOtherUser(null);
+      }
 
       const mode = r.paymentMode?.toLowerCase() || "cash";
 
       setForm({
         amount: r.amount,
-        person: r.manualPersonName || "",
+        person: r.person?.name || r.manualPersonName || "",
         paymentMode: mode,
         type: r.type,
         relatedDetails: r.relatedDetails || "",
@@ -236,53 +230,66 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
 
   /* ================= SUBMIT ================= */
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const data = new FormData();
-    data.append("dashboardId", selectedDashboard);
+    // ❗ FIRST confirm
+    if (selectedDashboard !== originalDashboard) {
+      setPendingDashboard(selectedDashboard);
+      setShowSwitchConfirm(true);
+      return; // 🚫 STOP API
+    }
 
-    // basic fields
+    await submitData(selectedDashboard);
+  };
+
+  const submitData = async (dashboardToUse) => {
+    const data = new FormData();
+
+    data.append("dashboardId", dashboardToUse);
     data.append("type", form.type);
     data.append("amount", form.amount);
     data.append("person", form.person);
     data.append("paymentMode", form.paymentMode);
     data.append("settlementType", settlementType);
 
-    // arrays
     data.append("description", selectedCategories.join(", "));
     selectedTags.forEach(t => data.append("tags[]", t));
     data.append("relatedDetails", form.relatedDetails);
 
-    // attachment
     if (attachment) {
       data.append("attachment", attachment);
     }
 
     try {
-      await api.put(`/account/edit/${id}`, data, {
+      const res = await api.put(`/account/edit/${id}`, data, {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
-        // 🔥 Dashboard changed?
-    if (selectedDashboard !== originalDashboard) {
-      setPendingDashboard(selectedDashboard);
-      setShowSwitchConfirm(true);
-    } else {
-      toast.success("Transaction updated");
-      onClose();
+
+    toast.success("Transaction updated");
+
+    // 🔥 updated file set કરો
+    if (res.data.transaction?.attachment) {
+      setCurrentFile({
+        filename: res.data.transaction.attachment,
+        originalName: res.data.transaction.originalName,
+      });
     }
 
-    } catch (err) {
-      console.error("Update error:", err);
-      toast.error("Update failed");
-    }
-  };
+    // optional: transaction list refresh
+    onDashboardSwitch?.(selectedDashboard);
+        onClose();
 
+      } catch (err) {
+        console.error(err);
+        toast.error("Update failed");
+      }
+    };
+  
    // tags and category change handle 
 
-   const [focusedCategoryIndex, setFocusedCategoryIndex] = useState(-1);
+  const [focusedCategoryIndex, setFocusedCategoryIndex] = useState(-1);
   const [focusedTagIndex, setFocusedTagIndex] = useState(-1);
 
 
@@ -497,19 +504,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
         {/* BODY (ONLY THIS SCROLLS) */}
         <div className="edit-popup-body">
           <form onSubmit={handleSubmit}>
-            {settlementEnabled && otherUser && (
-              <div className="mt-2">
-                <label>With User</label>
-                <p className="form-control-plaintext fw-semibold">
-                  {capitalizeFirst(
-                    typeof otherUser === "object"
-                      ? otherUser.name
-                      : otherUser
-                  )}
-                </p>
-              </div>
-            )}
-
             <label>Select Acconut <span className="text-danger">*</span></label>
 
             <div className="single-select mb-2" ref={dropdownRef}>
@@ -640,7 +634,8 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                       setForm(p => ({
                         ...p,
                         person: e.target.value
-                      }))
+
+                      })) 
                     }
                   />
                 </div>
@@ -978,7 +973,10 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
             {currentFile && (
               <p className="edit-label">
                 Current File:{" "}
-                <a href={`/uploads/${currentFile.filename}`} target="_blank" tabIndex={-1}>
+                {/* <a href={`/uploads/${currentFile.filename}`} target="_blank" tabIndex={-1}>
+                  {currentFile.originalName}
+                </a> */}
+                <a href={`/uploads/${currentFile.filename}?t=${Date.now()}`} target="_blank">
                   {currentFile.originalName}
                 </a>
               </p>
@@ -1015,7 +1013,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
                 className="btn btn-secondary"
                 onClick={() => {
                   setShowSwitchConfirm(false);
-                  toast.success("Transaction updated");
+                  // toast.success("Transaction updated");
                   onClose();
                 }}
 
@@ -1025,11 +1023,11 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
               <button
                 className="btn btn-success"
-                onClick={() => {
-                  onDashboardSwitch?.(pendingDashboard); 
-                  toast.success("Transaction updated");
+                onClick={async () => {
+                  await submitData(pendingDashboard); // 🔥 API HERE
+                  onDashboardSwitch?.(pendingDashboard);
+                  // toast.success("Transaction updated");
                   setShowSwitchConfirm(false);
-                  onClose();
                 }}
               >
                 Yes

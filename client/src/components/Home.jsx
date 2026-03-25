@@ -1003,7 +1003,10 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem("token");
 
-      await api.post(`/account/delete/${id}`);
+      // await api.post(`/account/delete/${id}`);
+      await api.post(`/account/delete/${id}`, {}, {
+        withCredentials: true
+      });
   
       // ✅ Remove deleted transaction from UI instantly
       setTransactions(prev => prev.filter(t => t._id !== id));
@@ -2598,14 +2601,6 @@ export default function Dashboard() {
                         <span className="label">
                           {item.type === "income" ? "Receiver: " : "Payer: "}
                         </span>
-                        {/* <span className="value" >
-                          {capitalizeFirst(
-                              typeof item.person === "string"
-                                ? item.person
-                                : item.person?.name || item.manualPersonName
-                            ) || "-"
-                          }
-                        </span> */}
                         <span className="value">
                           {capitalizeFirst(item.person?.name || item.manualPersonName) || "-"}
                         </span>

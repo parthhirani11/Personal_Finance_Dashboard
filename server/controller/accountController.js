@@ -7,6 +7,8 @@ import Notification from "../models/Notification.js";
 import { sendEmail } from "../utils/email.js";
 import { io } from "../server.js";
 import mongoose from "mongoose";
+import fs from "fs/promises"; 
+import path from "path";
 
 // DASHBOARD OUTPUT
 export const getDashboard = async (req, res) => {
@@ -27,7 +29,8 @@ export const getDashboard = async (req, res) => {
    
     const accounts = await Account.find({
       userId: new mongoose.Types.ObjectId(userId),
-      dashboardIds: new mongoose.Types.ObjectId(dashboardId)
+      dashboardIds: { $in: [new mongoose.Types.ObjectId(dashboardId)] }
+      // dashboardIds: new mongoose.Types.ObjectId(dashboardId)
     }).populate("person", "name email")
     .sort({ date: -1 });
 
@@ -105,6 +108,15 @@ export const addTransaction = async (req, res) => {
     }
 
     if (!isSettlement) {
+      let personId = null;
+      let manualName = null;
+
+      // check if valid ObjectId
+      if (mongoose.Types.ObjectId.isValid(person)) {
+        personId = new mongoose.Types.ObjectId(person);
+      } else {
+        manualName = person;
+      }
 
       const records = dashboards.map(did => ({
 
@@ -114,13 +126,13 @@ export const addTransaction = async (req, res) => {
 
         type,
         amount: Number(amount),
-
-        person: null,
-        manualPersonName: person || null,
+        person: personId,
+        manualPersonName: manualName,
         relatedDetails,
         description,
         tags: parsedTags,
-        paymentMode,
+        paymentMode: paymentMode?.toLowerCase(),
+        // paymentMode,
         date: date ? new Date(date) : new Date(),
         attachment: req.file ? req.file.filename : null,
         originalName: req.file ? req.file.originalname : null,
@@ -334,15 +346,17 @@ export const addTransaction = async (req, res) => {
 
 // EDIT PAGE 
 export const getEditTransaction = async (req, res) => {
-  
   const record = await Account.findOne({
     _id: req.params.id,
     userId: req.session.user.id
-  }).populate("person", "name email")
-  .populate("otherUserId", "name email");
+  })
+  .populate({ path: "person", select: "name email" })
+  .populate({ path: "otherUserId", select: "name email" })
+  .lean();
 
-  res.json(record); 
+  res.json(record);
 };
+
 
 // update
 export const updateTransaction = async (req, res) => {
@@ -361,23 +375,40 @@ export const updateTransaction = async (req, res) => {
 
     const userId = req.session.user.id;
 
-    const updateData = {
+    const txn = await Account.findById(req.params.id);
+
+    if (!txn) {
+      return res.status(404).json({ msg: "Transaction not found" });
+    }
+
+   const updateData = {
       type,
       amount: Number(amount),
-      paymentMode,
+      paymentMode: paymentMode?.toLowerCase(),
+      // paymentMode,
       relatedDetails: relatedDetails || "",
       description: description || "",
       tags: tags
-        ? (Array.isArray(tags)
-            ? tags.map(t => t.trim())
-            : [tags.trim()])
-        : [],
+      ? (Array.isArray(tags)
+          ? tags.map(t => t.trim().toLowerCase())
+          : [tags.trim().toLowerCase()])
+      : [],
     };
 
-    // 🔥 IMPORTANT — person update logic
-    if (person) {
-      updateData.manualPersonName = person;
-      updateData.person = null;
+    // ✅ FIXED
+    if (!txn.settlementId && person) {
+
+      if (mongoose.Types.ObjectId.isValid(person)) {
+        updateData.person = new mongoose.Types.ObjectId(person);
+        updateData.manualPersonName = null;
+      } else {
+        updateData.manualPersonName = person;
+        updateData.person = null;
+      }
+
+    }
+    if (txn.settlementId) {
+      updateData.manualPersonName = null; // ❗ important
     }
 
     // dashboard update
@@ -389,14 +420,22 @@ export const updateTransaction = async (req, res) => {
 
     // attachment
     if (req.file) {
+
+      // 🟡 OLD FILE DELETE (SAFE PATH)
+      if (txn.attachment) {
+        try {
+          const filePath = path.join("uploads", txn.attachment);
+          await fs.unlink(filePath); // 🔥 direct delete
+        } catch (err) {
+          if (err.code !== "ENOENT") {
+            console.error("File delete error:", err.message);
+          }
+        }
+      }
+
+      // 🟢 NEW FILE SAVE
       updateData.attachment = req.file.filename;
       updateData.originalName = req.file.originalname;
-    }
-
-    const txn = await Account.findById(req.params.id);
-
-    if (!txn) {
-      return res.status(404).json({ msg: "Transaction not found" });
     }
 
     // ====================================================
@@ -455,9 +494,11 @@ export const updateTransaction = async (req, res) => {
       // 🔥 dashboard change handling
       if (dashboardId) {
         if (txn.userId.toString() === settlement.fromUserId.toString()) {
-          settlement.fromDashboardId = dashboardId;
+          
+          settlement.fromDashboardId = new mongoose.Types.ObjectId(dashboardId);
         } else {
-          settlement.toDashboardId = dashboardId;
+          settlement.toDashboardId = new mongoose.Types.ObjectId(dashboardId);
+          
         }
       }
 
@@ -491,7 +532,13 @@ export const updateTransaction = async (req, res) => {
           tags: updateData.tags,
           paymentMode: paymentMode || acc.paymentMode,
           person: acc.person,
-          manualPersonName: person || acc.manualPersonName
+          manualPersonName: acc.manualPersonName,
+
+          ...(req.file && {
+            attachment: req.file.filename,
+            originalName: req.file.originalname
+          })
+
         });
       }
 
@@ -538,7 +585,9 @@ export const updateTransaction = async (req, res) => {
         message
       });
 
-      return res.json({ success: true });
+      const updatedTxn = await Account.findById(req.params.id).lean();
+        return res.json({ success: true, transaction: updatedTxn });
+      // return res.json({ success: true });
     }
 
     // ====================================================
@@ -555,7 +604,9 @@ export const updateTransaction = async (req, res) => {
       dashboardId: dashboardId || txn.dashboardIds[0]
     });
 
-    return res.json({ success: true });
+    // return res.json({ success: true });
+    const updatedTxn = await Account.findById(req.params.id).lean();
+      return res.json({ success: true, transaction: updatedTxn });
 
   } catch (err) {
     console.error("Update error:", err);
@@ -569,9 +620,9 @@ export const updateTransaction = async (req, res) => {
 
 export const deleteTransaction = async (req, res) => {
   try {
-
     const txn = await Account.findById(req.params.id);
-    
+
+    // ❗ FIRST check
     if (!txn) {
       return res.status(404).json({ msg: "Transaction not found" });
     }
@@ -586,10 +637,19 @@ export const deleteTransaction = async (req, res) => {
       });
     }
 
+    // 🟡 FILE DELETE
+    if (txn.attachment) {
+      try {
+        const filePath = path.join("uploads", txn.attachment);
+        await fs.unlink(filePath);
+      } catch (err) {
+        console.error("Delete file error:", err.message);
+      }
+    }
+
     // ⭐ settlement transaction
     if (txn.settlementId) {
 
-      // 🔴 pending → delete both
       if (txn.settlementStatus === "pending") {
 
         await Account.deleteMany({
@@ -600,10 +660,7 @@ export const deleteTransaction = async (req, res) => {
           _id: txn.settlementId
         });
 
-      }
-
-      // 🟢 settled → delete only current user record
-      else {
+      } else {
 
         await Account.deleteMany({
           settlementId: txn.settlementId,
@@ -612,11 +669,8 @@ export const deleteTransaction = async (req, res) => {
 
       }
 
-    } 
+    } else {
 
-    else {
-
-      // normal transaction
       await Account.deleteOne({
         _id: req.params.id,
         userId: req.session.user.id
@@ -624,13 +678,15 @@ export const deleteTransaction = async (req, res) => {
 
     }
 
+    io.to(req.session.user.id).emit("transactionUpdated", {
+      dashboardId: txn.dashboardIds[0]
+    });
+
     res.json({ success: true });
 
   } catch (err) {
-
     console.error(err);
     res.status(500).json({ msg: "Delete failed" });
-
   }
 };
 
@@ -736,7 +792,8 @@ export const getPaymentModeStats = async (req, res) => {
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
-          dashboardIds: new mongoose.Types.ObjectId(dashboardId),
+          dashboardIds: { $in: [new mongoose.Types.ObjectId(dashboardId)] },
+          // dashboardIds: new mongoose.Types.ObjectId(dashboardId),
           paymentMode: { $ne: "settlement" } 
         }
       },
