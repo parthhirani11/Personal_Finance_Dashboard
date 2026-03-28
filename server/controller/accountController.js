@@ -9,7 +9,7 @@ import { io } from "../server.js";
 import mongoose from "mongoose";
 import fs from "fs/promises"; 
 import path from "path";
-
+import { syncSettlementAccounts } from "../utils/syncSettlement.js";
 // DASHBOARD OUTPUT
 export const getDashboard = async (req, res) => {
   try {
@@ -357,7 +357,6 @@ export const getEditTransaction = async (req, res) => {
   res.json(record);
 };
 
-
 // update
 export const updateTransaction = async (req, res) => {
   try {
@@ -376,28 +375,76 @@ export const updateTransaction = async (req, res) => {
     const userId = req.session.user.id;
 
     const txn = await Account.findById(req.params.id);
+    if (!txn) return res.status(404).json({ msg: "Transaction not found" });
 
-    if (!txn) {
-      return res.status(404).json({ msg: "Transaction not found" });
-    }
-
-   const updateData = {
-      type,
-      amount: Number(amount),
-      paymentMode: paymentMode?.toLowerCase(),
-      // paymentMode,
-      relatedDetails: relatedDetails || "",
-      description: description || "",
-      tags: tags
-      ? (Array.isArray(tags)
-          ? tags.map(t => t.trim().toLowerCase())
-          : [tags.trim().toLowerCase()])
-      : [],
+    // ===============================
+    // 🔹 OLD DATA
+    // ===============================
+    const oldData = {
+      amount: txn.amount,
+      type: txn.type,
+      paymentMode: txn.paymentMode || "",
+      relatedDetails: txn.relatedDetails || "",
+      description: txn.description || "",
+      tags: (txn.tags || []).join(","),
     };
 
-    // ✅ FIXED
-    if (!txn.settlementId && person) {
+    // ===============================
+    // 🔹 NEW DATA
+    // ===============================
+    const newTags = Array.isArray(tags)
+      ? tags.map(t => t.trim().toLowerCase())
+      : (tags ? [tags.trim().toLowerCase()] : []);
 
+    const newData = {
+      amount: Number(amount),
+      type,
+      paymentMode: paymentMode || "",
+      relatedDetails: relatedDetails || "",
+      description: description || "",
+      tags: newTags.sort().join(",")
+    };
+
+    const oldDashboardId = txn.dashboardIds?.[0]?.toString();
+
+    // ===============================
+    // 🔹 SAFE CHANGE CHECK
+    // ===============================
+    const amountChanged = Number(oldData.amount) !== Number(newData.amount);
+    const typeChanged = oldData.type !== newData.type;
+    const paymentModeChanged =
+      (oldData.paymentMode || "") !== (newData.paymentMode || "");
+    const relatedChanged =
+      (oldData.relatedDetails || "") !== (newData.relatedDetails || "");
+    const descriptionChanged =
+  (oldData.description || "").trim() !== (newData.description || "").trim();
+    const tagsChanged =
+      (oldData.tags || "") !== (newData.tags || "");
+
+    const isDataChanged =
+      amountChanged ||
+      typeChanged ||
+      paymentModeChanged ||
+      relatedChanged ||
+      descriptionChanged ||
+      tagsChanged;
+
+    // ===============================
+    // 🔹 UPDATE DATA
+    // ===============================
+    const updateData = {
+      type,
+      amount: Number(amount),
+      paymentMode: paymentMode || "",
+      relatedDetails: relatedDetails || "",
+      description: description || "",
+      tags: newTags,
+    };
+
+    // ===============================
+    // 🔹 PERSON
+    // ===============================
+    if (!txn.settlementId && person) {
       if (mongoose.Types.ObjectId.isValid(person)) {
         updateData.person = new mongoose.Types.ObjectId(person);
         updateData.manualPersonName = null;
@@ -405,35 +452,28 @@ export const updateTransaction = async (req, res) => {
         updateData.manualPersonName = person;
         updateData.person = null;
       }
-
     }
+
     if (txn.settlementId) {
-      updateData.manualPersonName = null; // ❗ important
+      updateData.manualPersonName = null;
     }
 
-    // dashboard update
+    // ===============================
+    // 🔹 DASHBOARD
+    // ===============================
     if (dashboardId) {
-      updateData.dashboardIds = [
-        new mongoose.Types.ObjectId(dashboardId)
-      ];
+      updateData.dashboardIds = [new mongoose.Types.ObjectId(dashboardId)];
     }
 
-    // attachment
+    // ===============================
+    // 🔹 ATTACHMENT
+    // ===============================
     if (req.file) {
-
-      // 🟡 OLD FILE DELETE (SAFE PATH)
       if (txn.attachment) {
-        try {
-          const filePath = path.join("uploads", txn.attachment);
-          await fs.unlink(filePath); // 🔥 direct delete
-        } catch (err) {
-          if (err.code !== "ENOENT") {
-            console.error("File delete error:", err.message);
-          }
-        }
+        const filePath = path.join("uploads", txn.attachment);
+        await fs.unlink(filePath).catch(() => {});
       }
 
-      // 🟢 NEW FILE SAVE
       updateData.attachment = req.file.filename;
       updateData.originalName = req.file.originalname;
     }
@@ -442,70 +482,40 @@ export const updateTransaction = async (req, res) => {
     // 🔥 SETTLEMENT TRANSACTION
     // ====================================================
     if (txn.settlementId) {
-
+      
       const settlement = await Settlement.findById(txn.settlementId);
-
-      if (!settlement) {
-        return res.status(404).json({ msg: "Settlement not found" });
-      }
-
-      // 🔥 UPDATE settlement role based on new type
-      if (settlementType) {
-        const isReceivable = settlementType === "receivable";
-
-        settlement.fromUserId = isReceivable
-          ? txn.otherUserId
-          : txn.userId;
-
-        settlement.toUserId = isReceivable
-          ? txn.userId
-          : txn.otherUserId;
-
-        // swap dashboards
-        if (isReceivable) {
-          settlement.fromDashboardId = txn.otherDashboardId;
-          settlement.toDashboardId = dashboardId || txn.dashboardIds[0];
+      
+      if (dashboardId) {
+        if (txn.userId.toString() === settlement.fromUserId.toString()) {
+          settlement.fromDashboardId = new mongoose.Types.ObjectId(dashboardId);
         } else {
-          settlement.fromDashboardId = dashboardId || txn.dashboardIds[0];
-          settlement.toDashboardId = txn.otherDashboardId;
+          settlement.toDashboardId = new mongoose.Types.ObjectId(dashboardId);
         }
+
+        await settlement.save();
+        await syncSettlementAccounts(settlement); // 🔥 બધા accounts update
       }
 
-      // ====================================================
-      // ❌ IF SETTLED → ONLY SELF UPDATE
-      // ====================================================
+      // ❌ settled → only self
       if (txn.settlementStatus === "settled") {
-
         await Account.findOneAndUpdate(
           { _id: req.params.id, userId },
           updateData
         );
-
         return res.json({ success: true });
       }
 
-      // ====================================================
-      // ✅ PENDING → UPDATE BOTH USERS
-      // ====================================================
-
-      // 🔥 update settlement amount
+      // ✅ pending → both update
       settlement.amount = Number(amount);
 
-      // 🔥 dashboard change handling
-      if (dashboardId) {
-        if (txn.userId.toString() === settlement.fromUserId.toString()) {
-          
-          settlement.fromDashboardId = new mongoose.Types.ObjectId(dashboardId);
-        } else {
-          settlement.toDashboardId = new mongoose.Types.ObjectId(dashboardId);
-          
-        }
-      }
 
-      await settlement.save();
+      // await settlement.save();
+      // // 🔥 IMPORTANT SYNC
+      // // await syncSettlementAccounts(settlement);
 
-      // 🔥 update BOTH account records properly
-      const accounts = await Account.find({ settlementId: txn.settlementId });
+      const accounts = await Account.find({
+        settlementId: txn.settlementId
+      });
 
       for (let acc of accounts) {
         const isCurrentUser = acc.userId.toString() === userId;
@@ -525,53 +535,63 @@ export const updateTransaction = async (req, res) => {
 
         await Account.findByIdAndUpdate(acc._id, {
           amount: Number(amount),
-          type: updatedType,                 // ✅ always defined
-          settlementRole: updatedRole,       // ✅ fixed
+          type: updatedType,
+          settlementRole: updatedRole,
           relatedDetails: relatedDetails || "",
           description: description || "",
-          tags: updateData.tags,
+          tags: newTags,
           paymentMode: paymentMode || acc.paymentMode,
           person: acc.person,
           manualPersonName: acc.manualPersonName,
+
+          // dashboardIds: isCurrentUser
+          //   ? [new mongoose.Types.ObjectId(dashboardId || txn.dashboardIds[0])]
+          //   : acc.dashboardIds,
 
           ...(req.file && {
             attachment: req.file.filename,
             originalName: req.file.originalname
           })
-
         });
       }
 
-
-      // ====================================================
-      // 🔔 NOTIFICATION
-      // ====================================================
-
+      // ===============================
+      // 🔔 NOTIFICATION (FINAL FIX)
+      // ===============================
       const otherUserId =
         txn.userId.toString() === settlement.fromUserId.toString()
           ? settlement.toUserId
           : settlement.fromUserId;
+      const dashboardChanged =
+  dashboardId && dashboardId !== oldDashboardId;
+      // const shouldNotify = isDataChanged; // 🔥 only real data
+      const shouldNotify = isDataChanged && !dashboardChanged;
+      if (shouldNotify) {
+        const isReceiver =
+          settlementType
+            ? settlementType === "receivable"
+            : txn.settlementRole === "receivable";
 
-      // const isReceiver = txn.settlementRole === "receivable";
-      const isReceiver = settlementType === "receivable";
+        const message = isReceiver
+          ? `You will receive ₹${amount} (updated)`
+          : `You need to pay ₹${amount} (updated)`;
 
-      const message = isReceiver
-        ? `You will receive ₹${amount} (updated)`
-        : `You need to pay ₹${amount} (updated)`;
+        await Notification.create({
+          userId: otherUserId,
+          title: "Settlement Updated",
+          message,
+          type: "settlement",
+          settlementId: settlement._id,
+          status: "pending"
+        });
 
-      await Notification.create({
-        userId: otherUserId,
-        title: "Settlement Updated",
-        message,
-        type: "settlement",
-        settlementId: settlement._id,
-        status: "pending"
-      });
+        io.to(otherUserId.toString()).emit("newNotification", {
+          title: "Settlement Updated",
+          message
+        });
+      }
 
-      // ====================================================
-      // 🔥 SOCKET EMIT (FIXED)
-      // ====================================================
-
+      // 🔹 SOCKET
       io.to(settlement.fromUserId.toString()).emit("transactionUpdated", {
         dashboardId: settlement.fromDashboardId
       });
@@ -580,33 +600,24 @@ export const updateTransaction = async (req, res) => {
         dashboardId: settlement.toDashboardId
       });
 
-      io.to(otherUserId.toString()).emit("newNotification", {
-        title: "Settlement Updated",
-        message
-      });
-
       const updatedTxn = await Account.findById(req.params.id).lean();
-        return res.json({ success: true, transaction: updatedTxn });
-      // return res.json({ success: true });
+      return res.json({ success: true, transaction: updatedTxn });
     }
 
     // ====================================================
-    // ✅ NORMAL TRANSACTION
+    // 🔹 NORMAL TRANSACTION
     // ====================================================
-
     await Account.findOneAndUpdate(
       { _id: req.params.id, userId },
       updateData
     );
 
-    // 🔥 socket update current user
     io.to(userId.toString()).emit("transactionUpdated", {
       dashboardId: dashboardId || txn.dashboardIds[0]
     });
 
-    // return res.json({ success: true });
     const updatedTxn = await Account.findById(req.params.id).lean();
-      return res.json({ success: true, transaction: updatedTxn });
+    return res.json({ success: true, transaction: updatedTxn });
 
   } catch (err) {
     console.error("Update error:", err);
@@ -614,23 +625,20 @@ export const updateTransaction = async (req, res) => {
   }
 };
 
-
-
 // DELETE
 
 export const deleteTransaction = async (req, res) => {
   try {
     const txn = await Account.findById(req.params.id);
 
-    // ❗ FIRST check
     if (!txn) {
       return res.status(404).json({ msg: "Transaction not found" });
     }
 
-    // ⭐ pending settlement security
+    // ✅ FIX 1: security (createdBy → userId)
     if (
       txn.settlementStatus === "pending" &&
-      txn.createdBy.toString() !== req.session.user.id
+      txn.userId.toString() !== req.session.user.id
     ) {
       return res.status(403).json({
         msg: "You cannot delete this settlement transaction"
@@ -650,18 +658,27 @@ export const deleteTransaction = async (req, res) => {
     // ⭐ settlement transaction
     if (txn.settlementId) {
 
-      if (txn.settlementStatus === "pending") {
+      // ✅ FIX 2: always check Settlement model
+      const settlement = await Settlement.findById(txn.settlementId);
 
+      if (settlement && settlement.status === "pending") {
+
+        // 🔥 FIX 3: first delete settlement
+        await Settlement.findByIdAndDelete(txn.settlementId);
+
+        // 🔥 FIX 4: then delete all related accounts
         await Account.deleteMany({
           settlementId: txn.settlementId
         });
 
-        await Settlement.deleteOne({
-          _id: txn.settlementId
+        await Notification.deleteMany({
+          settlementId: txn.settlementId
         });
+
 
       } else {
 
+        // settled → only current user records delete
         await Account.deleteMany({
           settlementId: txn.settlementId,
           userId: req.session.user.id
@@ -671,6 +688,7 @@ export const deleteTransaction = async (req, res) => {
 
     } else {
 
+      // normal transaction
       await Account.deleteOne({
         _id: req.params.id,
         userId: req.session.user.id
@@ -689,6 +707,7 @@ export const deleteTransaction = async (req, res) => {
     res.status(500).json({ msg: "Delete failed" });
   }
 };
+
 
 // fetch recode
 export const getSingleRecord = async (req, res) => {
@@ -836,4 +855,3 @@ const data = await Settlement.find({
  res.json(data);
 
 };
-

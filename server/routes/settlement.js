@@ -12,6 +12,6 @@ router.post("/pay/:id", requireAuth, paySettlement);
 
 router.get("/pending", requireAuth, getPendingSettlements);
 
-router.post("/move-dashboard", moveDashboard);
+router.post("/move-dashboard",requireAuth, moveDashboard);
 
 export default router;

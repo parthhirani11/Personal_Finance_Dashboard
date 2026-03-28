@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer} from "react-toastify";
 
 export default function Notifications(){
 
@@ -19,7 +19,7 @@ export default function Notifications(){
 
     const fetchNotifications = async ()=>{
         const res = await api.get("/notifications");
-        console.log(res.data.notifications);
+        
         setNotifications(res.data.notifications || []);
         
     };
@@ -34,21 +34,43 @@ export default function Notifications(){
         setNotifications(prev=>prev.filter(n=>n._id!==id));
     };
 
-    const moveDashboard = async (settlementId)=>{
-        if(!selectedDashboard){
-            toast.error("Select dashboard");
-            return;
-        }
+    const moveDashboard = async (settlementId) => {
+  try {
+    if (!selectedDashboard) {
+      toast.error("Please select dashboard"); 
+      return;
+    }
 
-        await api.post("/settlement/move-dashboard",{
-            settlementId,
-            dashboardId:selectedDashboard
-        });
+    await api.post("/settlement/move-dashboard", {
+      settlementId,
+      dashboardId: selectedDashboard
+    });
 
-        toast.success("Dashboard changed");
-        setActiveId(null);
-        setSelectedDashboard("");
-    };
+    
+    const selectedDashObj = dashboards.find(d => d._id === selectedDashboard);
+
+    // toast.success(`Record moved to "${selectedDashObj?.name}" dashboard`);
+
+    setActiveId(null);
+    setSelectedDashboard("");
+
+    // 🔥 redirect to that dashboard
+    navigate("/home", {
+  state: { 
+    dashboardId: selectedDashboard,
+    toastMsg: `Record moved to "${selectedDashObj?.name}" dashboard`
+  }
+});
+    // navigate("/home", {
+    //   state: { dashboardId: selectedDashboard }
+    // });
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to move record");
+  }
+};
+
 
     return(
 
@@ -174,6 +196,7 @@ export default function Notifications(){
                 ))}
 
             </div>
+            {/* <ToastContainer position="top-center" autoClose={3000} /> */}
 
         </div>
 

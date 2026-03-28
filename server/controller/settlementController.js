@@ -2,6 +2,8 @@ import Settlement from "../models/Settlement.js";
 import Account from "../models/Account.js";
 import Notification from "../models/Notification.js";
 import mongoose from "mongoose";
+import { syncSettlementAccounts } from "../utils/syncSettlement.js";
+
 
 export const paySettlement = async (req, res) => {
   try {
@@ -45,14 +47,27 @@ export const paySettlement = async (req, res) => {
     settlement.settledAt = new Date();
 
     await settlement.save();
-
-    // update account records
+  
 
     await Account.updateMany(
-      { settlementId, paymentMode: { $ne: "settlement" } },
-      { settlementStatus: "settled" }
+      { settlementId, userId: settlement.fromUserId },
+      { 
+        settlementStatus: "settled",
+        paymentMode: null,
+        dashboardIds: [settlement.fromDashboardId]   // 🔥 ADD THIS
+      }
     );
 
+    await Account.updateMany(
+      { settlementId, userId: settlement.toUserId },
+      { 
+        settlementStatus: "settled",
+        paymentMode: null,
+        dashboardIds: [settlement.toDashboardId]   // 🔥 ADD THIS
+      }
+    );
+    console.log("FROM DASHBOARD:", settlement.fromDashboardId);
+    console.log("TO DASHBOARD:", settlement.toDashboardId);
     const originalTxn = await Account.findOne({
       settlementId: settlementId,
       paymentMode: { $ne: "settlement" }
@@ -172,21 +187,19 @@ export const moveDashboard = async (req, res) => {
 
     // ✅ check which user is updating
     if (settlement.toUserId.toString() === currentUserId) {
-      settlement.toDashboardId = dashboardId;
+      // settlement.toDashboardId = dashboardId;
+      settlement.toDashboardId = new mongoose.Types.ObjectId(dashboardId);
     } else if (settlement.fromUserId.toString() === currentUserId) {
-      settlement.fromDashboardId = dashboardId;
+      // settlement.fromDashboardId = dashboardId;
+      settlement.fromDashboardId = new mongoose.Types.ObjectId(dashboardId);
     } else {
       return res.status(403).json({ msg: "Not allowed" });
     }
 
-    // ✅ save updated settlement
     await settlement.save();
 
-    // ✅ update ONLY that user's account records
-    await Account.updateMany(
-      { settlementId, userId: currentUserId },
-      { dashboardIds: [dashboardId] }
-    );
+    // 🔥 IMPORTANT
+    await syncSettlementAccounts(settlement);
 
     res.json({ success: true });
 

@@ -227,49 +227,73 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     ];
   }, [transactions]);
 
+// 🔥 CHECK: form ma actual change thayu ke nai
+const hasDataChanged = () => {
+  if (!record) return false;
 
+  const tagsChanged = selectedTags.join(",") !== (record.tags || []).join(",");
+  const categoriesChanged = selectedCategories.join(",") !== (record.description || "");
 
-  /* ================= SUBMIT ================= */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const fileChanged = attachment !== null; // new file selected
+  
+  return (
+    Number(form.amount) !== record.amount ||
+    form.type !== record.type ||
+    form.paymentMode !== (record.paymentMode || "cash") ||
+    form.relatedDetails !== (record.relatedDetails || "") ||
+    tagsChanged ||
+    categoriesChanged ||
+    fileChanged
+  );
+};
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // ❗ FIRST confirm
-    if (selectedDashboard !== originalDashboard) {
-      setPendingDashboard(selectedDashboard);
-      setShowSwitchConfirm(true);
-      return; // 🚫 STOP API
-    }
+  const dataChanged = hasDataChanged();
 
-    await submitData(selectedDashboard);
-  };
+  if (!dataChanged && selectedDashboard === originalDashboard) {
+    toast.info("No changes made");
+    onClose();
+    return;
+  }
 
-  const submitData = async (dashboardToUse) => {
-    const data = new FormData();
+  // dashboard switch confirm
+  if (selectedDashboard !== originalDashboard) {
+    setPendingDashboard(selectedDashboard);
+    setShowSwitchConfirm(true);
+    return;
+  }
 
-    data.append("dashboardId", dashboardToUse);
-    data.append("type", form.type);
-    data.append("amount", form.amount);
-    data.append("person", form.person);
-    data.append("paymentMode", form.paymentMode);
-    data.append("settlementType", settlementType);
+  await submitData(selectedDashboard, dataChanged);
+};
 
-    data.append("description", selectedCategories.join(", "));
-    selectedTags.forEach(t => data.append("tags[]", t));
-    data.append("relatedDetails", form.relatedDetails);
+const submitData = async (dashboardToUse, dataChanged, shouldSwitch = true) => {
+  const formData = new FormData();
+  formData.append("dashboardId", dashboardToUse);
+  formData.append("type", form.type);
+  formData.append("amount", form.amount);
+  formData.append("person", form.person);
+  formData.append("paymentMode", form.paymentMode);
+  formData.append("settlementType", settlementType);
+  formData.append("description", selectedCategories.join(","));
+  selectedTags.forEach(t => formData.append("tags[]", t));
+  // formData.append("description", selectedCategories.join(", "));
+  // selectedTags.forEach(t => formData.append("tags[]", t));
+  formData.append("relatedDetails", form.relatedDetails);
 
-    if (attachment) {
-      data.append("attachment", attachment);
-    }
+  if (attachment) {
+    formData.append("attachment", attachment);
+  }
 
-    try {
-      const res = await api.put(`/account/edit/${id}`, data, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  try {
+    const res = await api.put(`/account/edit/${id}`, formData, {
+      withCredentials: true,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
     toast.success("Transaction updated");
 
-    // 🔥 updated file set કરો
+    // updated file set કરો
     if (res.data.transaction?.attachment) {
       setCurrentFile({
         filename: res.data.transaction.attachment,
@@ -277,16 +301,19 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       });
     }
 
-    // optional: transaction list refresh
-    onDashboardSwitch?.(selectedDashboard);
-        onClose();
+    // ✅ NEW
+    if (shouldSwitch) {
+      onDashboardSwitch?.(dashboardToUse);
+    }
+    onClose();
 
-      } catch (err) {
-        console.error(err);
-        toast.error("Update failed");
-      }
-    };
-  
+  } catch (err) {
+    console.error(err);
+    toast.error("Update failed");
+  }
+};
+
+
    // tags and category change handle 
 
   const [focusedCategoryIndex, setFocusedCategoryIndex] = useState(-1);
@@ -1009,7 +1036,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
             </p>
 
             <div className="modal-actions">
-              <button
+              {/* <button
                 className="btn btn-secondary"
                 onClick={() => {
                   setShowSwitchConfirm(false);
@@ -1019,15 +1046,25 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
               >
                 No
+              </button> */}
+
+              <button
+                className="btn btn-secondary"
+                onClick={async () => {
+                  await submitData(pendingDashboard, true, false); // ❌ no switch
+                  setShowSwitchConfirm(false);
+                }}
+              >
+                No
               </button>
 
               <button
                 className="btn btn-success"
                 onClick={async () => {
-                  await submitData(pendingDashboard); // 🔥 API HERE
-                  onDashboardSwitch?.(pendingDashboard);
-                  // toast.success("Transaction updated");
+                  await submitData(pendingDashboard, true, true); // 🔥 API HERE
                   setShowSwitchConfirm(false);
+                  onDashboardSwitch?.(pendingDashboard);
+                
                 }}
               >
                 Yes
@@ -1038,5 +1075,7 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
       )}
 
     </div>
+    
   );
+  
 }

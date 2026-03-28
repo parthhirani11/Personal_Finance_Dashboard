@@ -1,6 +1,6 @@
 // DASHBOARD PAGE
 import { useEffect,useMemo, useState, useRef  } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import robot from "../assets/robot.png";
 import CountUp from "react-countup";
 import Edit from "./Edit";
@@ -122,9 +122,20 @@ export default function Dashboard() {
 
   };
 
+  const location = useLocation();
+
+useEffect(() => {
+  if (location.state?.toastMsg) {
+    toast.success(location.state.toastMsg);
+  }
+}, [location.state]);
+
   // notifications
   const [notifications, setNotifications] = useState([]);
   const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const [activeMoveId, setActiveMoveId] = useState(null); // similar to activeId in notifications
+  const [selectedMoveDashboard, setSelectedMoveDashboard] = useState(""); // selected dashboard for move
 
   // popup change dashboard
 
@@ -1236,6 +1247,37 @@ export default function Dashboard() {
       console.error("Settlement error:", err);
     }
   };
+
+  const moveTransactionDashboard = async (transactionId) => {
+  try {
+    if (!selectedMoveDashboard) {
+      toast.error("Please select a dashboard");
+      return;
+    }
+
+    await api.post("/settlement/move-dashboard", {
+      settlementId: transactionId,
+      dashboardId: selectedMoveDashboard,
+    });
+
+    const selectedDashObj = dashboards.find(
+      (d) => d._id === selectedMoveDashboard
+    );
+
+    // Reset states
+    setActiveMoveId(null);
+    setSelectedMoveDashboard("");
+
+    toast.success(`Record moved to "${selectedDashObj?.name}" dashboard`);
+
+    // Refresh transactions
+    fetchDashboard();
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to move record");
+  }
+};
 
   //  .............................................................................
 
@@ -2586,7 +2628,7 @@ export default function Dashboard() {
                         </div>
                       )}
 
-                      {item.settlementStatus !== "pending" && (
+                      {/* {item.settlementStatus !== "pending" && (
                         <div className="rows">
                           <span className="label">Payment Mode:</span>
                           <span className="value">
@@ -2594,6 +2636,18 @@ export default function Dashboard() {
                           </span>
                         </div>
                         
+                      )} */}
+                      {item.settlementStatus !== "pending" && (
+                        <div className="rows">
+                          <span className="label">Payment Mode:</span>
+                          <span className="value">
+                            {item.paymentMode === "settlement"
+                              ? "SETTLEMENT"
+                              : item.paymentMode
+                              ? item.paymentMode.toUpperCase()
+                              : "-"}
+                          </span>
+                        </div>
                       )}
              
                       <div className="rows">
@@ -2715,6 +2769,14 @@ export default function Dashboard() {
                         </span>
                     )}
                     <div className="action-buttons d-flex gap-2">
+                      {item.settlementStatus === "pending" && item.createdBy !== currentUserId && (
+  <button
+    className="yes-btn"
+    onClick={() => setActiveMoveId(item._id)}
+  >
+    Move Dashboard Record
+  </button>
+)}
                       {item.settlementStatus === "pending" && (
                           <button
                             className="settle-btn"
@@ -2753,8 +2815,44 @@ export default function Dashboard() {
    
                     </div>
                   </div>
+                      {activeMoveId === item._id && (
+  <div className="dashboard-change-box">
+    <div className="change-header">
+      <p>Do you want to move this transaction record to another dashboard?</p>
+    </div>
 
+    <div className="change-body">
+      <select
+        value={selectedMoveDashboard}
+        onChange={(e) => setSelectedMoveDashboard(e.target.value)}
+      >
+        <option value="">Select</option>
+        {dashboards.map((d) => (
+          <option key={d._id} value={d._id}>
+            {d.name}
+          </option>
+        ))}
+      </select>
+
+      <div className="change-actions">
+        <button
+          className="confirm-btn"
+          onClick={() => moveTransactionDashboard(item.settlementId)}
+        >
+          ✔
+        </button>
+        <button
+          className="cancel-btn"
+          onClick={() => setActiveMoveId(null)}
+        >
+          ✖
+        </button>
+      </div>
+    </div>
+  </div>
+)}
                 </div>
+                
               ))}
             </div>
             ) : (

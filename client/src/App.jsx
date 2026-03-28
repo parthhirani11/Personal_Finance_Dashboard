@@ -16,6 +16,8 @@ import "./styles/main.css";
 import "./styles/responsive.css"
 import ScrollToTop from "./components/ScrollToTop";
 import { CategoryTagProvider } from "./context/CategoryTagContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 api.defaults.withCredentials = true;
 
 function App() {
@@ -81,6 +83,7 @@ function App() {
        
       </Routes>
       <Footer />
+      <ToastContainer position="top-center" autoClose={3000} />
     </Router>
  
   );

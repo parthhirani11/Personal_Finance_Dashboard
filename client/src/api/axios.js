@@ -6,11 +6,29 @@ const api = axios.create({
   withCredentials: true
 });
 
+// 🔥 GLOBAL ERROR HANDLER
 api.interceptors.response.use(
-  res => res,
-  err => {
-    return Promise.reject(err); // ❌ no redirect here
+  (response) => response,
+  (error) => {
+    // ❌ server down / no response
+    if (!error.response) {
+      window.location.href = "/login";
+    }
+
+    // ❌ unauthorized
+    if (error.response?.status === 401) {
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
   }
 );
+
+// api.interceptors.response.use(
+//   res => res,
+//   err => {
+//     return Promise.reject(err); // ❌ no redirect here
+//   }
+// );
 
 export default api;
