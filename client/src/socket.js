@@ -5,3 +5,5 @@ export const socket = io("/", {
   autoConnect:false,
   withCredentials:true
 });
+
+// C:\Users\parth\AppData\Local\nvm
