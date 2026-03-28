@@ -2712,7 +2712,7 @@ useEffect(() => {
                           <span className="label">Attachment :</span>
                           <a
                             className="value link"
-                            href={`http://localhost:5000/uploads/${item.attachment}`}
+                            href={`/uploads/${item.attachment}`}
                             // href={`${import.meta.env.VITE_API_URL_UPLOADS}/uploads/${item.attachment}`}
                             target="_blank"
                             rel="noopener noreferrer"
