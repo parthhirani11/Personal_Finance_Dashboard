@@ -1,6 +1,6 @@
 // edit transection recode
 import { useState, useEffect, useRef, useMemo } from "react";
-import { FiX, FiSave, FiPlusCircle,FiChevronDown  } from "react-icons/fi";
+import { FiSave, FiPlusCircle,FiChevronDown  } from "react-icons/fi";
 import api from "../api/axios";
 import "../styles/edit.css";
 import { toast } from "react-toastify";
@@ -28,7 +28,6 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
 
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-  const safeDashboards = dashboards || [];
 
   const [showModal, setShowModal] = useState(false);
   const [customMode, setCustomMode] = useState("");
@@ -227,91 +226,86 @@ export default function EditPopup({ id, onClose,transactions ,dashboardId,dashbo
     ];
   }, [transactions]);
 
-// 🔥 CHECK: form ma actual change thayu ke nai
-const hasDataChanged = () => {
-  if (!record) return false;
+  const hasDataChanged = () => {
+    if (!record) return false;
 
-  const tagsChanged = selectedTags.join(",") !== (record.tags || []).join(",");
-  const categoriesChanged = selectedCategories.join(",") !== (record.description || "");
+    const tagsChanged = selectedTags.join(",") !== (record.tags || []).join(",");
+    const categoriesChanged = selectedCategories.join(",") !== (record.description || "");
 
-  const fileChanged = attachment !== null; // new file selected
-  
-  return (
-    Number(form.amount) !== record.amount ||
-    form.type !== record.type ||
-    form.paymentMode !== (record.paymentMode || "cash") ||
-    form.relatedDetails !== (record.relatedDetails || "") ||
-    tagsChanged ||
-    categoriesChanged ||
-    fileChanged
-  );
-};
-const handleSubmit = async (e) => {
-  e.preventDefault();
+    const fileChanged = attachment !== null; // new file selected
+    
+    return (
+      Number(form.amount) !== record.amount ||
+      form.type !== record.type ||
+      form.paymentMode !== (record.paymentMode || "cash") ||
+      form.relatedDetails !== (record.relatedDetails || "") ||
+      tagsChanged ||
+      categoriesChanged ||
+      fileChanged
+    );
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const dataChanged = hasDataChanged();
+    const dataChanged = hasDataChanged();
 
-  if (!dataChanged && selectedDashboard === originalDashboard) {
-    toast.info("No changes made");
-    onClose();
-    return;
-  }
+    if (!dataChanged && selectedDashboard === originalDashboard) {
+      toast.info("No changes made");
+      onClose();
+      return;
+    }
 
-  // dashboard switch confirm
-  if (selectedDashboard !== originalDashboard) {
-    setPendingDashboard(selectedDashboard);
-    setShowSwitchConfirm(true);
-    return;
-  }
+    // dashboard switch confirm
+    if (selectedDashboard !== originalDashboard) {
+      setPendingDashboard(selectedDashboard);
+      setShowSwitchConfirm(true);
+      return;
+    }
 
-  await submitData(selectedDashboard, dataChanged);
-};
+    await submitData(selectedDashboard, dataChanged);
+  };
 
-const submitData = async (dashboardToUse, dataChanged, shouldSwitch = true) => {
-  const formData = new FormData();
-  formData.append("dashboardId", dashboardToUse);
-  formData.append("type", form.type);
-  formData.append("amount", form.amount);
-  formData.append("person", form.person);
-  formData.append("paymentMode", form.paymentMode);
-  formData.append("settlementType", settlementType);
-  formData.append("description", selectedCategories.join(","));
-  selectedTags.forEach(t => formData.append("tags[]", t));
-  // formData.append("description", selectedCategories.join(", "));
-  // selectedTags.forEach(t => formData.append("tags[]", t));
-  formData.append("relatedDetails", form.relatedDetails);
+  const submitData = async (dashboardToUse, dataChanged, shouldSwitch = true) => {
+    const formData = new FormData();
+    formData.append("dashboardId", dashboardToUse);
+    formData.append("type", form.type);
+    formData.append("amount", form.amount);
+    formData.append("person", form.person);
+    formData.append("paymentMode", form.paymentMode);
+    formData.append("settlementType", settlementType);
+    formData.append("description", selectedCategories.join(","));
+    selectedTags.forEach(t => formData.append("tags[]", t));
+    formData.append("relatedDetails", form.relatedDetails);
 
-  if (attachment) {
-    formData.append("attachment", attachment);
-  }
+    if (attachment) {
+      formData.append("attachment", attachment);
+    }
 
-  try {
-    const res = await api.put(`/account/edit/${id}`, formData, {
-      withCredentials: true,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    toast.success("Transaction updated");
-
-    // updated file set કરો
-    if (res.data.transaction?.attachment) {
-      setCurrentFile({
-        filename: res.data.transaction.attachment,
-        originalName: res.data.transaction.originalName,
+    try {
+      const res = await api.put(`/account/edit/${id}`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
       });
-    }
 
-    // ✅ NEW
-    if (shouldSwitch) {
-      onDashboardSwitch?.(dashboardToUse);
-    }
-    onClose();
+      toast.success("Transaction updated");
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Update failed");
-  }
-};
+      if (res.data.transaction?.attachment) {
+        setCurrentFile({
+          filename: res.data.transaction.attachment,
+          originalName: res.data.transaction.originalName,
+        });
+      }
+
+      if (shouldSwitch) {
+        onDashboardSwitch?.(dashboardToUse);
+      }
+      onClose();
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Update failed");
+    }
+  };
 
 
    // tags and category change handle 
@@ -1000,9 +994,6 @@ const submitData = async (dashboardToUse, dataChanged, shouldSwitch = true) => {
             {currentFile && (
               <p className="edit-label">
                 Current File:{" "}
-                {/* <a href={`/uploads/${currentFile.filename}`} target="_blank" tabIndex={-1}>
-                  {currentFile.originalName}
-                </a> */}
                 <a href={`/uploads/${currentFile.filename}?t=${Date.now()}`} target="_blank">
                   {currentFile.originalName}
                 </a>
@@ -1036,17 +1027,6 @@ const submitData = async (dashboardToUse, dataChanged, shouldSwitch = true) => {
             </p>
 
             <div className="modal-actions">
-              {/* <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowSwitchConfirm(false);
-                  // toast.success("Transaction updated");
-                  onClose();
-                }}
-
-              >
-                No
-              </button> */}
 
               <button
                 className="btn btn-secondary"

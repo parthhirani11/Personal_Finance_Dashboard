@@ -31,7 +31,7 @@ function App() {
           withCredentials: true,
         });
 
-        setUser(res.data.user); // 🔥 MOST IMPORTANT CHANGE
+        setUser(res.data.user); 
       } catch (err) {
         console.log("Session check failed:", err?.response?.status);
         setUser(null);

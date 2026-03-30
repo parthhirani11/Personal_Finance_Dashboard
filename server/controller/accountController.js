@@ -30,7 +30,6 @@ export const getDashboard = async (req, res) => {
     const accounts = await Account.find({
       userId: new mongoose.Types.ObjectId(userId),
       dashboardIds: { $in: [new mongoose.Types.ObjectId(dashboardId)] }
-      // dashboardIds: new mongoose.Types.ObjectId(dashboardId)
     }).populate("person", "name email")
     .sort({ date: -1 });
 
@@ -508,11 +507,6 @@ export const updateTransaction = async (req, res) => {
       // ✅ pending → both update
       settlement.amount = Number(amount);
 
-
-      // await settlement.save();
-      // // 🔥 IMPORTANT SYNC
-      // // await syncSettlementAccounts(settlement);
-
       const accounts = await Account.find({
         settlementId: txn.settlementId
       });
@@ -544,10 +538,6 @@ export const updateTransaction = async (req, res) => {
           person: acc.person,
           manualPersonName: acc.manualPersonName,
 
-          // dashboardIds: isCurrentUser
-          //   ? [new mongoose.Types.ObjectId(dashboardId || txn.dashboardIds[0])]
-          //   : acc.dashboardIds,
-
           ...(req.file && {
             attachment: req.file.filename,
             originalName: req.file.originalname
@@ -563,8 +553,8 @@ export const updateTransaction = async (req, res) => {
           ? settlement.toUserId
           : settlement.fromUserId;
       const dashboardChanged =
-  dashboardId && dashboardId !== oldDashboardId;
-      // const shouldNotify = isDataChanged; // 🔥 only real data
+           dashboardId && dashboardId !== oldDashboardId;
+     
       const shouldNotify = isDataChanged && !dashboardChanged;
       if (shouldNotify) {
         const isReceiver =
@@ -812,7 +802,7 @@ export const getPaymentModeStats = async (req, res) => {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
           dashboardIds: { $in: [new mongoose.Types.ObjectId(dashboardId)] },
-          // dashboardIds: new mongoose.Types.ObjectId(dashboardId),
+          
           paymentMode: { $ne: "settlement" } 
         }
       },

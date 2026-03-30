@@ -68,7 +68,6 @@ export const sendEmail = async (
       html: htmlTemplate
     });
 
-    // console.log("Email sent");
 
   } catch (error) {
     console.error("Email send error:", error);

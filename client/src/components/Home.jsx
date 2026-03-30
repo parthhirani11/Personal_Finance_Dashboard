@@ -124,15 +124,16 @@ export default function Dashboard() {
 
   const location = useLocation();
 
-useEffect(() => {
-  if (location.state?.toastMsg) {
-    toast.success(location.state.toastMsg);
-  }
-}, [location.state]);
+  useEffect(() => {
+    if (location.state?.toastMsg) {
+      toast.success(location.state.toastMsg);
+    }
+  }, [location.state]);
 
   // notifications
   const [notifications, setNotifications] = useState([]);
   const unreadCount = notifications.filter(n => !n.isRead).length;
+  const notificationSoundRef = useRef(null);
 
   const [activeMoveId, setActiveMoveId] = useState(null); // similar to activeId in notifications
   const [selectedMoveDashboard, setSelectedMoveDashboard] = useState(""); // selected dashboard for move
@@ -1125,7 +1126,9 @@ useEffect(() => {
 
   const userId = localStorage.getItem("userId");
 
-    socket.connect();
+    if (!socket.connected) {
+      socket.connect();
+    }
     socket.on("connect", () => {
 
       if(userId){
@@ -1158,21 +1161,9 @@ useEffect(() => {
 
   },[]);
 
-  useEffect(()=>{
-
-    if("Notification" in window){
-
-      if(Notification.permission === "default"){
-        Notification.requestPermission().then(permission=>{
-          console.log("Notification permission:",permission);
-        });
-      }
-
-    }
-
-  },[]);
-
-  const notificationSound = new Audio("/cheerful-527.ogg?v=1");
+  useEffect(() => {
+    notificationSoundRef.current = new Audio("/cheerful-527.ogg");
+  }, []);
  
   const requestNotificationPermission = async () => {
 
@@ -1207,27 +1198,34 @@ useEffect(() => {
 
   };
 
+ 
   const playNotificationSound = () => {
+    const sound = notificationSoundRef.current;
+    if (!sound) return;
 
-  notificationSound.currentTime = 0;
-  notificationSound.play().catch(()=>{});
-
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
   };
 
-  useEffect(()=>{
+  useEffect(() => {
+    const handleClick = () => {
+      const sound = notificationSoundRef.current;
+      if (!sound) return;
 
-  document.addEventListener("click",()=>{
+      sound.play()
+        .then(() => {
+          sound.pause();
+          sound.currentTime = 0;
+        })
+        .catch(() => {});
+    };
 
-    notificationSound.play()
-    .then(()=>{
-      notificationSound.pause();
-      notificationSound.currentTime = 0;
-    })
-    .catch(()=>{});
+    document.addEventListener("click", handleClick, { once: true });
 
-  },{once:true});
-
-  },[]);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, []);
 
   const completeSettlement = async (settlementId) => {
     try {
@@ -1435,10 +1433,6 @@ useEffect(() => {
 
         <hr />
 
-        {/* <div className="tooltip-row">
-          <strong>Total</strong>
-          <strong>₹{total.toLocaleString()}</strong>
-        </div> */}
       </div>
     );
   }
@@ -1464,18 +1458,18 @@ useEffect(() => {
 
 
   const getColorForKey = (key) => {
-    // ✅ already assigned hoy to same return karo
+    
     if (colorMap.current[key]) {
       return colorMap.current[key];
     }
 
-    // ✅ fixed color hoy to use karo
+  
     if (PAYMENTS_COLORS[key]) {
       colorMap.current[key] = PAYMENTS_COLORS[key];
       return colorMap.current[key];
     }
 
-    // ✅ nahi hoy to extra colors mathi apo (no repeat)
+   
     const color =
       EXTRA_COLORSS[colorIndexRef.current % EXTRA_COLORSS.length];
 
@@ -1939,13 +1933,11 @@ useEffect(() => {
 
       localStorage.removeItem("activeDashboardId");
 
-      // ✅ STEP 1: Fetch fresh dashboards from backend
       const resDash = await api.get("/dashboard");
       const newDashboards = resDash.data;
 
       setDashboards(newDashboards);
 
-      // ✅ STEP 2: find default dashboard
       const defaultDash = newDashboards.find(d => d.isDefault);
 
       if (defaultDash) {
@@ -2628,15 +2620,6 @@ useEffect(() => {
                         </div>
                       )}
 
-                      {/* {item.settlementStatus !== "pending" && (
-                        <div className="rows">
-                          <span className="label">Payment Mode:</span>
-                          <span className="value">
-                            {item.paymentMode?.toUpperCase() || "-"}
-                          </span>
-                        </div>
-                        
-                      )} */}
                       {item.settlementStatus !== "pending" && (
                         <div className="rows">
                           <span className="label">Payment Mode:</span>
@@ -2713,7 +2696,6 @@ useEffect(() => {
                           <a
                             className="value link"
                             href={`/uploads/${item.attachment}`}
-                            // href={`${import.meta.env.VITE_API_URL_UPLOADS}/uploads/${item.attachment}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -2771,13 +2753,13 @@ useEffect(() => {
                     )}
                     <div className="action-buttons d-flex gap-2">
                       {item.settlementStatus === "pending" && item.createdBy !== currentUserId && (
-  <button
-    className="yes-btn"
-    onClick={() => setActiveMoveId(item._id)}
-  >
-    Move Dashboard Record
-  </button>
-)}
+                        <button
+                          className="yes-btn"
+                          onClick={() => setActiveMoveId(item._id)}
+                        >
+                          Move Dashboard Record
+                        </button>
+                      )}
                       {item.settlementStatus === "pending" && (
                           <button
                             className="settle-btn"
@@ -2816,42 +2798,42 @@ useEffect(() => {
    
                     </div>
                   </div>
-                      {activeMoveId === item._id && (
-  <div className="dashboard-change-box">
-    <div className="change-header">
-      <p>Do you want to move this transaction record to another dashboard?</p>
-    </div>
+                  {activeMoveId === item._id && (
+                    <div className="dashboard-change-box">
+                      <div className="change-header">
+                        <p>Do you want to move this transaction record to another dashboard?</p>
+                      </div>
 
-    <div className="change-body">
-      <select
-        value={selectedMoveDashboard}
-        onChange={(e) => setSelectedMoveDashboard(e.target.value)}
-      >
-        <option value="">Select</option>
-        {dashboards.map((d) => (
-          <option key={d._id} value={d._id}>
-            {d.name}
-          </option>
-        ))}
-      </select>
+                      <div className="change-body">
+                        <select
+                          value={selectedMoveDashboard}
+                          onChange={(e) => setSelectedMoveDashboard(e.target.value)}
+                        >
+                          <option value="">Select</option>
+                          {dashboards.map((d) => (
+                            <option key={d._id} value={d._id}>
+                              {d.name}
+                            </option>
+                          ))}
+                        </select>
 
-      <div className="change-actions">
-        <button
-          className="confirm-btn"
-          onClick={() => moveTransactionDashboard(item.settlementId)}
-        >
-          ✔
-        </button>
-        <button
-          className="cancel-btn"
-          onClick={() => setActiveMoveId(null)}
-        >
-          ✖
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                        <div className="change-actions">
+                          <button
+                            className="confirm-btn"
+                            onClick={() => moveTransactionDashboard(item.settlementId)}
+                          >
+                            ✔
+                          </button>
+                          <button
+                            className="cancel-btn"
+                            onClick={() => setActiveMoveId(null)}
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
               ))}
@@ -3253,7 +3235,6 @@ useEffect(() => {
                               <input
                                 type="text"
                                 className="form-control mb-3"
-                                // placeholder="Enter new tag"
                                 value={customMode}
                                   onChange={e => setCustomMode(e.target.value)}
                               />

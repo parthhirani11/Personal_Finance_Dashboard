@@ -10,7 +10,6 @@ import { getDashboard, addTransaction, updateTransaction, getSingleRecord,
   getPaymentModeStats,
   deleteTransaction,
   getSettlementHistory,
-  // getTransactionSuggestions,
 } from "../controller/accountController.js";
 
 const router = express.Router();

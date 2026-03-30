@@ -187,10 +187,8 @@ export const moveDashboard = async (req, res) => {
 
     // ✅ check which user is updating
     if (settlement.toUserId.toString() === currentUserId) {
-      // settlement.toDashboardId = dashboardId;
       settlement.toDashboardId = new mongoose.Types.ObjectId(dashboardId);
     } else if (settlement.fromUserId.toString() === currentUserId) {
-      // settlement.fromDashboardId = dashboardId;
       settlement.fromDashboardId = new mongoose.Types.ObjectId(dashboardId);
     } else {
       return res.status(403).json({ msg: "Not allowed" });

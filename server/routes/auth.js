@@ -120,13 +120,13 @@ router.get("/me", (req, res) => {
 router.post("/logout", (req, res) => {
   
   req.session.destroy(err => {
-  if (err) {
-    return res.status(500).json({ msg: "Logout failed" });
-  }
-  res.clearCookie("session-id");
-  res.json({ msg: "Logged out" });
-});
-  // });
+    if (err) {
+      return res.status(500).json({ msg: "Logout failed" });
+    }
+    res.clearCookie("session-id");
+    res.json({ msg: "Logged out" });
+  });
+  
 });
 
 
