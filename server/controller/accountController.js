@@ -8,8 +8,12 @@ import { sendEmail } from "../utils/email.js";
 import { io } from "../server.js";
 import mongoose from "mongoose";
 import fs from "fs/promises"; 
-import path from "path";
 import { syncSettlementAccounts } from "../utils/syncSettlement.js";
+
+import path from "path";
+import { fileURLToPath } from "url";
+
+
 // DASHBOARD OUTPUT
 export const getDashboard = async (req, res) => {
   try {
@@ -617,6 +621,7 @@ export const updateTransaction = async (req, res) => {
 
 // DELETE
 
+
 export const deleteTransaction = async (req, res) => {
   try {
     const txn = await Account.findById(req.params.id);
@@ -625,7 +630,7 @@ export const deleteTransaction = async (req, res) => {
       return res.status(404).json({ msg: "Transaction not found" });
     }
 
-    // ✅ FIX 1: security (createdBy → userId)
+    // 🔐 Security
     if (
       txn.settlementStatus === "pending" &&
       txn.userId.toString() !== req.session.user.id
@@ -638,25 +643,22 @@ export const deleteTransaction = async (req, res) => {
     // 🟡 FILE DELETE
     if (txn.attachment) {
       try {
-        const filePath = path.join("uploads", txn.attachment);
+        const filePath = path.join(process.cwd(), "uploads", txn.attachment);
         await fs.unlink(filePath);
       } catch (err) {
         console.error("Delete file error:", err.message);
       }
     }
 
-    // ⭐ settlement transaction
+    // ⭐ Settlement logic
     if (txn.settlementId) {
 
-      // ✅ FIX 2: always check Settlement model
       const settlement = await Settlement.findById(txn.settlementId);
 
       if (settlement && settlement.status === "pending") {
 
-        // 🔥 FIX 3: first delete settlement
         await Settlement.findByIdAndDelete(txn.settlementId);
 
-        // 🔥 FIX 4: then delete all related accounts
         await Account.deleteMany({
           settlementId: txn.settlementId
         });
@@ -665,10 +667,8 @@ export const deleteTransaction = async (req, res) => {
           settlementId: txn.settlementId
         });
 
-
       } else {
 
-        // settled → only current user records delete
         await Account.deleteMany({
           settlementId: txn.settlementId,
           userId: req.session.user.id
@@ -678,7 +678,6 @@ export const deleteTransaction = async (req, res) => {
 
     } else {
 
-      // normal transaction
       await Account.deleteOne({
         _id: req.params.id,
         userId: req.session.user.id
@@ -687,7 +686,7 @@ export const deleteTransaction = async (req, res) => {
     }
 
     io.to(req.session.user.id).emit("transactionUpdated", {
-      dashboardId: txn.dashboardIds[0]
+      dashboardId: txn.dashboardIds?.[0]
     });
 
     res.json({ success: true });

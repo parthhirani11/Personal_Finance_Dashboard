@@ -66,8 +66,6 @@ export const paySettlement = async (req, res) => {
         dashboardIds: [settlement.toDashboardId]   // 🔥 ADD THIS
       }
     );
-    console.log("FROM DASHBOARD:", settlement.fromDashboardId);
-    console.log("TO DASHBOARD:", settlement.toDashboardId);
     const originalTxn = await Account.findOne({
       settlementId: settlementId,
       paymentMode: { $ne: "settlement" }

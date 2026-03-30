@@ -76,7 +76,7 @@ function Register() {
   return (
     <div className="container-center">
       {/* Toast container */}
-      <ToastContainer position="top-center" autoClose={3000} />
+      {/* <ToastContainer position="top-center" autoClose={3000} /> */}
 
       <form className="auth-box" onSubmit={handleSubmit} noValidate> 
         <h3>Register</h3>

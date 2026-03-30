@@ -905,9 +905,14 @@ export default function Dashboard() {
       // agar manually type karyo hoy to find user by name
       if (!selectedOtherUserId && otherUserId.trim()) {
         // backend call to get user by exact name
-        const res = await api.get("/users/by-userid", { params: { name: otherUserId.trim() } });
-        if (res.data?.success && res.data?.users?.length > 0) {
-          selectedOtherUserId = res.data.users[0]._id; // first matched user
+        try {
+          const res = await api.get("/users/by-userid", { params: { name: otherUserId.trim() } });
+          if (res.data?.success && res.data?.users?.length > 0) {
+            selectedOtherUserId = res.data.users[0]._id; // first matched user
+          }
+        } catch (err) {
+          toast.error("User fetch failed");
+          return;
         }
       }
 
@@ -936,17 +941,6 @@ export default function Dashboard() {
 
     if (file) {
       formData.append("attachment", file);
-    }
-
-    let newErrors = {};
-
-    if (!amount || Number(amount) <= 0) {
-      newErrors.amount = "Please enter amount";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return; //  stop submit
     }
 
     try {
@@ -1013,27 +1007,16 @@ export default function Dashboard() {
 
   const handleConfirmDelete = async (id) => {
     try {
-      const token = localStorage.getItem("token");
 
-      // await api.post(`/account/delete/${id}`);
       await api.post(`/account/delete/${id}`, {}, {
         withCredentials: true
       });
-  
-      // ✅ Remove deleted transaction from UI instantly
-      setTransactions(prev => prev.filter(t => t._id !== id));
 
-      // ✅ Reload current dashboard transactions
-      if (activeDashboard) {
-        const res = await api.get(`/account/home/${activeDashboard}`);
-        setTransactions(
-          Array.isArray(res.data.transactions)
-            ? res.data.transactions
-            : []
-        );
-      }
-       setPaymentModeVersion(prev => prev + 1);
-      // Optional refresh helpers
+      // ✅ Just reload (clean approach)
+      await fetchDashboard();
+
+      setPaymentModeVersion(prev => prev + 1);
+
       fetchCategories();
       await fetchTags();
 
@@ -1046,6 +1029,7 @@ export default function Dashboard() {
       setConfirmDelete({ show: false, id: null });
     }
   };
+
 
   const fetchUserByUserId = async (value) => {
    
@@ -2562,7 +2546,7 @@ export default function Dashboard() {
 
            {/* ....................................transection list recode card.................................... */}
           
-          <ToastContainer position="top-center" autoClose={3000} />
+          {/* <ToastContainer position="top-center" autoClose={3000} /> */}
           {filteredData.length > 0 ? (
             
             <div className="transaction-wrapper mt-3">
